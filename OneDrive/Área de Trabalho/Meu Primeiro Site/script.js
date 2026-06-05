@@ -460,3 +460,91 @@ if (btnFotoTurmaSelecionada) {
         }
     });
 }
+
+// =============================
+// CARREGAR AULAS DA TURMA SELECIONADA
+// =============================
+
+async function carregarAulasDaTurma(turmaId) {
+    const areaAulas = document.getElementById("areaAulasTurma");
+    const listaAulas = document.getElementById("listaAulasTurma");
+
+    if (!areaAulas || !listaAulas) {
+        return;
+    }
+
+    if (!banco) {
+        listaAulas.innerHTML = "<p>Supabase não conectado.</p>";
+        areaAulas.style.display = "block";
+        return;
+    }
+
+    listaAulas.innerHTML = "<p>Carregando aulas da turma...</p>";
+    areaAulas.style.display = "block";
+
+    const { data, error } = await banco
+        .from("aulas")
+        .select(`
+            id,
+            titulo_aula,
+            subtitulo,
+            descricao,
+            data_aula,
+            horario_inicio,
+            horario_fim,
+            local_aula,
+            desafio_pratico,
+            disciplinas (
+                nome_disciplina
+            )
+        `)
+        .eq("turma_id", turmaId)
+        .eq("ativo", true)
+        .order("data_aula", { ascending: true });
+
+    if (error) {
+        listaAulas.innerHTML = `
+            <p>Erro ao carregar aulas: ${error.message}</p>
+        `;
+        console.log("Erro ao carregar aulas:", error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        listaAulas.innerHTML = `
+            <p>Nenhuma aula cadastrada para esta turma ainda.</p>
+        `;
+        return;
+    }
+
+    listaAulas.innerHTML = "";
+
+    data.forEach(function(aula) {
+        const nomeDisciplina = aula.disciplinas
+            ? aula.disciplinas.nome_disciplina
+            : "Disciplina não informada";
+
+        listaAulas.innerHTML += `
+            <div class="card-aula">
+                <span class="badge-disciplina">${nomeDisciplina}</span>
+
+                <h3>${aula.titulo_aula}</h3>
+
+                <p><strong>Subtítulo:</strong> ${aula.subtitulo || "Não informado"}</p>
+
+                <p><strong>Descrição:</strong> ${aula.descricao || "Não informada"}</p>
+
+                <p><strong>Data:</strong> ${aula.data_aula || "Não informada"}</p>
+
+                <p>
+                    <strong>Horário:</strong>
+                    ${aula.horario_inicio || "--:--"} às ${aula.horario_fim || "--:--"}
+                </p>
+
+                <p><strong>Local:</strong> ${aula.local_aula || "Não informado"}</p>
+
+                <p><strong>Desafio prático:</strong> ${aula.desafio_pratico || "Não informado"}</p>
+            </div>
+        `;
+    });
+}
