@@ -1,0 +1,327 @@
+// =============================
+// CONEXÃO COM O SUPABASE
+// =============================
+
+const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
+
+// Coloque aqui sua chave ANON PUBLIC do Supabase.
+// Nunca use sb_secret ou service_role no site.
+const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
+
+let banco = null;
+
+// Verifica se a biblioteca do Supabase carregou corretamente
+if (window.supabase) {
+    banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log("Supabase conectado!");
+} else {
+    console.log("Supabase não carregou. Verifique o script CDN no index.html.");
+}
+
+
+// =============================
+// BOTÃO: DESAFIO PRÁTICO
+// =============================
+
+const botao = document.getElementById("meuBotao");
+
+if (botao) {
+    botao.addEventListener("click", function () {
+        alert(`Cada aluno criará uma página simples de apresentação pessoal/profissional.
+
+• Título com nome e turma.
+• Parágrafo contando o que está aprendendo.
+• Lista com 3 habilidades ou interesses.
+• Botão que troca uma mensagem usando JavaScript.
+• Visual com cores, card, espaçamento e botão estilizado.
+• Publicação no Netlify com link compartilhável.
+
+Tempo sugerido: 50 a 80 minutos, dependendo do ritmo da turma.`);
+    });
+}
+
+
+// =============================
+// BOTÕES "O QUE É?"
+// =============================
+
+function mostrarHTML() {
+    document.getElementById("resultado").innerHTML = `
+        <h3>HTML</h3>
+
+        <p>
+            HTML é a linguagem responsável pela estrutura do site.
+        </p>
+
+        <p>
+            Exemplo: se o site fosse uma casa, o HTML seria as paredes,
+            portas, janelas e telhado.
+        </p>
+    `;
+}
+
+function mostrarCSS() {
+    document.getElementById("resultado").innerHTML = `
+        <h3>CSS</h3>
+
+        <p>
+            CSS é responsável pela aparência do site.
+        </p>
+
+        <p>
+            Exemplo: se o site fosse uma casa, o CSS seria a pintura,
+            decoração, cores, móveis e iluminação.
+        </p>
+    `;
+}
+
+function mostrarJS() {
+    document.getElementById("resultado").innerHTML = `
+        <h3>JavaScript</h3>
+
+        <p>
+            JavaScript adiciona interação ao site.
+        </p>
+
+        <p>
+            Exemplo: se o site fosse uma casa, o JavaScript seria a energia elétrica,
+            o controle remoto, o portão automático e a automação.
+        </p>
+    `;
+}
+
+
+// =============================
+// BOTÃO: VER / OCULTAR FOTO DA TURMA
+// =============================
+
+const btnTurma = document.getElementById("btnTurma");
+
+if (btnTurma) {
+    btnTurma.addEventListener("click", function () {
+        const foto = document.getElementById("fotoTurma");
+
+        if (foto.style.display === "none" || foto.style.display === "") {
+            foto.style.display = "block";
+            btnTurma.textContent = "❌ Ocultar Foto da Turma";
+        } else {
+            foto.style.display = "none";
+            btnTurma.textContent = "📸 Ver Foto da Turma";
+        }
+    });
+}
+
+
+// =============================
+// BOTÃO: VISUALIZAR / FECHAR PLANO DE AULA
+// =============================
+
+const btnPDF = document.getElementById("btnPDF");
+
+if (btnPDF) {
+    btnPDF.addEventListener("click", function () {
+        const pdf = document.getElementById("visualizadorPDF");
+        const mensagemPDF = document.getElementById("mensagemPDF");
+
+        const caminhoPDF = "plano-aula-front-end.pdf";
+
+        // Se não tiver nome de arquivo, mostra mensagem
+        if (caminhoPDF === "") {
+            mensagemPDF.textContent = "Plano de Aula Vazio.";
+            return;
+        }
+
+        // Se o PDF já estiver aberto, fecha
+        if (pdf.style.display === "block") {
+            pdf.style.display = "none";
+            pdf.src = "";
+            btnPDF.textContent = "📚 Visualizar Plano de Aula";
+            mensagemPDF.textContent = "";
+            return;
+        }
+
+        // Abre o PDF dentro do site
+        pdf.src = caminhoPDF;
+        pdf.style.display = "block";
+        btnPDF.textContent = "❌ Fechar Plano de Aula";
+        mensagemPDF.textContent = "";
+    });
+}
+
+
+// =============================
+// BLOQUEIO BÁSICO DE LINKS PROIBIDOS
+// =============================
+
+const palavrasProibidas = [
+    "porn",
+    "porno",
+    "xxx",
+    "sex",
+    "sexo",
+    "nude",
+    "nudes",
+    "bet",
+    "cassino",
+    "casino",
+    "aposta",
+    "drogas",
+    "violencia",
+    "violência"
+];
+
+function linkPareceSeguro(link) {
+    if (!link) {
+        return false;
+    }
+
+    const linkMinusculo = link.toLowerCase();
+
+    if (!linkMinusculo.startsWith("https://")) {
+        return false;
+    }
+
+    for (let palavra of palavrasProibidas) {
+        if (linkMinusculo.includes(palavra)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+// =============================
+// BOTÃO: CADASTRAR PORTFÓLIO
+// =============================
+
+const btnCadastrarPortfolio = document.getElementById("btnCadastrarPortfolio");
+
+if (btnCadastrarPortfolio) {
+    btnCadastrarPortfolio.addEventListener("click", async function () {
+        if (!banco) {
+            alert("Supabase não está conectado. Verifique a chave e o script CDN.");
+            return;
+        }
+
+        const nome = document.getElementById("nomeAluno").value.trim();
+        const telefone = document.getElementById("telefoneAluno").value.trim();
+        const email = document.getElementById("emailAluno").value.trim();
+        const site = document.getElementById("linkSiteAluno").value.trim();
+        const video = document.getElementById("linkVideoAluno").value.trim();
+        const autorizado = document.getElementById("autorizacaoAluno").checked;
+
+        if (!nome || !email || !site || !autorizado) {
+            alert("Preencha nome, e-mail, link do site e marque a autorização.");
+            return;
+        }
+
+        if (!linkPareceSeguro(site)) {
+            alert("O link do site precisa começar com https:// e não pode conter conteúdo proibido.");
+            return;
+        }
+
+        if (video && !linkPareceSeguro(video)) {
+            alert("O link do vídeo precisa começar com https:// e não pode conter conteúdo proibido.");
+            return;
+        }
+
+        const { error } = await banco
+            .from("portfolio_alunos")
+            .insert([
+                {
+                    nome_aluno: nome,
+                    telefone: telefone,
+                    email: email,
+                    link_site: site,
+                    link_video: video,
+                    autorizado: true,
+                    aprovado: false
+                }
+            ]);
+
+        if (error) {
+            alert("Erro ao salvar: " + error.message);
+            console.log("Erro Supabase:", error);
+            return;
+        }
+
+        alert("Portfólio enviado com sucesso! Aguarde aprovação do professor.");
+
+        document.getElementById("nomeAluno").value = "";
+        document.getElementById("telefoneAluno").value = "";
+        document.getElementById("emailAluno").value = "";
+        document.getElementById("linkSiteAluno").value = "";
+        document.getElementById("linkVideoAluno").value = "";
+        document.getElementById("autorizacaoAluno").checked = false;
+    });
+}
+
+
+// =============================
+// BOTÃO: CARREGAR PORTFÓLIOS PUBLICADOS
+// =============================
+
+const btnCarregarPortfolios = document.getElementById("btnCarregarPortfolios");
+
+if (btnCarregarPortfolios) {
+    btnCarregarPortfolios.addEventListener("click", async function () {
+        if (!banco) {
+            alert("Supabase não está conectado.");
+            return;
+        }
+
+        const areaPortfolios = document.getElementById("portfoliosPublicados");
+
+        areaPortfolios.innerHTML = "<p>Carregando portfólios...</p>";
+
+        const { data, error } = await banco
+            .from("portfolio_alunos")
+            .select("nome_aluno, telefone, email, link_site, link_video, criado_em")
+            .eq("autorizado", true)
+            .eq("aprovado", true)
+            .order("criado_em", { ascending: false });
+
+        if (error) {
+            areaPortfolios.innerHTML = `
+                <p>Erro ao carregar portfólios: ${error.message}</p>
+            `;
+            return;
+        }
+
+        if (data.length === 0) {
+            areaPortfolios.innerHTML = `
+                <p>Nenhum portfólio aprovado ainda.</p>
+            `;
+            return;
+        }
+
+        areaPortfolios.innerHTML = "";
+
+        data.forEach(function (aluno) {
+            areaPortfolios.innerHTML += `
+                <div class="card-publicado">
+                    <h3>${aluno.nome_aluno}</h3>
+
+                    <p><strong>Telefone:</strong> ${aluno.telefone || "Não informado"}</p>
+
+                    <p><strong>E-mail:</strong> ${aluno.email || "Não informado"}</p>
+
+                    <p>
+                        <strong>Site:</strong>
+                        <a href="${aluno.link_site}" target="_blank">
+                            Acessar projeto do aluno
+                        </a>
+                    </p>
+
+                    <p>
+                        <strong>Vídeo:</strong>
+                        <a href="${aluno.link_video}" target="_blank">
+                            Assistir apresentação
+                        </a>
+                    </p>
+                </div>
+            `;
+        });
+    });
+}
