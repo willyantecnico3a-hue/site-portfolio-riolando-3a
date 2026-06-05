@@ -22,7 +22,7 @@ console.log("Painel admin conectado ao Supabase");
 
 const EMAIL_ADMIN = "willyancruz@prof.educacao.sp.gov.br";
 
-const SENHA_ADMIN = "123456";
+
 
 const btnLoginAdmin = document.getElementById("btnLoginAdmin");
 
@@ -215,3 +215,16 @@ async function excluirPortfolio(id) {
     }
 
 }
+
+const btnSairAdmin = document.getElementById("btnSairAdmin");
+
+btnSairAdmin.addEventListener("click", async function() {
+
+    await banco.auth.signOut();
+
+    document.getElementById("areaAdmin").style.display = "none";
+
+    document.getElementById("mensagemLogin").textContent =
+        "Você saiu do painel administrativo.";
+
+});
