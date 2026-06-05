@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3b215b3ByYnZvaW1xbWlrdmV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MDUyODAsImV4cCI6MjA5NjE4MTI4MH0.FGA69_VBr2xXfEO_ybTAnZMmAQm2XEqkVvqLc-spesA";
+git remote set-url origin https://github.com/willyantecnico3a-hue/site-portfolio-riolando-3a.gitnR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3b215b3ByYnZvaW1xbWlrdmV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MDUyODAsImV4cCI6MjA5NjE4MTI4MH0.FGA69_VBr2xXfEO_ybTAnZMmAQm2XEqkVvqLc-spesA";
 
 const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -47,35 +47,27 @@ function mostrarJS() {
     `;
 }
 
-// Botão para abrir e fechar o PDF do plano de aula
+// =============================
+// BOTÃO PARA ABRIR E FECHAR O PDF
+// =============================
+
 const btnPDF = document.getElementById("btnPDF");
 
-btnPDF.addEventListener("click", function() {
-
+btnPDF.addEventListener("click", function () {
     // Pega o iframe onde o PDF aparece
     const pdf = document.getElementById("visualizadorPDF");
 
-    // Verifica se o PDF está escondido ou vazio
+    // Se o PDF estiver escondido, ele será aberto
     if (pdf.style.display === "none" || pdf.style.display === "") {
-
-        // Define o caminho do arquivo PDF
         pdf.src = "plano-aula-front-end.pdf";
-
-        // Mostra o PDF na tela
         pdf.style.display = "block";
 
-        // Altera o texto do botão
         btnPDF.textContent = "❌ Fechar Plano de Aula";
-
     } else {
-
-        // Esconde o PDF
+        // Se o PDF já estiver aberto, ele será fechado
         pdf.style.display = "none";
-
-        // Limpa o arquivo carregado
         pdf.src = "";
 
-        // Volta o texto original do botão
         btnPDF.textContent = "📚 Visualizar Plano de Aula";
     }
 });
