@@ -222,3 +222,27 @@ button:hover {
     font-weight: bold;
     color: #0f766e;
 }
+
+.area-admin-link {
+    margin-top: 40px;
+    padding: 25px;
+    background-color: white;
+    border-radius: 15px;
+    border-left: 6px solid #7c3aed;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.botao-admin {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 12px 22px;
+    background-color: #7c3aed;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.botao-admin:hover {
+    background-color: #5b21b6;
+}
