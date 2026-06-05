@@ -325,3 +325,138 @@ if (btnCarregarPortfolios) {
         });
     });
 }
+
+// =============================
+// CARREGAR TURMAS DO SUPABASE
+// =============================
+
+async function carregarTurmas() {
+    const selectTurma = document.getElementById("selectTurma");
+
+    if (!selectTurma) {
+        return;
+    }
+
+    if (!banco) {
+        console.log("Supabase não conectado para carregar turmas.");
+        return;
+    }
+
+    const { data, error } = await banco
+        .from("turmas")
+        .select("id, nome_turma, curso, descricao, foto_url")
+        .eq("ativo", true)
+        .order("nome_turma", { ascending: true });
+
+    if (error) {
+        console.log("Erro ao carregar turmas:", error.message);
+        return;
+    }
+
+    data.forEach(function(turma) {
+        const option = document.createElement("option");
+
+        option.value = turma.id;
+
+        option.textContent = `${turma.nome_turma} - ${turma.curso}`;
+
+        option.dataset.nome = turma.nome_turma;
+        option.dataset.curso = turma.curso;
+        option.dataset.descricao = turma.descricao || "";
+        option.dataset.foto = turma.foto_url || "";
+
+        selectTurma.appendChild(option);
+    });
+}
+
+carregarTurmas();
+
+
+// =============================
+// MOSTRAR AMBIENTE DA TURMA ESCOLHIDA
+// =============================
+
+const selectTurma = document.getElementById("selectTurma");
+
+if (selectTurma) {
+    selectTurma.addEventListener("change", function() {
+        const optionSelecionada =
+            selectTurma.options[selectTurma.selectedIndex];
+
+        const ambienteTurma =
+            document.getElementById("ambienteTurma");
+
+        const nomeTurma =
+            document.getElementById("nomeTurmaSelecionada");
+
+        const cursoTurma =
+            document.getElementById("cursoTurmaSelecionada");
+
+        const descricaoTurma =
+            document.getElementById("descricaoTurmaSelecionada");
+
+        const fotoTurma =
+            document.getElementById("fotoTurmaSelecionada");
+
+        const btnFotoTurma =
+            document.getElementById("btnFotoTurmaSelecionada");
+
+        if (selectTurma.value === "") {
+            ambienteTurma.style.display = "none";
+            return;
+        }
+
+        nomeTurma.textContent =
+            `Turma ${optionSelecionada.dataset.nome}`;
+
+        cursoTurma.textContent =
+            `Curso: ${optionSelecionada.dataset.curso}`;
+
+        descricaoTurma.textContent =
+            optionSelecionada.dataset.descricao;
+
+        const caminhoFoto =
+            optionSelecionada.dataset.foto;
+
+        if (caminhoFoto) {
+            fotoTurma.src = caminhoFoto;
+            btnFotoTurma.style.display = "inline-block";
+        } else {
+            fotoTurma.src = "";
+            fotoTurma.style.display = "none";
+            btnFotoTurma.style.display = "none";
+        }
+
+        ambienteTurma.style.display = "block";
+
+        btnFotoTurma.textContent =
+            "📸 Ver Foto da Turma";
+    });
+}
+
+
+// =============================
+// BOTÃO FOTO DA TURMA SELECIONADA
+// =============================
+
+const btnFotoTurmaSelecionada =
+    document.getElementById("btnFotoTurmaSelecionada");
+
+if (btnFotoTurmaSelecionada) {
+    btnFotoTurmaSelecionada.addEventListener("click", function() {
+        const fotoTurma =
+            document.getElementById("fotoTurmaSelecionada");
+
+        if (fotoTurma.style.display === "none" || fotoTurma.style.display === "") {
+            fotoTurma.style.display = "block";
+
+            btnFotoTurmaSelecionada.textContent =
+                "❌ Ocultar Foto da Turma";
+        } else {
+            fotoTurma.style.display = "none";
+
+            btnFotoTurmaSelecionada.textContent =
+                "📸 Ver Foto da Turma";
+        }
+    });
+}

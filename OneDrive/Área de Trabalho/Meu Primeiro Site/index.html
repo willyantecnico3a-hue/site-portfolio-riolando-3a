@@ -10,6 +10,39 @@
 </head>
 <body>
 
+    <section class="seletor-turma">
+    <h2>Escolha sua Turma</h2>
+
+    <p>
+        Selecione a turma para visualizar aulas, materiais, foto, portfólios e atividades.
+    </p>
+
+    <select id="selectTurma">
+        <option value="">Selecione uma turma</option>
+    </select>
+</section>
+
+<section id="ambienteTurma" class="ambiente-turma" style="display: none;">
+    <h2 id="nomeTurmaSelecionada"></h2>
+
+    <p id="cursoTurmaSelecionada"></p>
+
+    <p id="descricaoTurmaSelecionada"></p>
+
+    <button id="btnFotoTurmaSelecionada">
+        📸 Ver Foto da Turma
+    </button>
+
+    <br><br>
+
+    <img
+        id="fotoTurmaSelecionada"
+        src=""
+        alt="Foto da turma selecionada"
+        style="display: none;"
+    >
+</section>
+
     <h2>Turma Desenvolvimento de Sistemas 3ºA</h2>
 
 <button id="btnTurma">
@@ -167,7 +200,21 @@
     <a href="admin.html" class="botao-admin">
       🔐 Acessar Painel Admin
     </a>
-</section>    
+</section>  
+
+<section class="seletor-turma">
+    <h2>Escolha sua Turma</h2>
+
+    <select id="selectTurma">
+        <option value="">Selecione uma turma</option>
+    </select>
+</section>
+
+<section id="ambienteTurma" class="ambiente-turma">
+    <h2 id="nomeTurmaSelecionada"></h2>
+    <p id="cursoTurmaSelecionada"></p>
+    <img id="fotoTurmaSelecionada" style="display:none;">
+</section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
