@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Painel Administrativo</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <section class="painel-admin">
+        <h1>Painel Administrativo</h1>
+
+        <p>
+            Área exclusiva para o professor gerenciar os portfólios enviados pelos alunos.
+        </p>
+
+        <h2>Login do Administrador</h2>
+
+        <input type="email" id="emailAdmin" placeholder="E-mail do administrador">
+
+        <input type="password" id="senhaAdmin" placeholder="Senha">
+
+        <button id="btnLoginAdmin">
+            Entrar no Painel
+        </button>
+
+        <p id="mensagemLogin"></p>
+    </section>
+
+    <section id="areaAdmin" class="painel-admin" style="display:none;">
+
+        <h2>Portfólios Enviados</h2>
+
+        <p>
+            Aqui você pode aprovar, ocultar ou excluir portfólios enviados pelos alunos.
+        </p>
+
+        <button id="btnCarregarAdmin">
+            🔎 Carregar Portfólios
+        </button>
+
+        <div id="listaAdminPortfolios"></div>
+
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="admin.js"></script>
+
+</body>
+</html>
