@@ -11,121 +11,119 @@
 </head>
 <body>
 
-    <header class="topo-site">
-        <div>
-            <h1>Portal de Aulas e Portfólios</h1>
+  <header class="topo-site">
+    <div>
+        <h1>Portal de Aulas e Portfólios</h1>
 
-            <p>
-                Professor Willyan Vieira — PEI Professor Riolando Canno
+        <p>
+            Professor Willyan Vieira — PEI Professor Riolando Canno
+        </p>
+    </div>
+
+    <a href="admin.html" class="link-admin-discreto">
+        🔐 Admin
+    </a>
+</header>
+
+<main class="tela-inicial">
+
+    <section class="card-escolha-turma">
+        <h2>Escolha sua Turma</h2>
+
+        <p>
+            Selecione sua turma para visualizar aulas, materiais, atividades,
+            portfólios e orientações do professor.
+        </p>
+
+        <select id="selectTurma">
+            <option value="">Selecione uma turma</option>
+        </select>
+    </section>
+
+    <section id="ambienteTurma" class="ambiente-turma" style="display: none;">
+
+        <h2 id="nomeTurmaSelecionada"></h2>
+
+        <p id="cursoTurmaSelecionada"></p>
+
+        <p id="descricaoTurmaSelecionada"></p>
+
+        <button id="btnFotoTurmaSelecionada">
+            📸 Ver Foto da Turma
+        </button>
+
+        <br><br>
+
+        <img
+            id="fotoTurmaSelecionada"
+            src=""
+            alt="Foto da turma selecionada"
+            style="display: none;"
+        >
+
+        <section class="area-aula-dia">
+            <h2>Aula do Dia</h2>
+
+            <p id="infoAulaDia">
+                Após selecionar a turma, as aulas cadastradas aparecerão aqui.
             </p>
-        </div>
-
-        <a href="admin.html" class="link-admin-discreto">
-            🔐 Admin
-        </a>
-    </header>
-
-    <main class="tela-inicial">
-
-        <section class="card-escolha-turma">
-            <h2>Escolha sua Turma</h2>
-
-            <p>
-                Selecione sua turma para visualizar aulas, materiais, atividades,
-                portfólios e orientações do professor.
-            </p>
-
-            <select id="selectTurma">
-                <option value="">Selecione uma turma</option>
-            </select>
         </section>
 
-        <section id="ambienteTurma" class="ambiente-turma" style="display: none;">
+        <section class="area-materiais">
+            <h2>Materiais da Aula</h2>
 
-            <h2 id="nomeTurmaSelecionada"></h2>
+            <div id="materiaisTurma">
+                <p>Nenhum material carregado ainda.</p>
+            </div>
+        </section>
 
-            <p id="cursoTurmaSelecionada"></p>
+        <section class="area-portfolio-aluno">
+            <h2>Enviar Portfólio</h2>
 
-            <p id="descricaoTurmaSelecionada"></p>
+            <p>
+                Envie o link do projeto desenvolvido para avaliação e publicação após aprovação.
+            </p>
 
-            <button id="btnFotoTurmaSelecionada">
-                📸 Ver Foto da Turma
+            <input type="text" id="nomeAluno" placeholder="Nome do aluno">
+
+            <input type="text" id="telefoneAluno" placeholder="Telefone">
+
+            <input type="email" id="emailAluno" placeholder="E-mail">
+
+            <input type="url" id="linkSiteAluno" placeholder="Link do site criado pelo aluno">
+
+            <input type="url" id="linkVideoAluno" placeholder="Link do vídeo de apresentação">
+
+            <label class="autorizacao">
+                <input type="checkbox" id="autorizacaoAluno">
+                Autorizo divulgar meus dados, site e vídeo para fins de portfólio escolar e oportunidades profissionais.
+            </label>
+
+            <button id="btnCadastrarPortfolio">
+                Cadastrar Portfólio
+            </button>
+        </section>
+
+        <section class="secao-portfolios-publicados">
+            <h2>Portfólios Publicados</h2>
+
+            <p>
+                Confira os projetos aprovados desta turma.
+            </p>
+
+            <button id="btnCarregarPortfolios">
+                🔎 Ver Portfólios dos Alunos
             </button>
 
-            <br><br>
-
-            <img
-                id="fotoTurmaSelecionada"
-                src=""
-                alt="Foto da turma selecionada"
-                style="display: none;"
-            >
-
-            <hr>
-
-            <section class="area-aula-dia">
-                <h2>Aula do Dia</h2>
-
-                <p id="infoAulaDia">
-                    Após selecionar a turma, as aulas cadastradas aparecerão aqui.
-                </p>
-            </section>
-
-            <section class="area-materiais">
-                <h2>Materiais da Aula</h2>
-
-                <div id="materiaisTurma">
-                    <p>Nenhum material carregado ainda.</p>
-                </div>
-            </section>
-
-            <section class="area-portfolio-aluno">
-                <h2>Enviar Portfólio</h2>
-
-                <p>
-                    Envie o link do projeto desenvolvido para avaliação e publicação após aprovação.
-                </p>
-
-                <input type="text" id="nomeAluno" placeholder="Nome do aluno">
-
-                <input type="text" id="telefoneAluno" placeholder="Telefone">
-
-                <input type="email" id="emailAluno" placeholder="E-mail">
-
-                <input type="url" id="linkSiteAluno" placeholder="Link do site criado pelo aluno">
-
-                <input type="url" id="linkVideoAluno" placeholder="Link do vídeo de apresentação">
-
-                <label class="autorizacao">
-                    <input type="checkbox" id="autorizacaoAluno">
-                    Autorizo divulgar meus dados, site e vídeo para fins de portfólio escolar e oportunidades profissionais.
-                </label>
-
-                <button id="btnCadastrarPortfolio">
-                    Cadastrar Portfólio
-                </button>
-            </section>
-
-            <section class="secao-portfolios-publicados">
-                <h2>Portfólios Publicados</h2>
-
-                <p>
-                    Confira os projetos aprovados desta turma.
-                </p>
-
-                <button id="btnCarregarPortfolios">
-                    🔎 Ver Portfólios dos Alunos
-                </button>
-
-                <div id="portfoliosPublicados"></div>
-            </section>
-
+            <div id="portfoliosPublicados"></div>
         </section>
 
-    </main>
+    </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
 
 </body>
 </html>
