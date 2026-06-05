@@ -285,3 +285,130 @@ button:hover {
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
+.topo-site {
+    max-width: 1100px;
+    margin: 25px auto 0 auto;
+    padding: 20px 25px;
+    background-color: white;
+    border-radius: 16px;
+    border-left: 6px solid #0f766e;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.topo-site h1 {
+    margin: 0;
+    color: rgb(139, 0, 19);
+}
+
+.topo-site p {
+    margin: 8px 0 0 0;
+    font-weight: bold;
+    color: #0f172a;
+}
+
+.link-admin-discreto {
+    font-size: 14px;
+    padding: 8px 12px;
+    background-color: #f1f5f9;
+    color: #334155;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link-admin-discreto:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.tela-inicial {
+    max-width: 1100px;
+    margin: 25px auto;
+}
+
+.card-escolha-turma {
+    padding: 30px;
+    background-color: white;
+    border-radius: 18px;
+    border-left: 6px solid #1e40af;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-escolha-turma select {
+    width: 100%;
+    padding: 16px;
+    margin-top: 15px;
+    border: 2px solid #0f766e;
+    border-radius: 10px;
+    font-size: 18px;
+}
+
+.ambiente-turma,
+.area-aula-dia,
+.area-materiais,
+.area-portfolio-aluno,
+.secao-portfolios-publicados {
+    margin-top: 30px;
+    padding: 25px;
+    background-color: white;
+    border-radius: 15px;
+    border-left: 6px solid #0f766e;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.area-portfolio-aluno input {
+    display: block;
+    width: 95%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 2px solid #0f766e;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+#fotoTurmaSelecionada {
+    max-width: 850px;
+    width: 100%;
+    border-radius: 15px;
+    border: 4px solid #1e40af;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+}
+
+/* Responsividade para celular */
+@media (max-width: 768px) {
+    .topo-site {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .link-admin-discreto {
+        align-self: flex-end;
+    }
+
+    .topo-site h1 {
+        font-size: 28px;
+    }
+
+    .card-escolha-turma,
+    .ambiente-turma,
+    .area-aula-dia,
+    .area-materiais,
+    .area-portfolio-aluno,
+    .secao-portfolios-publicados {
+        padding: 18px;
+    }
+
+    button,
+    .botao-admin,
+    .link-admin-discreto {
+        width: 100%;
+        margin-top: 10px;
+        text-align: center;
+    }
+}
+
