@@ -10,143 +10,103 @@
 </head>
 <body>
 
-    <h2>Turma Desenvolvimento de Sistemas 3ºA</h2>
-
-<button id="btnTurma">
-    📸 Ver Foto da Turma
-</button>
-
-<br><br>
-
-<img
-    id="fotoTurma"
-    src="turma3A.jpg"
-    alt="Turma Desenvolvimento de Sistemas 3ºA"
-    style="display:none;"
->
-    
-    
-    
-    <h1>Olá, Eu Sou o Professor Willyan</h1>
-    <p>Sou Professor e PAEET do Curso de  Desenvolvimento de Sistema Pela Escola PEI Professor Riolando Canno.  </p>
-    <h2>Minhas Missão é Compartilhar conhecimento sobre Front-END </h2>
-    <ul>
-        <li class="item-lista">
-    <span>HTML</span>
-    <button onclick="mostrarHTML()">O que é?</button>
-</li>
-
-<li class="item-lista">
-    <span>CSS</span>
-    <button onclick="mostrarCSS()">O que é?</button>
-</li>
-
-<li class="item-lista">
-    <span>JavaScript</span>
-    <button onclick="mostrarJS()">O que é?</button>
-</li>
-           
-    </ul>
-
-    <div id="resultado"></div>
-
-    <button id="meuBotao">
-    Clique aqui para Ver seu Desafio Prático. 
-</button>
-    <p id="mensagem">Clique no Botão acima para continuar.</p>
-
-    <section class="area-pdf">
-    <h2>Plano de Aula de Front-End</h2>
-
-    <p>
-        Clique nos botões abaixo para abrir ou baixar o PDF do plano de aula.
-    </p>
-
-    <a href="plano-aula-front-end.pdf" target="_blank" class="botao-pdf">
-        Abrir PDF
-    </a>
-
-    <a href="plano-aula-front-end.pdf" download class="botao-pdf">
-        Baixar PDF
-    </a>
-</section>
-
-<h2>Material da Aula</h2>
-
-    <button id="btnPDF">
-        📚 Visualizar Plano de Aula
-    </button>
-
-    <iframe
-        id="visualizadorPDF"
-        width="100%"
-        height="600"
-        style="display:none;">
-    </iframe>
-
-    <section class="secao-beem">
-    <h2>Programa BEEM e Portfólio dos Alunos</h2>
-
-    <p>
-        Espaço criado para apresentar oportunidades do Programa BEEM
-        e divulgar os projetos desenvolvidos pelos alunos do curso de
-        Desenvolvimento de Sistemas.
-    </p>
-
-
-
-    <h3>Vídeo de Apresentação</h3>
-
-    <video controls width="100%">
-        <source src="video-beem.mp4" type="video/mp4">
-        Seu navegador não suporta vídeo.
-    </video>
-
-    <div class="contato-escola">
-        <h3>PEI Professor Riolando Canno</h3>
-        <p><strong>Telefone da escola:</strong> (11) 4056-7092</p>
-        <p><strong>Professor:</strong> Willyan Vieira</p>
-        <p><strong>Função:</strong> PAEET</p>
-        <p><strong>E-mail:</strong> willyancruz@prof.educacao.sp.gov.br</p>
-        <p><strong>Contato:</strong> (11) 98157-6068</p>
+    <header class="topo-site">
+    <div>
+        <h1>Portal de Aulas e Portfólios</h1>
+        <p>Professor Willyan Vieira — PEI Professor Riolando Canno</p>
     </div>
 
-    <h3>Cadastro de Portfólio do Aluno</h3>
+    <a href="admin.html" class="link-admin-discreto">
+        🔐 Admin
+    </a>
+</header>
 
-<input type="text" id="nomeAluno" placeholder="Nome do aluno">
-<input type="text" id="telefoneAluno" placeholder="Telefone">
-<input type="email" id="emailAluno" placeholder="E-mail">
-<input type="url" id="linkSiteAluno" placeholder="Link do site criado pelo aluno">
-<input type="url" id="linkVideoAluno" placeholder="Link do vídeo na nuvem">
+<main class="tela-inicial">
 
-<label class="autorizacao">
-    <input type="checkbox" id="autorizacaoAluno">
-    Autorizo divulgar meus dados, site e vídeo para fins de portfólio escolar e oportunidades profissionais.
-</label>
+    <section class="card-escolha-turma">
+        <h2>Escolha sua Turma</h2>
 
-<button id="btnCadastrarPortfolio">
-    Cadastrar Portfólio
-</button>
+        <p>
+            Selecione sua turma para visualizar aulas, materiais, atividades,
+            portfólios e orientações do professor.
+        </p>
 
+        <select id="selectTurma">
+            <option value="">Selecione uma turma</option>
+        </select>
+    </section>
 
+    <section id="ambienteTurma" class="ambiente-turma" style="display: none;">
+        <h2 id="nomeTurmaSelecionada"></h2>
 
-<div id="listaPortfolio"></div>
+        <p id="cursoTurmaSelecionada"></p>
 
-<section class="secao-portfolios-publicados">
-    <h2>Portfólios Publicados</h2>
+        <p id="descricaoTurmaSelecionada"></p>
 
-    <p>
-        Confira os projetos desenvolvidos pelos alunos do Curso de Desenvolvimento de Sistemas.
-    </p>
+        <button id="btnFotoTurmaSelecionada">
+            📸 Ver Foto da Turma
+        </button>
 
-    <button id="btnCarregarPortfolios">
-        🔎 Ver Portfólios dos Alunos
-    </button>
+        <br><br>
 
-    <div id="portfoliosPublicados"></div>
-</section>
+        <img
+            id="fotoTurmaSelecionada"
+            src=""
+            alt="Foto da turma selecionada"
+            style="display: none;"
+        >
 
+        <section class="area-aula-dia">
+            <h2>Aula do Dia</h2>
+            <p id="infoAulaDia">
+                Após selecionar a turma, as aulas cadastradas aparecerão aqui.
+            </p>
+        </section>
 
+        <section class="area-materiais">
+            <h2>Materiais da Aula</h2>
+            <div id="materiaisTurma">
+                <p>Nenhum material carregado ainda.</p>
+            </div>
+        </section>
+
+        <section class="area-portfolio-aluno">
+            <h2>Enviar Portfólio</h2>
+
+            <p>
+                Envie o link do projeto desenvolvido para avaliação e publicação após aprovação.
+            </p>
+
+            <input type="text" id="nomeAluno" placeholder="Nome do aluno">
+            <input type="text" id="telefoneAluno" placeholder="Telefone">
+            <input type="email" id="emailAluno" placeholder="E-mail">
+            <input type="url" id="linkSiteAluno" placeholder="Link do site criado pelo aluno">
+            <input type="url" id="linkVideoAluno" placeholder="Link do vídeo de apresentação">
+
+            <label class="autorizacao">
+                <input type="checkbox" id="autorizacaoAluno">
+                Autorizo divulgar meus dados, site e vídeo para fins de portfólio escolar e oportunidades profissionais.
+            </label>
+
+            <button id="btnCadastrarPortfolio">
+                Cadastrar Portfólio
+            </button>
+        </section>
+
+        <section class="secao-portfolios-publicados">
+            <h2>Portfólios Publicados</h2>
+
+            <p>Confira os projetos aprovados desta turma.</p>
+
+            <button id="btnCarregarPortfolios">
+                🔎 Ver Portfólios dos Alunos
+            </button>
+
+            <div id="portfoliosPublicados"></div>
+        </section>
+    </section>
+
+</main>
     
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
