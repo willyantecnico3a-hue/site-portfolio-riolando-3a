@@ -1,298 +1,15 @@
-body {
-    background-color: lightblue;
-    font-family: Arial, sans-serif;
-}
+/* =====================================================
+   NOVO LAYOUT DA PÁGINA DO ALUNO
+===================================================== */
 
-h1 {
-    color: rgb(139, 0, 19);
-}
-
-h2 {
-    color: #0f766e;
-}
-
-#meuBotao {
-    font-size: 24px;
-    padding: 20px 40px;
-    background-color: darkblue;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-}
-
-button {
-    background-color: #1e40af;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin-left: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-button:hover {
-    background-color: #2563eb;
-}
-
-#mensagem {
-    font-size: 20px;
-    color: darkblue;
-    font-weight: bold;
-}
-
-#resultado {
-    margin-top: 25px;
-    padding: 20px;
-    background-color: white;
-    border-radius: 12px;
-    border-left: 6px solid #1e40af;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-.item-lista {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.item-lista span {
-    width: 120px;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-#fotoTurma {
-
-    max-width: 800px;
-    width: 100%;
-    margin-top: 20px;
-    border-radius: 15px;
-    border: 4px solid #1e40af;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-
-}
-
-#btnTurma {
-
-    background-color: #0f766e;
-    font-size: 18px;
-
-}
-
-#btnTurma:hover {
-
-    background-color: #115e59;
-
-}
-
-.secao-beem {
-    margin-top: 40px;
-    padding: 25px;
-    background-color: white;
-    border-radius: 15px;
-    border-left: 6px solid #0f766e;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.secao-beem video {
-    margin-top: 15px;
-    border-radius: 12px;
-    border: 3px solid #1e40af;
-}
-
-.contato-escola {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #e0f2fe;
-    border-radius: 12px;
-}
-
-.secao-beem input {
-    display: block;
-    width: 95%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #0f766e;
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-#btnCadastrarPortfolio {
-    margin-top: 10px;
-    background-color: #0f766e;
-}
-
-.card-portfolio {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f0f9ff;
-    border-radius: 12px;
-    border-left: 5px solid #1e40af;
-}
-
-.autorizacao {
-    display: block;
-    margin: 15px 0;
-    padding: 12px;
-    background-color: #e0f2fe;
-    border-radius: 8px;
-    font-weight: bold;
-    color: #0f172a;
-}
-
-.autorizacao input {
-    width: auto;
-    margin-right: 8px;
-}
-
-.secao-portfolios-publicados {
-    margin-top: 40px;
-    padding: 25px;
-    background-color: white;
-    border-radius: 15px;
-    border-left: 6px solid #1e40af;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-#btnCarregarPortfolios {
-    margin-top: 10px;
-    background-color: #1e40af;
-}
-
-#btnCarregarPortfolios:hover {
-    background-color: #2563eb;
-}
-
-#portfoliosPublicados {
-    margin-top: 25px;
-}
-
-.card-publicado {
-    margin-top: 20px;
-    padding: 18px;
-    background-color: #f0f9ff;
-    border-radius: 12px;
-    border-left: 5px solid #0f766e;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-}
-
-.card-publicado h3 {
-    color: #0f766e;
-    margin-bottom: 10px;
-}
-
-.card-publicado p {
-    margin: 6px 0;
-}
-
-.card-publicado a {
-    color: #1e40af;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.card-publicado a:hover {
-    text-decoration: underline;
-}
-
-.painel-admin {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 25px;
-    background-color: white;
-    border-radius: 15px;
-    border-left: 6px solid #1e40af;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.painel-admin input {
-    display: block;
-    width: 95%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #1e40af;
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-#mensagemLogin {
-    font-weight: bold;
-    color: #0f766e;
-}
-
-.area-admin-link {
-    margin-top: 40px;
-    padding: 25px;
-    background-color: white;
-    border-radius: 15px;
-    border-left: 6px solid #7c3aed;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.botao-admin {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 12px 22px;
-    background-color: #7c3aed;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-}
-
-.botao-admin:hover {
-    background-color: #5b21b6;
-}
-
-.seletor-turma {
-    margin: 30px auto;
-    padding: 25px;
-    max-width: 900px;
-    background-color: white;
-    border-radius: 15px;
-    border-left: 6px solid #0f766e;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.seletor-turma select {
-    width: 100%;
-    padding: 14px;
-    margin-top: 15px;
-    border: 2px solid #0f766e;
-    border-radius: 10px;
-    font-size: 18px;
-}
-
-.ambiente-turma {
-    margin: 30px auto;
-    padding: 25px;
-    max-width: 900px;
-    background-color: white;
-    border-radius: 15px;
-    border-left: 6px solid #1e40af;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-#fotoTurmaSelecionada {
-    max-width: 800px;
-    width: 100%;
-    margin-top: 20px;
-    border-radius: 15px;
-    border: 4px solid #1e40af;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.topo-site {
+.novo-topo-aluno {
     max-width: 1100px;
     margin: 25px auto 0 auto;
-    padding: 20px 25px;
-    background-color: white;
-    border-radius: 16px;
-    border-left: 6px solid #0f766e;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    padding: 24px;
+    background: linear-gradient(135deg, #ffffff, #ecfeff);
+    border-radius: 20px;
+    border-left: 7px solid #0f766e;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 
     display: flex;
     justify-content: space-between;
@@ -300,88 +17,309 @@ button:hover {
     gap: 20px;
 }
 
-.topo-site h1 {
+
+/* Texto do topo */
+.topo-conteudo-aluno h1 {
+    margin: 8px 0;
+    color: #7f1d1d;
+    font-size: 34px;
+}
+
+.topo-conteudo-aluno p {
     margin: 0;
-    color: rgb(139, 0, 19);
-}
-
-.topo-site p {
-    margin: 8px 0 0 0;
     font-weight: bold;
-    color: #0f172a;
+    color: #334155;
 }
 
-.link-admin-discreto {
+
+/* Selo com nome da escola */
+.selo-escola {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #ccfbf1;
+    color: #0f766e;
+    border-radius: 999px;
+    font-weight: bold;
     font-size: 14px;
-    padding: 8px 12px;
+}
+
+
+/* Botão discreto do admin */
+.link-admin-discreto {
+    padding: 10px 14px;
     background-color: #f1f5f9;
     color: #334155;
-    border-radius: 8px;
+    border-radius: 12px;
     text-decoration: none;
     font-weight: bold;
+    border: 2px solid #cbd5e1;
 }
 
 .link-admin-discreto:hover {
-    background-color: #e2e8f0;
-    color: #0f172a;
+    background-color: #e0f2fe;
+    border-color: #1e40af;
 }
 
-.tela-inicial {
+
+/* Área principal */
+.nova-tela-aluno {
     max-width: 1100px;
     margin: 25px auto;
 }
 
-.card-escolha-turma {
-    padding: 30px;
+
+/* Card inicial de escolha da turma */
+.card-principal-aluno {
     background-color: white;
-    border-radius: 18px;
-    border-left: 6px solid #1e40af;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 20px;
+    padding: 28px;
+    border-left: 7px solid #1e40af;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 
-.card-escolha-turma select {
+
+/* Cabeçalho interno dos cards */
+.cabecalho-card-aluno {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.icone-card-aluno {
+    font-size: 38px;
+}
+
+
+/* Label do seletor */
+.label-aluno {
+    display: block;
+    margin-top: 20px;
+    font-weight: bold;
+    color: #0f172a;
+}
+
+
+/* Select da turma */
+.select-turma-aluno {
     width: 100%;
     padding: 16px;
-    margin-top: 15px;
+    margin-top: 8px;
     border: 2px solid #0f766e;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 18px;
+    background-color: #f8fafc;
 }
 
-.ambiente-turma,
-.area-aula-dia,
-.area-materiais,
-.area-portfolio-aluno,
-.secao-portfolios-publicados {
-    margin-top: 30px;
-    padding: 25px;
+
+/* Painel da turma depois da escolha */
+.painel-turma-aluno {
+    margin-top: 28px;
+}
+
+
+/* Cabeçalho da turma selecionada */
+.cabecalho-turma-aluno {
     background-color: white;
-    border-radius: 15px;
-    border-left: 6px solid #0f766e;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    border-radius: 20px;
+    padding: 24px;
+    border-left: 7px solid #0f766e;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
 }
 
-.area-portfolio-aluno input {
-    display: block;
-    width: 95%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #0f766e;
-    border-radius: 8px;
-    font-size: 16px;
+
+/* Selo da turma */
+.selo-turma {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #dbeafe;
+    color: #1e40af;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+
+/* Foto da turma */
+.area-foto-turma-aluno {
+    margin-top: 20px;
 }
 
 #fotoTurmaSelecionada {
-    max-width: 850px;
-    width: 100%;
-    border-radius: 15px;
+    max-width: 100%;
+    border-radius: 18px;
     border: 4px solid #1e40af;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.22);
 }
 
-/* Responsividade para celular */
-@media (max-width: 768px) {
-    .topo-site {
+
+/* Menu rápido do aluno */
+.menu-rapido-aluno {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 25px 0;
+}
+
+.card-menu-aluno {
+    background-color: white;
+    border-radius: 18px;
+    padding: 20px;
+    text-decoration: none;
+    color: #0f172a;
+    border: 2px solid #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    transition: 0.2s;
+}
+
+.card-menu-aluno:hover {
+    background-color: #ecfeff;
+    border-color: #0f766e;
+    transform: translateY(-2px);
+}
+
+.card-menu-aluno strong {
+    display: block;
+    margin: 8px 0;
+    font-size: 18px;
+    color: #0f766e;
+}
+
+.card-menu-aluno small {
+    color: #475569;
+}
+
+
+/* Blocos principais */
+.bloco-aluno {
+    background-color: white;
+    border-radius: 20px;
+    padding: 24px;
+    margin-top: 24px;
+    border-left: 7px solid #1e40af;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+
+/* Título das seções */
+.titulo-bloco-aluno {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.titulo-bloco-aluno span {
+    font-size: 34px;
+}
+
+.titulo-bloco-aluno h2 {
+    margin: 0;
+    color: #1e40af;
+}
+
+.titulo-bloco-aluno p {
+    margin: 6px 0 0 0;
+    color: #475569;
+}
+
+
+/* Conteúdo da aula */
+.conteudo-aula-aluno {
+    padding: 18px;
+    background-color: #f8fafc;
+    border-radius: 14px;
+    border-left: 5px solid #0f766e;
+}
+
+
+/* Formulário do portfólio */
+.formulario-portfolio-aluno label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    color: #0f172a;
+}
+
+.formulario-portfolio-aluno input {
+    width: 95%;
+    padding: 13px;
+    margin-top: 6px;
+    border: 2px solid #1e40af;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+
+/* Autorização */
+.autorizacao {
+    margin: 18px 0;
+    padding: 14px;
+    background-color: #f8fafc;
+    border-radius: 12px;
+    border-left: 5px solid #0f766e;
+}
+
+
+/* Botões principais */
+.botao-principal-aluno,
+.botao-secundario-aluno {
+    padding: 13px 18px;
+    border-radius: 12px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.botao-principal-aluno {
+    background-color: #0f766e;
+    color: white;
+}
+
+.botao-principal-aluno:hover {
+    background-color: #115e59;
+}
+
+.botao-secundario-aluno {
+    background-color: #1e40af;
+    color: white;
+}
+
+.botao-secundario-aluno:hover {
+    background-color: #2563eb;
+}
+
+
+/* Lista de portfólios */
+.lista-portfolios-aluno {
+    margin-top: 18px;
+}
+
+
+/* Rodapé */
+.rodape-aluno {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+    text-align: center;
+    color: #475569;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+}
+
+
+/* =====================================================
+   RESPONSIVIDADE PARA CELULAR
+===================================================== */
+
+@media (max-width: 800px) {
+    .novo-topo-aluno {
         flex-direction: column;
         align-items: flex-start;
     }
@@ -390,148 +328,36 @@ button:hover {
         align-self: flex-end;
     }
 
-    .topo-site h1 {
+    .topo-conteudo-aluno h1 {
         font-size: 28px;
     }
 
-    .card-escolha-turma,
-    .ambiente-turma,
-    .area-aula-dia,
-    .area-materiais,
-    .area-portfolio-aluno,
-    .secao-portfolios-publicados {
-        padding: 18px;
+    .cabecalho-turma-aluno {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    button,
-    .botao-admin,
-    .link-admin-discreto {
+    .menu-rapido-aluno {
+        grid-template-columns: 1fr;
+    }
+
+    .cabecalho-card-aluno {
+        flex-direction: column;
+    }
+
+    .formulario-portfolio-aluno input {
+        width: 100%;
+    }
+
+    .botao-principal-aluno,
+    .botao-secundario-aluno {
         width: 100%;
         margin-top: 10px;
-        text-align: center;
     }
-}
 
-.card-aula-dia {
-    margin-top: 15px;
-    padding: 20px;
-    background-color: #f8fafc;
-    border-radius: 14px;
-    border-left: 5px solid #1e40af;
-}
-
-.card-aula-dia h3 {
-    color: #1e40af;
-    margin-top: 0;
-}
-
-.card-aula-dia p {
-    font-size: 17px;
-    line-height: 1.5;
-}
-
-.desafio-aula {
-    margin-top: 20px;
-    padding: 18px;
-    background-color: #e0f2fe;
-    border-radius: 12px;
-    border-left: 5px solid #0f766e;
-}
-
-.desafio-aula h4 {
-    margin-top: 0;
-    color: #0f766e;
-}
-
-.card-aula-dia {
-    margin-top: 15px;
-    padding: 20px;
-    background-color: #f8fafc;
-    border-radius: 14px;
-    border-left: 5px solid #1e40af;
-}
-
-.card-aula-dia h3 {
-    color: #1e40af;
-    margin-top: 0;
-}
-
-.card-aula-dia p {
-    font-size: 17px;
-    line-height: 1.5;
-}
-
-.desafio-aula {
-    margin-top: 20px;
-    padding: 18px;
-    background-color: #e0f2fe;
-    border-radius: 12px;
-    border-left: 5px solid #0f766e;
-}
-
-.desafio-aula h4 {
-    margin-top: 0;
-    color: #0f766e;
-}
-
-.painel-admin select,
-.painel-admin textarea {
-    display: block;
-    width: 95%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #1e40af;
-    border-radius: 8px;
-    font-size: 16px;
-    font-family: Arial, sans-serif;
-}
-
-.painel-admin textarea {
-    min-height: 100px;
-}
-
-.card-aula-admin {
-    margin-top: 20px;
-    padding: 18px;
-    background-color: #f8fafc;
-    border-left: 5px solid #0f766e;
-    border-radius: 12px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-}
-
-.card-aula-admin h3 {
-    margin-top: 0;
-    color: #1e40af;
-}
-
-.card-aula-admin button {
-    margin-top: 8px;
-    margin-right: 8px;
-}
-
-.upload-box-admin {
-    padding: 18px;
-    margin: 15px 0;
-    background-color: #f8fafc;
-    border: 2px dashed #0f766e;
-    border-radius: 12px;
-}
-
-.texto-ajuda {
-    font-size: 14px;
-    color: #475569;
-}
-
-.preview-midia {
-    margin-top: 15px;
-    padding: 15px;
-    background-color: white;
-    border-radius: 12px;
-    border: 1px solid #cbd5e1;
-}
-
-.preview-imagem-admin {
-    max-width: 100%;
-    border-radius: 12px;
-    border: 3px solid #1e40af;
+    .bloco-aluno,
+    .card-principal-aluno,
+    .cabecalho-turma-aluno {
+        padding: 18px;
+    }
 }
