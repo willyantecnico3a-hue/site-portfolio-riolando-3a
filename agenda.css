@@ -1,0 +1,491 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.topo-agenda {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem;
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.topo-agenda div {
+  max-width: 760px;
+}
+
+.selo-agenda {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.topo-agenda h1 {
+  margin: 0.75rem 0 0.5rem;
+  font-size: clamp(1.9rem, 5vw, 2.8rem);
+  line-height: 1.05;
+}
+
+.topo-agenda p {
+  margin: 0;
+  max-width: 42rem;
+  line-height: 1.75;
+  opacity: 0.92;
+}
+
+.btn-voltar-site {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.95rem 1.1rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+}
+
+.container-agenda {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 3rem;
+}
+
+.barra-controles-agenda,
+.legenda-agenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.barra-controles-agenda button,
+.btn-criar-evento,
+.form-evento button {
+  border: none;
+  border-radius: 0.95rem;
+  padding: 0.95rem 1.25rem;
+  background: #2563eb;
+  color: #ffffff;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.barra-controles-agenda button:hover,
+.btn-criar-evento:hover,
+.form-evento button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.barra-controles-agenda h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.filtros-agenda {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.filtros-agenda label,
+.form-evento label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-weight: 600;
+}
+
+.filtros-agenda select,
+.form-evento select,
+.form-evento input,
+.form-evento textarea {
+  width: 100%;
+  max-width: 420px;
+  padding: 0.95rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 1rem;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.form-evento textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.legenda-agenda {
+  gap: 0.65rem;
+}
+
+.tag-legenda {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.tag-legenda.tipo-aula {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.tag-legenda.tipo-ot {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.tag-legenda.tipo-efape {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tag-legenda.tipo-multiplica {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.tag-legenda.tipo-atpcg {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.tag-legenda.tipo-visita_tecnica {
+  background: #cffafe;
+  color: #0c4a6e;
+}
+
+.calendario {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+}
+
+.dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.5rem;
+  text-align: center;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 1rem;
+}
+
+.grade-calendario {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.grade-calendario > button {
+  min-height: 100px;
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 1.25rem;
+  background: #f8fafc;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grade-calendario > button:hover {
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+}
+
+.grade-calendario > button.inativo {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: default;
+}
+
+.grade-calendario > button .numero-dia {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.grade-calendario > button .evento-pequeno {
+  display: block;
+  margin-top: 0.4rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.85rem;
+  font-size: 0.82rem;
+  color: #ffffff;
+}
+
+.modal-agenda {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 50;
+}
+
+.modal-agenda.ativo {
+  display: flex;
+}
+
+.modal-conteudo-agenda {
+  width: min(100%, 560px);
+  background: #ffffff;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 36px 110px rgba(15, 23, 42, 0.18);
+}
+
+.modal-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.modal-topo h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+#btnFecharModal {
+  border: none;
+  background: #f8fafc;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+}
+
+#listaEventosDia {
+  margin-bottom: 1rem;
+}
+
+.form-evento {
+  display: grid;
+  gap: 1rem;
+}
+
+#mensagemEvento {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.95rem;
+  min-height: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .topo-agenda {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .barra-controles-agenda,
+  .legenda-agenda {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .barra-controles-agenda button,
+  .btn-criar-evento {
+    width: 100%;
+  }
+}
+
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Agenda Pedagógica</title>
+
+    <link rel="stylesheet" href="agenda.css">
+</head>
+<body>
+
+    <header class="topo-agenda">
+        <div>
+            <span class="selo-agenda">Agenda Pedagógica</span>
+
+            <h1>Calendário Interativo</h1>
+
+            <p>
+                Organize aulas, OTs, EFAPE, Multiplica, ATPCG, visitas técnicas e materiais.
+            </p>
+        </div>
+
+        <a href="index.html" class="btn-voltar-site">
+            🏠 Início
+        </a>
+    </header>
+
+    <main class="container-agenda">
+
+        <section class="barra-controles-agenda">
+
+            <button id="btnMesAnterior">
+                ← Mês anterior
+            </button>
+
+            <h2 id="tituloMesAno"></h2>
+
+            <button id="btnProximoMes">
+                Próximo mês →
+            </button>
+
+        </section>
+
+        <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
+
+            <label for="filtroCursoAgenda">
+                Filtrar por curso/disciplina:
+            </label>
+
+            <select id="filtroCursoAgenda">
+                <option value="todos">Ver tudo</option>
+                <option value="informatica">Informática</option>
+                <option value="administracao">Administração</option>
+                <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                <option value="administrativo">Administrativo</option>
+            </select>
+
+        </section>
+
+        <section class="legenda-agenda">
+            <span class="tag-legenda tipo-aula">Aula</span>
+            <span class="tag-legenda tipo-ot">OT</span>
+            <span class="tag-legenda tipo-efape">EFAPE</span>
+            <span class="tag-legenda tipo-multiplica">Multiplica</span>
+            <span class="tag-legenda tipo-atpcg">ATPCG</span>
+            <span class="tag-legenda tipo-visita_tecnica">Visita Técnica</span>
+        </section>
+
+        <section class="calendario">
+
+            <div class="dias-semana">
+                <div>Dom</div>
+                <div>Seg</div>
+                <div>Ter</div>
+                <div>Qua</div>
+                <div>Qui</div>
+                <div>Sex</div>
+                <div>Sáb</div>
+            </div>
+
+            <div id="gradeCalendario" class="grade-calendario"></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- MODAL DO DIA -->
+    <div id="modalDia" class="modal-agenda">
+
+        <div class="modal-conteudo-agenda">
+
+            <div class="modal-topo">
+                <h2 id="modalTituloData"></h2>
+
+                <button id="btnFecharModal">
+                    ✕
+                </button>
+            </div>
+
+            <div id="listaEventosDia"></div>
+
+            <button id="btnAbrirFormEvento" class="btn-criar-evento" style="display:none;">
+                + Criar novo evento
+            </button>
+
+            <form id="formEvento" class="form-evento" style="display:none;">
+
+                <h3>Novo Evento</h3>
+
+                <label>Tipo</label>
+                <select id="eventoTipo">
+                    <option value="aula">Aula</option>
+                    <option value="OT">OT</option>
+                    <option value="EFAPE">EFAPE</option>
+                    <option value="Multiplica">Multiplica</option>
+                    <option value="ATPCG">ATPCG</option>
+                    <option value="visita_tecnica">Visita Técnica</option>
+                </select>
+
+                <label>Título</label>
+                <input type="text" id="eventoTitulo" placeholder="Ex: Aula de Front-End">
+
+                <label>Descrição</label>
+                <textarea id="eventoDescricao" placeholder="Plano da aula, recado ou orientação"></textarea>
+
+                <label>Curso alvo</label>
+                <select id="eventoCursoAlvo">
+                    <option value="todos">Todos</option>
+                    <option value="informatica">Informática</option>
+                    <option value="administracao">Administração</option>
+                    <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                    <option value="administrativo">Administrativo</option>
+                </select>
+
+                <label>Link do material</label>
+                <input type="url" id="eventoLinkMaterial" placeholder="Link do PDF, vídeo, slide ou atividade">
+
+                <button type="submit">
+                    Salvar Evento
+                </button>
+
+                <p id="mensagemEvento"></p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="agenda.js"></script>
+
+</body>
+</html>

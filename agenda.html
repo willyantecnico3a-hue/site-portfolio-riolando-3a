@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Agenda Pedagógica</title>
+
+    <link rel="stylesheet" href="agenda.css">
+</head>
+<body>
+
+    <header class="topo-agenda">
+        <div>
+            <span class="selo-agenda">Agenda Pedagógica</span>
+
+            <h1>Calendário Interativo</h1>
+
+            <p>
+                Organize aulas, OTs, EFAPE, Multiplica, ATPCG, visitas técnicas e materiais.
+            </p>
+        </div>
+
+        <a href="index.html" class="btn-voltar-site">
+            🏠 Início
+        </a>
+    </header>
+
+    <main class="container-agenda">
+
+        <section class="barra-controles-agenda">
+
+            <button id="btnMesAnterior">
+                ← Mês anterior
+            </button>
+
+            <h2 id="tituloMesAno"></h2>
+
+            <button id="btnProximoMes">
+                Próximo mês →
+            </button>
+
+        </section>
+
+        <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
+
+            <label for="filtroCursoAgenda">
+                Filtrar por curso/disciplina:
+            </label>
+
+            <select id="filtroCursoAgenda">
+                <option value="todos">Ver tudo</option>
+                <option value="informatica">Informática</option>
+                <option value="administracao">Administração</option>
+                <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                <option value="administrativo">Administrativo</option>
+            </select>
+
+        </section>
+
+        <section class="legenda-agenda">
+            <span class="tag-legenda tipo-aula">Aula</span>
+            <span class="tag-legenda tipo-ot">OT</span>
+            <span class="tag-legenda tipo-efape">EFAPE</span>
+            <span class="tag-legenda tipo-multiplica">Multiplica</span>
+            <span class="tag-legenda tipo-atpcg">ATPCG</span>
+            <span class="tag-legenda tipo-visita_tecnica">Visita Técnica</span>
+        </section>
+
+        <section class="calendario">
+
+            <div class="dias-semana">
+                <div>Dom</div>
+                <div>Seg</div>
+                <div>Ter</div>
+                <div>Qua</div>
+                <div>Qui</div>
+                <div>Sex</div>
+                <div>Sáb</div>
+            </div>
+
+            <div id="gradeCalendario" class="grade-calendario"></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- MODAL DO DIA -->
+    <div id="modalDia" class="modal-agenda">
+
+        <div class="modal-conteudo-agenda">
+
+            <div class="modal-topo">
+                <h2 id="modalTituloData"></h2>
+
+                <button id="btnFecharModal">
+                    ✕
+                </button>
+            </div>
+
+            <div id="listaEventosDia"></div>
+
+            <button id="btnAbrirFormEvento" class="btn-criar-evento" style="display:none;">
+                + Criar novo evento
+            </button>
+
+            <form id="formEvento" class="form-evento" style="display:none;">
+
+                <h3>Novo Evento</h3>
+
+                <label>Tipo</label>
+                <select id="eventoTipo">
+                    <option value="aula">Aula</option>
+                    <option value="OT">OT</option>
+                    <option value="EFAPE">EFAPE</option>
+                    <option value="Multiplica">Multiplica</option>
+                    <option value="ATPCG">ATPCG</option>
+                    <option value="visita_tecnica">Visita Técnica</option>
+                </select>
+
+                <label>Título</label>
+                <input type="text" id="eventoTitulo" placeholder="Ex: Aula de Front-End">
+
+                <label>Descrição</label>
+                <textarea id="eventoDescricao" placeholder="Plano da aula, recado ou orientação"></textarea>
+
+                <label>Curso alvo</label>
+                <select id="eventoCursoAlvo">
+                    <option value="todos">Todos</option>
+                    <option value="informatica">Informática</option>
+                    <option value="administracao">Administração</option>
+                    <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                    <option value="administrativo">Administrativo</option>
+                </select>
+
+                <label>Link do material</label>
+                <input type="url" id="eventoLinkMaterial" placeholder="Link do PDF, vídeo, slide ou atividade">
+
+                <button type="submit">
+                    Salvar Evento
+                </button>
+
+                <p id="mensagemEvento"></p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="agenda.js"></script>
+
+</body>
+</html>

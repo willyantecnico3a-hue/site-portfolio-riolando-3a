@@ -158,7 +158,8 @@
 
 
 /* Menu rápido do aluno */
-.menu-rapido-aluno {
+   
+}menu-rapido-aluno {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
@@ -359,5 +360,11 @@
     .card-principal-aluno,
     .cabecalho-turma-aluno {
         padding: 18px;
+    }
+}
+
+@media (max-width: 800px) {
+    .menu-rapido-aluno {
+        grid-template-columns: 1fr;
     }
 }
