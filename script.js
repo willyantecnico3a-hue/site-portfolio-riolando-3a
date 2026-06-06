@@ -380,6 +380,7 @@ const selectTurma = document.getElementById("selectTurma");
 
 if (selectTurma) {
     selectTurma.addEventListener("change", function() {
+        
         const optionSelecionada =
             selectTurma.options[selectTurma.selectedIndex];
 
@@ -403,6 +404,7 @@ if (selectTurma) {
 
         if (selectTurma.value === "") {
             ambienteTurma.style.display = "none";
+            carregarAulaDaTurma(selectTurma.value);
             return;
         }
 
@@ -431,6 +433,7 @@ if (selectTurma) {
 
         btnFotoTurma.textContent =
             "📸 Ver Foto da Turma";
+            
     });
 }
 
@@ -547,4 +550,108 @@ async function carregarAulasDaTurma(turmaId) {
             </div>
         `;
     });
+}
+
+// =============================
+// CARREGAR AULA DA TURMA SELECIONADA
+// =============================
+
+async function carregarAulaDaTurma(turmaId) {
+    const aulaDiaConteudo = document.getElementById("aulaDiaConteudo");
+
+    if (!aulaDiaConteudo) {
+        return;
+    }
+
+    if (!banco) {
+        aulaDiaConteudo.innerHTML = `
+            <p>Supabase não conectado.</p>
+        `;
+        return;
+    }
+
+    aulaDiaConteudo.innerHTML = `
+        <p>Carregando aula da turma...</p>
+    `;
+
+    const { data, error } = await banco
+        .from("aulas")
+        .select(`
+            id,
+            titulo_aula,
+            subtitulo,
+            descricao,
+            data_aula,
+            horario_inicio,
+            horario_fim,
+            local_aula,
+            desafio_pratico,
+            disciplinas (
+                nome_disciplina
+            )
+        `)
+        .eq("turma_id", turmaId)
+        .eq("ativo", true)
+        .order("data_aula", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+        aulaDiaConteudo.innerHTML = `
+            <p>Erro ao carregar aula: ${error.message}</p>
+        `;
+        console.log("Erro ao carregar aula:", error);
+        return;
+    }
+
+    if (!data) {
+        aulaDiaConteudo.innerHTML = `
+            <p>Nenhuma aula cadastrada para esta turma ainda.</p>
+        `;
+        return;
+    }
+
+    aulaDiaConteudo.innerHTML = `
+        <div class="card-aula-dia">
+            <h3>${data.titulo_aula}</h3>
+
+            <p>
+                <strong>Disciplina:</strong>
+                ${data.disciplinas ? data.disciplinas.nome_disciplina : "Não informada"}
+            </p>
+
+            <p>
+                <strong>Subtítulo:</strong>
+                ${data.subtitulo || "Não informado"}
+            </p>
+
+            <p>
+                <strong>Descrição:</strong>
+                ${data.descricao || "Não informada"}
+            </p>
+
+            <p>
+                <strong>Data:</strong>
+                ${data.data_aula || "Não informada"}
+            </p>
+
+            <p>
+                <strong>Horário:</strong>
+                ${data.horario_inicio || "--"} às ${data.horario_fim || "--"}
+            </p>
+
+            <p>
+                <strong>Local:</strong>
+                ${data.local_aula || "Não informado"}
+            </p>
+
+            <div class="desafio-aula">
+                <h4>Desafio Prático</h4>
+
+                <p>
+                    ${data.desafio_pratico || "Nenhum desafio cadastrado."}
+                </p>
+            </div>
+        </div>
+    `;
 }

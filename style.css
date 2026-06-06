@@ -412,3 +412,33 @@ button:hover {
     }
 }
 
+.card-aula-dia {
+    margin-top: 15px;
+    padding: 20px;
+    background-color: #f8fafc;
+    border-radius: 14px;
+    border-left: 5px solid #1e40af;
+}
+
+.card-aula-dia h3 {
+    color: #1e40af;
+    margin-top: 0;
+}
+
+.card-aula-dia p {
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+.desafio-aula {
+    margin-top: 20px;
+    padding: 18px;
+    background-color: #e0f2fe;
+    border-radius: 12px;
+    border-left: 5px solid #0f766e;
+}
+
+.desafio-aula h4 {
+    margin-top: 0;
+    color: #0f766e;
+}
