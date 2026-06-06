@@ -32,27 +32,258 @@
     </section>
 
     <section id="areaAdmin" class="painel-admin" style="display:none;">
+        <hr>
 
-        <h2>Portfólios Enviados</h2>
+<h3>Cadastrar Nova Turma</h3>
+
+<label>Nome da turma</label>
+<input type="text" id="novaTurmaNome" placeholder="Ex: 3ºA">
+
+<label>Curso</label>
+<input type="text" id="novaTurmaCurso" placeholder="Ex: Desenvolvimento de Sistemas">
+
+<label>Descrição da turma</label>
+<textarea id="novaTurmaDescricao" placeholder="Ex: Turma do curso técnico de Desenvolvimento de Sistemas"></textarea>
+
+<label>Foto ou mídia da turma</label>
+
+<div class="upload-box-admin">
+    <input
+        type="file"
+        id="arquivoTurmaFoto"
+        accept="image/*,video/mp4,application/pdf"
+    >
+
+    <p class="texto-ajuda">
+        Você pode escolher uma imagem, PDF ou vídeo MP4 do computador/celular.
+    </p>
+
+    <input
+        type="text"
+        id="novaTurmaFoto"
+        placeholder="Ou cole aqui um link de imagem, YouTube, PDF ou MP4"
+    >
+
+    <button type="button" id="btnPreviewTurmaMidia">
+        👁️ Pré-visualizar mídia
+    </button>
+
+    <div id="previewTurmaMidia" class="preview-midia"></div>
+</div>
+
+<button id="btnCadastrarTurma">
+    ➕ Cadastrar Turma
+</button>
+
+<p id="mensagemTurmaAdmin"></p>
+
+    <h2>Painel de Gestão do Site</h2>
+
+    <p>
+        Gerencie aulas, turmas, disciplinas, portfólios e materiais do portal.
+    </p>
+
+    <div class="abas-admin">
+        <button class="aba-btn ativa" data-aba="abaAulas">
+            📚 Planejamento de Aulas
+        </button>
+
+        <button class="aba-btn" data-aba="abaPortfolios">
+            🧑‍💻 Portfólios
+        </button>
+
+        <button class="aba-btn" data-aba="abaMateriais">
+            📎 Materiais
+        </button>
+
+        <button id="btnSairAdmin">
+            🚪 Sair do Painel
+        </button>
+    </div>
+
+    <!-- ABA PLANEJAMENTO DE AULAS -->
+    <section id="abaAulas" class="conteudo-aba-admin ativo">
+
+        <h2>Planejamento de Aulas</h2>
 
         <p>
-            Aqui você pode aprovar, ocultar ou excluir portfólios enviados pelos alunos.
+            Cadastre turmas, disciplinas e aulas sem precisar abrir o Supabase.
         </p>
 
-        <button id="btnCarregarAdmin">
-            🔎 Carregar Portfólios
+        <hr>
+
+        <h3>Cadastrar Nova Turma</h3>
+
+        <label>Nome da turma</label>
+        <input type="text" id="novaTurmaNome" placeholder="Ex: 3ºA">
+
+        <label>Curso</label>
+        <input type="text" id="novaTurmaCurso" placeholder="Ex: Desenvolvimento de Sistemas">
+
+        <label>Descrição da turma</label>
+        <textarea id="novaTurmaDescricao" placeholder="Ex: Turma do curso técnico de Desenvolvimento de Sistemas"></textarea>
+
+        <label>Foto ou mídia da turma</label>
+
+<div class="upload-box-admin">
+    <input
+        type="file"
+        id="arquivoTurmaFoto"
+        accept="image/*,video/mp4,application/pdf"
+    >
+
+    <p class="texto-ajuda">
+        Você pode escolher uma imagem, PDF ou vídeo MP4 do computador/celular.
+    </p>
+
+    <input
+        type="text"
+        id="novaTurmaFoto"
+        placeholder="Ou cole aqui um link de imagem, YouTube, PDF ou MP4"
+    >
+
+    <button type="button" id="btnPreviewTurmaMidia">
+        👁️ Pré-visualizar mídia
+    </button>
+
+    <div id="previewTurmaMidia" class="preview-midia"></div>
+</div>
+
+        <button id="btnCadastrarTurma">
+            ➕ Cadastrar Turma
         </button>
-        <button id="btnSairAdmin">
-                Sair do Painel
+
+        <p id="mensagemTurmaAdmin"></p>
+
+        <hr>
+
+        <h3>Cadastrar Nova Disciplina</h3>
+
+        <label>Nome da disciplina</label>
+        <input type="text" id="novaDisciplinaNome" placeholder="Ex: Front-End">
+
+        <label>Curso relacionado</label>
+        <input type="text" id="novaDisciplinaCurso" placeholder="Ex: Desenvolvimento de Sistemas">
+
+        <label>Descrição da disciplina</label>
+        <textarea id="novaDisciplinaDescricao" placeholder="Explique brevemente a disciplina"></textarea>
+
+        <button id="btnCadastrarDisciplina">
+            ➕ Cadastrar Disciplina
+        </button>
+
+        <p id="mensagemDisciplinaAdmin"></p>
+
+        <hr>
+
+        <h3>Cadastrar Aula</h3>
+
+        <label>Turma</label>
+        <select id="adminTurmaAula">
+            <option value="">Selecione uma turma</option>
+        </select>
+
+        <label>Disciplina</label>
+        <select id="adminDisciplinaAula">
+            <option value="">Selecione uma disciplina</option>
+        </select>
+
+        <label>Título da aula</label>
+        <input type="text" id="adminTituloAula" placeholder="Ex: Introdução ao Front-End">
+
+        <label>Subtítulo</label>
+        <input type="text" id="adminSubtituloAula" placeholder="Ex: HTML, CSS e JavaScript para iniciantes">
+
+        <label>Descrição da aula</label>
+        <textarea id="adminDescricaoAula" placeholder="Descreva o objetivo e o conteúdo da aula"></textarea>
+
+        <label>Data da aula</label>
+        <input type="date" id="adminDataAula">
+
+        <label>Horário de início</label>
+        <input type="time" id="adminHorarioInicio">
+
+        <label>Horário de fim</label>
+        <input type="time" id="adminHorarioFim">
+
+        <label>Local da aula</label>
+        <input type="text" id="adminLocalAula" placeholder="Ex: Laboratório de Informática">
+
+        <label>Desafio prático</label>
+        <textarea id="adminDesafioAula" placeholder="Descreva a atividade prática para os alunos"></textarea>
+
+        <button id="btnSalvarAula">
+            💾 Salvar Aula
+        </button>
+
+        <p id="mensagemAulaAdmin"></p>
+
+        <hr>
+
+        <h3>Aulas Cadastradas</h3>
+
+        <button id="btnCarregarAulasAdmin">
+            🔎 Carregar Aulas
+        </button>
+
+        <div id="listaAulasAdmin"></div>
+
+    </section>
+
+    <!-- ABA PORTFÓLIOS -->
+    <section id="abaPortfolios" class="conteudo-aba-admin">
+
+        <h2>Portfólios dos Alunos</h2>
+
+        <p>
+            Aprove, oculte, exclua e filtre os portfólios enviados pelos alunos.
+        </p>
+
+        <div class="filtros-admin">
+            <input
+                type="text"
+                id="filtroNomePortfolio"
+                placeholder="Pesquisar por nome do aluno"
+            >
+
+            <input
+                type="date"
+                id="filtroDataPortfolio"
+            >
+
+            <button id="btnFiltrarPortfolios">
+                🔎 Filtrar
+            </button>
+
+            <button id="btnLimparFiltroPortfolios">
+                🧹 Limpar Filtros
+            </button>
+        </div>
+
+        <button id="btnCarregarAdmin">
+            🔎 Carregar Todos os Portfólios
         </button>
 
         <div id="listaAdminPortfolios"></div>
 
     </section>
 
+    <!-- ABA MATERIAIS -->
+    <section id="abaMateriais" class="conteudo-aba-admin">
+
+        <h2>Materiais da Aula</h2>
+
+        <p>
+            Esta área será configurada na próxima sprint para cadastrar PDFs, vídeos, imagens e links.
+        </p>
+
+    </section>
+
+</section>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script src="admin.js"></script>
 
 </body>
 </html>
+

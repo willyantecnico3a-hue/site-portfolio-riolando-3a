@@ -473,3 +473,65 @@ button:hover {
     margin-top: 0;
     color: #0f766e;
 }
+
+.painel-admin select,
+.painel-admin textarea {
+    display: block;
+    width: 95%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 2px solid #1e40af;
+    border-radius: 8px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+}
+
+.painel-admin textarea {
+    min-height: 100px;
+}
+
+.card-aula-admin {
+    margin-top: 20px;
+    padding: 18px;
+    background-color: #f8fafc;
+    border-left: 5px solid #0f766e;
+    border-radius: 12px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+.card-aula-admin h3 {
+    margin-top: 0;
+    color: #1e40af;
+}
+
+.card-aula-admin button {
+    margin-top: 8px;
+    margin-right: 8px;
+}
+
+.upload-box-admin {
+    padding: 18px;
+    margin: 15px 0;
+    background-color: #f8fafc;
+    border: 2px dashed #0f766e;
+    border-radius: 12px;
+}
+
+.texto-ajuda {
+    font-size: 14px;
+    color: #475569;
+}
+
+.preview-midia {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+}
+
+.preview-imagem-admin {
+    max-width: 100%;
+    border-radius: 12px;
+    border: 3px solid #1e40af;
+}
