@@ -47,16 +47,37 @@ function mostrarJS() {
     `;
 }
 
+// Botão para abrir e fechar o PDF do plano de aula
 const btnPDF = document.getElementById("btnPDF");
 
 btnPDF.addEventListener("click", function() {
 
+    // Pega o iframe onde o PDF aparece
     const pdf = document.getElementById("visualizadorPDF");
 
-    pdf.src = "plano-aula-front-end.pdf";
+    // Verifica se o PDF está escondido ou vazio
+    if (pdf.style.display === "none" || pdf.style.display === "") {
 
-    pdf.style.display = "block";
+        // Define o caminho do arquivo PDF
+        pdf.src = "plano-aula-front-end.pdf";
 
+        // Mostra o PDF na tela
+        pdf.style.display = "block";
+
+        // Altera o texto do botão
+        btnPDF.textContent = "❌ Fechar Plano de Aula";
+
+    } else {
+
+        // Esconde o PDF
+        pdf.style.display = "none";
+
+        // Limpa o arquivo carregado
+        pdf.src = "";
+
+        // Volta o texto original do botão
+        btnPDF.textContent = "📚 Visualizar Plano de Aula";
+    }
 });
 
 const btnTurma = document.getElementById("btnTurma");
@@ -84,6 +105,52 @@ btnTurma.addEventListener("click", function() {
 
 });
 
+// Lista simples de palavras proibidas.
+// Você pode adicionar outras palavras conforme necessidade pedagógica.
+const palavrasProibidas = [
+    "porn",
+    "porno",
+    "xxx",
+    "sex",
+    "sexo",
+    "nude",
+    "nudes",
+    "bet",
+    "cassino",
+    "casino",
+    "aposta",
+    "drogas",
+    "violencia",
+    "violência"
+];
+
+// Função para verificar se um link parece seguro
+function linkPareceSeguro(link) {
+
+    // Se o campo estiver vazio, retorna falso
+    if (!link) {
+        return false;
+    }
+
+    // Transforma o link em letras minúsculas para facilitar a comparação
+    const linkMinusculo = link.toLowerCase();
+
+    // Obriga o link começar com https://
+    if (!linkMinusculo.startsWith("https://")) {
+        return false;
+    }
+
+    // Verifica se contém palavras proibidas
+    for (let palavra of palavrasProibidas) {
+        if (linkMinusculo.includes(palavra)) {
+            return false;
+        }
+    }
+
+    // Se passou por todas as verificações, considera válido
+    return true;
+}
+
 const btnCadastrarPortfolio = document.getElementById("btnCadastrarPortfolio");
 
 btnCadastrarPortfolio.addEventListener("click", async function() {
@@ -92,6 +159,15 @@ btnCadastrarPortfolio.addEventListener("click", async function() {
     const email = document.getElementById("emailAluno").value;
     const site = document.getElementById("linkSiteAluno").value;
     const video = document.getElementById("linkVideoAluno").value;
+    if (!linkPareceSeguro(site)) {
+    alert("O link do site precisa começar com https:// e não pode conter conteúdo proibido.");
+    return;
+}
+
+if (video && !linkPareceSeguro(video)) {
+    alert("O link do vídeo precisa começar com https:// e não pode conter conteúdo proibido.");
+    return;
+}
     const autorizado = document.getElementById("autorizacaoAluno").checked;
 
     if (!nome || !email || !site || !autorizado) {
@@ -99,16 +175,12 @@ btnCadastrarPortfolio.addEventListener("click", async function() {
         return;
     }
 
-    const { error } = await banco
-        .from("portfolio_alunos")
-        .insert([{
-            nome_aluno: nome,
-            telefone: telefone,
-            email: email,
-            link_site: site,
-            link_video: video,
-            autorizado: autorizado
-        }]);
+    const { data, error } = await banco
+    .from("portfolio_alunos")
+    .select("nome_aluno, telefone, email, link_site, link_video, criado_em")
+    .eq("autorizado", true)
+    .eq("aprovado", true)
+    .order("criado_em", { ascending: false });
 
     if (error) {
         alert("Erro ao salvar: " + error.message);
@@ -194,3 +266,13 @@ btnCarregarPortfolios.addEventListener("click", async function() {
     });
 
 });
+
+if (!linkPareceSeguro(site)) {
+    alert("O link do site precisa começar com https:// e não pode conter conteúdo proibido.");
+    return;
+}
+
+if (video && !linkPareceSeguro(video)) {
+    alert("O link do vídeo precisa começar com https:// e não pode conter conteúdo proibido.");
+    return;
+}
