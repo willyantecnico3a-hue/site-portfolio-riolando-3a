@@ -368,3 +368,111 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* =====================================================
+   CORREÇÃO DO MENU RÁPIDO DO ALUNO
+   Organiza os cards: Aula, Agenda, Portfólio e Publicados
+===================================================== */
+
+.menu-rapido-aluno {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin: 28px 0;
+    align-items: stretch;
+}
+
+/* Cada card do menu */
+.card-menu-aluno {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 14px;
+
+    width: auto;
+    min-height: 120px;
+
+    padding: 18px;
+    background-color: #ffffff;
+
+    border: 2px solid #cbd5e1;
+    border-left: 6px solid #0f766e;
+    border-radius: 18px;
+
+    text-decoration: none;
+    color: #0f172a;
+
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    transition: 0.2s ease;
+
+    overflow: hidden;
+    position: relative;
+}
+
+/* Efeito ao passar o mouse */
+.card-menu-aluno:hover {
+    background-color: #ecfeff;
+    border-color: #0f766e;
+    transform: translateY(-2px);
+}
+
+/* Ícone do card */
+.icone-menu-aluno {
+    font-size: 32px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* Título do card */
+.card-menu-aluno strong {
+    display: block;
+    font-size: 17px;
+    color: #0f766e;
+    margin-bottom: 6px;
+    line-height: 1.2;
+}
+
+/* Texto menor do card */
+.card-menu-aluno small {
+    display: block;
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.35;
+}
+
+/* =====================================================
+   RESPONSIVIDADE
+===================================================== */
+
+/* Tablet: 2 cards por linha */
+@media (max-width: 1000px) {
+    .menu-rapido-aluno {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Celular: 1 card por linha */
+@media (max-width: 600px) {
+    .menu-rapido-aluno {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .card-menu-aluno {
+        min-height: auto;
+        padding: 16px;
+    }
+
+    .icone-menu-aluno {
+        font-size: 28px;
+    }
+
+    .card-menu-aluno strong {
+        font-size: 16px;
+    }
+
+    .card-menu-aluno small {
+        font-size: 13px;
+    }
+}
+
