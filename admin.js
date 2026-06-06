@@ -770,19 +770,7 @@ function mostrarPreviewMidia(url, elementoPreviewId) {
     `;
 }
 
-// =============================
-// PRÉ-VISUALIZAR MÍDIA DA TURMA
-// =============================
 
-const btnPreviewTurmaMidia = document.getElementById("btnPreviewTurmaMidia");
-
-if (btnPreviewTurmaMidia) {
-    btnPreviewTurmaMidia.addEventListener("click", function() {
-        const url = document.getElementById("novaTurmaFoto").value.trim();
-
-        mostrarPreviewMidia(url, "previewTurmaMidia");
-    });
-}
 
 // =============================
 // UPLOAD DE ARQUIVO PARA SUPABASE STORAGE
