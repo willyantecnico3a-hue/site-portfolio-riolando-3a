@@ -12,7 +12,7 @@ const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
 // COLE AQUI SUA CHAVE PUBLIC / ANON / PUBLISHABLE DO SUPABASE
 // IMPORTANTE: mantenha a chave entre aspas.
-const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
+const SUPABASE_KEY = "COLE_AQUI_SUA_CHAVE_SUPABASE";
 
 const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -27,6 +27,10 @@ let perfilUsuario = null;
 let dataSelecionadaNoModal = null;
 let eventoEmEdicaoId = null;
 let eventoParaExcluirId = null;
+
+// Controla quando o usuário fez swipe no calendário.
+// Serve para evitar abrir o modal do dia sem querer.
+let usuarioFezSwipeNoCalendario = false;
 
 
 // =====================================================
@@ -75,7 +79,7 @@ async function iniciarAgenda() {
 
     renderizarCalendario();
 
-    configurarArrasteTrocaMes();
+    configurarArrasteTrocaMesNoCalendario();
 }
 
 
@@ -327,6 +331,12 @@ function renderizarCalendario() {
         `;
 
         cardDia.addEventListener("click", function () {
+            // Se o usuário acabou de fazer swipe, não abre o modal do dia.
+            if (usuarioFezSwipeNoCalendario) {
+                usuarioFezSwipeNoCalendario = false;
+                return;
+            }
+
             abrirModalDoDia(dataISO, eventosDoDia);
         });
 
@@ -919,12 +929,13 @@ async function mudarMes(direcao) {
 
 
 // =====================================================
-// 23. TROCAR MÊS ARRASTANDO NA BARRA DO MÊS
+// 23. TROCAR MÊS ARRASTANDO NO PRÓPRIO CALENDÁRIO
 // Arrastar para direita: mês anterior
 // Arrastar para esquerda: próximo mês
 //
-// Esta versão usa TOUCH EVENTS, mais compatível com celular.
-// Também mantém MOUSE EVENTS para testar no computador.
+// Agora o gesto fica na área .calendario,
+// igual à experiência do Google Agenda.
+// Os botões continuam funcionando normalmente.
 // =====================================================
 
 let toqueInicioX = 0;
@@ -934,23 +945,24 @@ let toqueFimY = 0;
 let gestoAtivo = false;
 let swipeConfigurado = false;
 
-function configurarArrasteTrocaMes() {
+function configurarArrasteTrocaMesNoCalendario() {
     if (swipeConfigurado) {
         return;
     }
 
-    const areaSwipe = document.querySelector(".barra-controles-agenda");
+    const areaSwipe = document.querySelector(".calendario");
 
     if (!areaSwipe) {
-        console.log("Área de swipe não encontrada.");
+        console.log("Área do calendário para swipe não encontrada.");
         return;
     }
 
     swipeConfigurado = true;
 
-    console.log("Swipe de meses configurado.");
+    console.log("Swipe de meses configurado no calendário.");
 
-    areaSwipe.style.touchAction = "none";
+    // Permite que o JavaScript controle o gesto horizontal dentro do calendário.
+    areaSwipe.style.touchAction = "pan-y";
     areaSwipe.style.userSelect = "none";
     areaSwipe.style.overscrollBehaviorX = "contain";
 
@@ -960,6 +972,8 @@ function configurarArrasteTrocaMes() {
         }
 
         const toque = event.touches[0];
+
+        // Evita conflito com gesto de voltar página nas bordas do navegador.
         const larguraTela = window.innerWidth;
 
         if (toque.clientX < 20 || toque.clientX > larguraTela - 20) {
@@ -973,9 +987,8 @@ function configurarArrasteTrocaMes() {
         toqueFimY = toque.clientY;
 
         gestoAtivo = true;
-
-        event.preventDefault();
-    }, { passive: false });
+        usuarioFezSwipeNoCalendario = false;
+    }, { passive: true });
 
     areaSwipe.addEventListener("touchmove", function (event) {
         if (!gestoAtivo) {
@@ -991,7 +1004,17 @@ function configurarArrasteTrocaMes() {
         toqueFimX = toque.clientX;
         toqueFimY = toque.clientY;
 
-        event.preventDefault();
+        const distanciaX = toqueFimX - toqueInicioX;
+        const distanciaY = toqueFimY - toqueInicioY;
+
+        // Quando perceber que é gesto horizontal, impede rolagem padrão.
+        if (Math.abs(distanciaX) > Math.abs(distanciaY) && Math.abs(distanciaX) > 15) {
+            usuarioFezSwipeNoCalendario = true;
+
+            if (event.cancelable) {
+                event.preventDefault();
+            }
+        }
     }, { passive: false });
 
     areaSwipe.addEventListener("touchend", async function (event) {
@@ -1001,15 +1024,14 @@ function configurarArrasteTrocaMes() {
 
         gestoAtivo = false;
 
-        event.preventDefault();
-
         await interpretarArrasteDoCalendario();
-    }, { passive: false });
+    }, { passive: true });
 
     areaSwipe.addEventListener("touchcancel", function () {
         gestoAtivo = false;
     });
 
+    // Mouse para teste no computador
     areaSwipe.addEventListener("mousedown", function (event) {
         toqueInicioX = event.clientX;
         toqueFimX = event.clientX;
@@ -1018,6 +1040,7 @@ function configurarArrasteTrocaMes() {
         toqueFimY = event.clientY;
 
         gestoAtivo = true;
+        usuarioFezSwipeNoCalendario = false;
     });
 
     areaSwipe.addEventListener("mousemove", function (event) {
@@ -1027,6 +1050,13 @@ function configurarArrasteTrocaMes() {
 
         toqueFimX = event.clientX;
         toqueFimY = event.clientY;
+
+        const distanciaX = toqueFimX - toqueInicioX;
+        const distanciaY = toqueFimY - toqueInicioY;
+
+        if (Math.abs(distanciaX) > Math.abs(distanciaY) && Math.abs(distanciaX) > 15) {
+            usuarioFezSwipeNoCalendario = true;
+        }
     });
 
     areaSwipe.addEventListener("mouseup", async function () {
@@ -1044,7 +1074,6 @@ function configurarArrasteTrocaMes() {
     });
 }
 
-
 async function interpretarArrasteDoCalendario() {
     const distanciaX = toqueFimX - toqueInicioX;
     const distanciaY = toqueFimY - toqueInicioY;
@@ -1052,15 +1081,19 @@ async function interpretarArrasteDoCalendario() {
     console.log("Distância X:", distanciaX);
     console.log("Distância Y:", distanciaY);
 
+    // Movimento vertical: usuário só estava rolando a página.
     if (Math.abs(distanciaY) > Math.abs(distanciaX)) {
-        console.log("Movimento vertical detectado. Não troca mês.");
+        usuarioFezSwipeNoCalendario = false;
         return;
     }
 
-    if (Math.abs(distanciaX) < 45) {
-        console.log("Arraste muito curto. Não troca mês.");
+    // Gesto curto: considera toque normal.
+    if (Math.abs(distanciaX) < 55) {
+        usuarioFezSwipeNoCalendario = false;
         return;
     }
+
+    usuarioFezSwipeNoCalendario = true;
 
     // Arrastou para direita: mês anterior
     if (distanciaX > 0) {

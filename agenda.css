@@ -864,3 +864,15 @@ button {
     user-select: none !important;
     overscroll-behavior-x: contain !important;
 }
+
+.calendario {
+    overscroll-behavior-x: contain;
+}
+
+@media (max-width: 800px) {
+    .calendario {
+        touch-action: pan-y !important;
+        overscroll-behavior-x: contain !important;
+        user-select: none !important;
+    }
+}
