@@ -880,7 +880,7 @@ let inicioToqueX = 0;
 let fimToqueX = 0;
 let arrastandoCalendario = false;
 
-const areaCalendarioSwipe = document.querySelector(".calendario");
+const areaCalendarioSwipe = document.querySelector(".barra-controles-agenda");
 
 if (areaCalendarioSwipe) {
     // Celular/tablet
@@ -923,15 +923,15 @@ async function interpretarArrasteDoCalendario() {
         return;
     }
 
-   // Arrastou para esquerda: mês anterior
-if (distancia < 0) {
-    dataAtual.setMonth(dataAtual.getMonth() - 1);
-}
+    // Arrastou para esquerda: próximo mês
+    if (distancia < 0) {
+        dataAtual.setMonth(dataAtual.getMonth() + 1);
+    }
 
-// Arrastou para direita: próximo mês
-if (distancia > 0) {
-    dataAtual.setMonth(dataAtual.getMonth() + 1);
-}
+    // Arrastou para direita: mês anterior
+    if (distancia > 0) {
+        dataAtual.setMonth(dataAtual.getMonth() - 1);
+    }
 
     await carregarEventosDoMes();
 

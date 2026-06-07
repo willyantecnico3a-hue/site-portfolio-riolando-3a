@@ -152,16 +152,25 @@ button {
 }
 
 .legenda-agenda {
-  gap: 0.65rem;
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 8px;
+    padding: 8px 4px 10px 4px;
+    margin: 6px 0 8px 0;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
 }
 
 .tag-legenda {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.5rem 0.85rem;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 600;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 999px;
 }
 
 .tag-legenda.tipo-aula {
@@ -860,158 +869,126 @@ button {
         border-radius: 999px;
     }
 
-    /* Calendário ocupando quase toda a tela */
-    .calendario {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 6px;
-        border-radius: 14px;
-        min-height: auto;
-        overflow: hidden;
-        touch-action: pan-y;
-    }
+    /* =====================================================
+   CALENDÁRIO MOBILE COM ROLAGEM HORIZONTAL
+   Mantém os quadrantes maiores e legíveis
+===================================================== */
 
-    .dias-semana {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        font-size: 10px;
-        border-bottom: 1px solid #e2e8f0;
-    }
+.calendario {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+    border-radius: 14px;
+    min-height: auto;
 
-    .dias-semana div {
-        padding: 6px 1px;
-        text-align: center;
-        font-weight: bold;
-    }
+    /* Agora a rolagem horizontal fica na área do calendário */
+    overflow-x: auto;
+    overflow-y: hidden;
 
-    .grade-calendario {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .dia-vazio {
-        min-height: 70px;
-        border: 1px solid #e2e8f0;
-        background-color: #f8fafc;
-    }
-
-    .dia-calendario {
-        min-height: 70px;
-        padding: 3px;
-        border-radius: 0;
-        margin: 0;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-        background-color: white;
-        box-sizing: border-box;
-    }
-
-    .dia-calendario:hover {
-        transform: none;
-    }
-
-    .dia-hoje {
-        outline: 2px solid #0f766e;
-        outline-offset: -2px;
-        background-color: #f0fdfa;
-    }
-
-    .cabecalho-dia {
-        margin-bottom: 3px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1px;
-    }
-
-    .numero-dia {
-        font-size: 12px;
-        font-weight: bold;
-    }
-
-    .quantidade-eventos {
-        font-size: 7px;
-        color: #64748b;
-        white-space: nowrap;
-    }
-
-    .eventos-mini-dia {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .evento-mini {
-        font-size: 7px;
-        line-height: 1.1;
-        padding: 2px 3px;
-        border-radius: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-    }
-
-    .evento-mini span {
-        display: none;
-    }
-
-    /* Limita quantidade visual para não estourar o card */
-    .eventos-mini-dia .evento-mini:nth-child(n+4) {
-        display: none;
-    }
-
-    /* Modal no celular */
-    .modal-agenda {
-        padding: 8px;
-    }
-
-    .modal-conteudo-agenda {
-        max-width: 96vw;
-        max-height: 92vh;
-        padding: 14px;
-        border-radius: 16px;
-        box-sizing: border-box;
-    }
-
-    .modal-topo h2 {
-        font-size: 18px;
-    }
-
-    .card-evento-dia,
-    .detalhe-card-evento {
-        padding: 13px;
-        border-radius: 13px;
-    }
-
-    .form-evento input,
-    .form-evento select,
-    .form-evento textarea {
-        width: 100%;
-        box-sizing: border-box;
-        font-size: 14px;
-    }
-
-    .linha-form-evento {
-        grid-template-columns: 1fr;
-    }
-
-    .btn-criar-evento {
-        width: 100%;
-    }
-
-    .botoes-confirmacao {
-        flex-direction: column;
-    }
-
-    .btn-nao-excluir,
-    .btn-sim-excluir {
-        width: 100%;
-    }
+    /* Rolagem suave no smartphone */
+    -webkit-overflow-scrolling: touch;
 }
 
+/* A linha dos dias da semana fica larga, não espremida */
+.dias-semana {
+    display: grid;
+    grid-template-columns: repeat(7, 110px);
+    min-width: 770px;
+    font-size: 12px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dias-semana div {
+    padding: 8px 2px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* A grade também fica larga e rolável */
+.grade-calendario {
+    display: grid;
+    grid-template-columns: repeat(7, 110px);
+    min-width: 770px;
+    width: max-content;
+    box-sizing: border-box;
+}
+
+/* Dias vazios acompanham o mesmo tamanho dos dias normais */
+.dia-vazio {
+    min-height: 115px;
+    border: 1px solid #e2e8f0;
+    background-color: #f8fafc;
+}
+
+/* Cada quadrante agora fica maior e mais fácil de ler */
+.dia-calendario {
+    min-height: 115px;
+    padding: 6px;
+    border-radius: 0;
+    margin: 0;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    background-color: white;
+    box-sizing: border-box;
+}
+
+.dia-calendario:hover {
+    transform: none;
+}
+
+.dia-hoje {
+    outline: 2px solid #0f766e;
+    outline-offset: -2px;
+    background-color: #f0fdfa;
+}
+
+.cabecalho-dia {
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2px;
+}
+
+.numero-dia {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.quantidade-eventos {
+    font-size: 9px;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.eventos-mini-dia {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+/* Eventos mais legíveis dentro do quadrante */
+.evento-mini {
+    font-size: 9px;
+    line-height: 1.15;
+    padding: 4px 5px;
+    border-radius: 6px;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 34px;
+}
+
+.evento-mini span {
+    display: inline;
+    font-weight: bold;
+    margin-right: 3px;
+}
+
+/* Mostra até 3 eventos por dia para não estourar o card */
+.eventos-mini-dia .evento-mini:nth-child(n+4) {
+    display: none;
+}
 /* =====================================================
    MODAL PERSONALIZADO DE CONFIRMAÇÃO DE EXCLUSÃO
 ===================================================== */
