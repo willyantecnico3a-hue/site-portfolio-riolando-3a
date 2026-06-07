@@ -2,16 +2,19 @@
 // PAINEL ADMINISTRATIVO - PORTAL DE AULAS E PORTFÓLIOS
 // Professor Willyan Vieira
 // =====================================================
-
+//
 // Este arquivo controla:
 // 1. Login administrativo com Supabase Auth
 // 2. Menu lateral sobreposto do painel admin
 // 3. Cadastro de turmas
 // 4. Cadastro de disciplinas
 // 5. Cadastro e listagem de aulas
-// 6. Aprovação, ocultação e exclusão de portfólios
-// 7. Upload e pré-visualização de mídias
-// 8. Botão de data atual e alerta para fim de semana/feriado fixo
+// 6. Ativar aula como Aula do Dia
+// 7. Aprovação, ocultação e exclusão de portfólios
+// 8. Upload e pré-visualização de mídias
+// 9. Botão de data atual e alerta para fim de semana/feriado fixo
+//
+// =====================================================
 
 
 // =====================================================
@@ -20,11 +23,9 @@
 
 const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
-// Use somente chave publishable ou anon public.
+// COLE AQUI SUA CHAVE PUBLIC / ANON / PUBLISHABLE DO SUPABASE.
 // Nunca coloque service_role ou sb_secret no navegador.
 const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
-
-// Cria a conexão com o Supabase.
 const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 console.log("Painel admin conectado ao Supabase.");
@@ -34,13 +35,8 @@ console.log("Painel admin conectado ao Supabase.");
 // 2. ELEMENTOS PRINCIPAIS DA TELA
 // =====================================================
 
-// Botão de login do admin.
 const btnLoginAdmin = document.getElementById("btnLoginAdmin");
-
-// Área administrativa que fica escondida antes do login.
 const areaAdmin = document.getElementById("areaAdmin");
-
-// Mensagem exibida abaixo do login.
 const mensagemLogin = document.getElementById("mensagemLogin");
 
 
@@ -60,7 +56,6 @@ if (btnLoginAdmin) {
 
         mensagemLogin.textContent = "Verificando login...";
 
-        // Faz login real usando Supabase Auth.
         const { data, error } = await banco.auth.signInWithPassword({
             email: email,
             password: senha
@@ -79,7 +74,6 @@ if (btnLoginAdmin) {
             return;
         }
 
-        // Verifica se o e-mail logado está na tabela admins.
         const adminAutorizado = await verificarSeUsuarioEAdmin(usuario.email);
 
         if (!adminAutorizado) {
@@ -90,10 +84,10 @@ if (btnLoginAdmin) {
 
         mensagemLogin.textContent = "Login administrativo realizado com sucesso!";
 
-        // Mostra a área administrativa.
-        areaAdmin.style.display = "block";
+        if (areaAdmin) {
+            areaAdmin.style.display = "block";
+        }
 
-        // Carrega dados iniciais usados no painel.
         carregarDadosIniciaisAdmin();
     });
 }
@@ -267,7 +261,6 @@ function configurarMenuSobrepostoAdmin() {
         fundo.addEventListener("click", fecharMenu);
     }
 
-    // Cada botão do menu abre apenas uma tela por vez.
     itensMenu.forEach(function (item) {
         item.addEventListener("click", function () {
             const telaEscolhida = item.dataset.tela;
@@ -282,21 +275,18 @@ function configurarMenuSobrepostoAdmin() {
 
             fecharMenu();
 
-            // Ao abrir Aulas, atualiza turmas, disciplinas e aulas.
             if (telaEscolhida === "telaAulas") {
                 carregarTurmasAdmin();
                 carregarDisciplinasAdmin();
                 carregarAulasAdmin();
             }
 
-            // Ao abrir Portfólios, atualiza a lista.
             if (telaEscolhida === "telaPortfolios") {
                 carregarPortfoliosAdmin();
             }
         });
     });
 
-    // Botão voltar fecha a tela atual e abre novamente o menu lateral.
     botoesVoltar.forEach(function (botao) {
         botao.addEventListener("click", function () {
             fecharTelas();
@@ -388,7 +378,6 @@ if (btnCadastrarTurma) {
         const curso = document.getElementById("novaTurmaCurso").value.trim();
         const descricao = document.getElementById("novaTurmaDescricao").value.trim();
 
-        // Pode vir de link colado ou de upload.
         let foto = document.getElementById("novaTurmaFoto").value.trim();
 
         const arquivoFoto = document.getElementById("arquivoTurmaFoto");
@@ -400,7 +389,6 @@ if (btnCadastrarTurma) {
 
         mensagem.textContent = "Cadastrando turma...";
 
-        // Se o professor escolheu um arquivo, faz upload para o Supabase Storage.
         if (arquivoFoto && arquivoFoto.files.length > 0) {
             mensagem.textContent = "Enviando arquivo da turma...";
 
@@ -523,17 +511,28 @@ if (btnSalvarAula) {
         const horarioFim = document.getElementById("adminHorarioFim").value;
         const local = document.getElementById("adminLocalAula").value.trim();
         const desafio = document.getElementById("adminDesafioAula").value.trim();
-        const pdfUrl = document.getElementById("adminPdfAula").value.trim();
-const videoUrl = document.getElementById("adminVideoAula").value.trim();
-const atividadeUrl = document.getElementById("adminAtividadeAula").value.trim();
-const materialExtraUrl = document.getElementById("adminMaterialExtraAula").value.trim();
+
+        const pdfUrl = document.getElementById("adminPdfAula")
+            ? document.getElementById("adminPdfAula").value.trim()
+            : "";
+
+        const videoUrl = document.getElementById("adminVideoAula")
+            ? document.getElementById("adminVideoAula").value.trim()
+            : "";
+
+        const atividadeUrl = document.getElementById("adminAtividadeAula")
+            ? document.getElementById("adminAtividadeAula").value.trim()
+            : "";
+
+        const materialExtraUrl = document.getElementById("adminMaterialExtraAula")
+            ? document.getElementById("adminMaterialExtraAula").value.trim()
+            : "";
 
         if (!turmaId || !disciplinaId || !titulo) {
             mensagem.textContent = "Preencha pelo menos turma, disciplina e título da aula.";
             return;
         }
 
-        // Verifica se a data é fim de semana ou feriado fixo.
         if (dataAula) {
             const dataOk = verificarFeriadoOuFimDeSemana(dataAula);
 
@@ -554,24 +553,25 @@ const materialExtraUrl = document.getElementById("adminMaterialExtraAula").value
             .from("aulas")
             .insert([
                 {
-    turma_id: Number(turmaId),
-    disciplina_id: Number(disciplinaId),
-    titulo_aula: titulo,
-    subtitulo: subtitulo,
-    descricao: descricao,
-    data_aula: dataAula || null,
-    horario_inicio: horarioInicio || null,
-    horario_fim: horarioFim || null,
-    local_aula: local,
-    desafio_pratico: desafio,
+                    turma_id: Number(turmaId),
+                    disciplina_id: Number(disciplinaId),
+                    titulo_aula: titulo,
+                    subtitulo: subtitulo,
+                    descricao: descricao,
+                    data_aula: dataAula || null,
+                    horario_inicio: horarioInicio || null,
+                    horario_fim: horarioFim || null,
+                    local_aula: local,
+                    desafio_pratico: desafio,
 
-    pdf_url: pdfUrl,
-    video_url: videoUrl,
-    atividade_url: atividadeUrl,
-    material_extra_url: materialExtraUrl,
+                    pdf_url: pdfUrl,
+                    video_url: videoUrl,
+                    atividade_url: atividadeUrl,
+                    material_extra_url: materialExtraUrl,
 
-    ativo: true
-}
+                    ativo: true,
+                    aula_do_dia: false
+                }
             ]);
 
         if (error) {
@@ -580,25 +580,23 @@ const materialExtraUrl = document.getElementById("adminMaterialExtraAula").value
             return;
         }
 
-       mensagem.textContent = "Aula salva com sucesso!";
+        mensagem.textContent = "Aula salva com sucesso!";
 
-// Limpa os campos principais da aula
-document.getElementById("adminTituloAula").value = "";
-document.getElementById("adminSubtituloAula").value = "";
-document.getElementById("adminDescricaoAula").value = "";
-document.getElementById("adminDataAula").value = "";
-document.getElementById("adminHorarioInicio").value = "";
-document.getElementById("adminHorarioFim").value = "";
-document.getElementById("adminLocalAula").value = "";
-document.getElementById("adminDesafioAula").value = "";
+        document.getElementById("adminTituloAula").value = "";
+        document.getElementById("adminSubtituloAula").value = "";
+        document.getElementById("adminDescricaoAula").value = "";
+        document.getElementById("adminDataAula").value = "";
+        document.getElementById("adminHorarioInicio").value = "";
+        document.getElementById("adminHorarioFim").value = "";
+        document.getElementById("adminLocalAula").value = "";
+        document.getElementById("adminDesafioAula").value = "";
 
-// Limpa os campos de materiais da aula
-document.getElementById("adminPdfAula").value = "";
-document.getElementById("adminVideoAula").value = "";
-document.getElementById("adminAtividadeAula").value = "";
-document.getElementById("adminMaterialExtraAula").value = "";
+        limparCampoSeExistir("adminPdfAula");
+        limparCampoSeExistir("adminVideoAula");
+        limparCampoSeExistir("adminAtividadeAula");
+        limparCampoSeExistir("adminMaterialExtraAula");
 
-carregarAulasAdmin();
+        carregarAulasAdmin();
     });
 }
 
@@ -623,35 +621,35 @@ async function carregarAulasAdmin() {
     lista.innerHTML = "<p>Carregando aulas...</p>";
 
     const { data, error } = await banco
-    .from("aulas")
-    .select(`
-        id,
-        turma_id,
-        disciplina_id,
-        titulo_aula,
-        subtitulo,
-        descricao,
-        data_aula,
-        horario_inicio,
-        horario_fim,
-        local_aula,
-        desafio_pratico,
-        aula_do_dia,
-        ativo,
-        turmas (
-            nome_turma,
-            curso
-        ),
-        disciplinas (
-            nome_disciplina
-        )
-    `)
-    .order("data_aula", { ascending: false });
+        .from("aulas")
+        .select(`
+            id,
+            turma_id,
+            disciplina_id,
+            titulo_aula,
+            subtitulo,
+            descricao,
+            data_aula,
+            horario_inicio,
+            horario_fim,
+            local_aula,
+            desafio_pratico,
+            pdf_url,
+            video_url,
+            atividade_url,
+            material_extra_url,
+            aula_do_dia,
+            ativo,
+            turmas (
+                nome_turma,
+                curso
+            ),
             disciplinas (
                 nome_disciplina
             )
         `)
-        .order("data_aula", { ascending: false });
+        .order("data_aula", { ascending: false })
+        .order("horario_inicio", { ascending: false });
 
     if (error) {
         lista.innerHTML = `<p>Erro ao carregar aulas: ${error.message}</p>`;
@@ -669,32 +667,103 @@ async function carregarAulasAdmin() {
     data.forEach(function (aula) {
         lista.innerHTML += `
             <div class="card-aula-admin">
+
+                ${
+                    aula.aula_do_dia
+                    ? `<span class="badge-aula-dia-admin">⭐ Aula do Dia ativa</span>`
+                    : ""
+                }
+
                 <h3>${aula.titulo_aula}</h3>
 
-                <p><strong>Turma:</strong> ${aula.turmas ? aula.turmas.nome_turma : "Não informada"}</p>
+                <p>
+                    <strong>Turma:</strong>
+                    ${aula.turmas ? aula.turmas.nome_turma : "Não informada"}
+                </p>
 
-                <p><strong>Curso:</strong> ${aula.turmas ? aula.turmas.curso : "Não informado"}</p>
+                <p>
+                    <strong>Curso:</strong>
+                    ${aula.turmas ? aula.turmas.curso : "Não informado"}
+                </p>
 
-                <p><strong>Disciplina:</strong> ${aula.disciplinas ? aula.disciplinas.nome_disciplina : "Não informada"}</p>
+                <p>
+                    <strong>Disciplina:</strong>
+                    ${aula.disciplinas ? aula.disciplinas.nome_disciplina : "Não informada"}
+                </p>
 
-                <p><strong>Data:</strong> ${aula.data_aula || "Não informada"}</p>
+                <p>
+                    <strong>Data:</strong>
+                    ${formatarDataAdmin(aula.data_aula)}
+                </p>
 
-                <p><strong>Horário:</strong> ${aula.horario_inicio || "--"} às ${aula.horario_fim || "--"}</p>
+                <p>
+                    <strong>Horário:</strong>
+                    ${formatarHorarioAdmin(aula.horario_inicio)}
+                    às
+                    ${formatarHorarioAdmin(aula.horario_fim)}
+                </p>
 
-                <p><strong>Local:</strong> ${aula.local_aula || "Não informado"}</p>
+                <p>
+                    <strong>Local:</strong>
+                    ${aula.local_aula || "Não informado"}
+                </p>
 
-                <p><strong>Status:</strong> ${aula.ativo ? "Ativa" : "Inativa"}</p>
-                <button onclick="ativarAulaDoDia('${aula.id}', '${aula.turma_id}')" class="btn-ativar-aula-dia">
-                    ⭐ Ativar como Aula do Dia
-                 </button>
+                <p>
+                    <strong>Status:</strong>
+                    ${aula.ativo ? "Ativa" : "Inativa"}
+                </p>
 
-                <button onclick="desativarAula(${aula.id})">
-                    🚫 Desativar
-                </button>
+                <div class="materiais-card-admin">
+                    ${
+                        aula.pdf_url
+                        ? `<span>📄 PDF</span>`
+                        : ""
+                    }
 
-                <button onclick="excluirAula(${aula.id})">
-                    🗑️ Excluir
-                </button>
+                    ${
+                        aula.video_url
+                        ? `<span>🎥 Vídeo</span>`
+                        : ""
+                    }
+
+                    ${
+                        aula.atividade_url
+                        ? `<span>📝 Atividade</span>`
+                        : ""
+                    }
+
+                    ${
+                        aula.material_extra_url
+                        ? `<span>🔗 Extra</span>`
+                        : ""
+                    }
+                </div>
+
+                <div class="acoes-card-aula-admin">
+
+                    <button
+                        onclick="ativarAulaDoDia('${aula.id}', '${aula.turma_id}')"
+                        class="btn-ativar-aula-dia"
+                    >
+                        ⭐ Ativar como Aula do Dia
+                    </button>
+
+                    <button
+                        onclick="desativarAula('${aula.id}')"
+                        class="btn-desativar-aula"
+                    >
+                        🚫 Desativar
+                    </button>
+
+                    <button
+                        onclick="excluirAula('${aula.id}')"
+                        class="btn-excluir-aula"
+                    >
+                        🗑️ Excluir
+                    </button>
+
+                </div>
+
             </div>
         `;
     });
@@ -702,7 +771,63 @@ async function carregarAulasAdmin() {
 
 
 // =====================================================
-// 15. DESATIVAR AULA
+// 15. ATIVAR AULA COMO AULA DO DIA
+// =====================================================
+
+async function ativarAulaDoDia(aulaId, turmaId) {
+    if (!banco) {
+        alert("Supabase não conectado.");
+        return;
+    }
+
+    if (!aulaId || !turmaId || turmaId === "undefined") {
+        alert("Erro: não foi possível identificar a turma desta aula.");
+        console.log("aulaId recebido:", aulaId);
+        console.log("turmaId recebido:", turmaId);
+        return;
+    }
+
+    const confirmar = confirm(
+        "Deseja ativar esta aula como Aula do Dia para os alunos?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error: erroDesmarcar } = await banco
+        .from("aulas")
+        .update({ aula_do_dia: false })
+        .eq("turma_id", turmaId);
+
+    if (erroDesmarcar) {
+        alert("Erro ao desmarcar aulas anteriores: " + erroDesmarcar.message);
+        console.log("Erro ao desmarcar:", erroDesmarcar);
+        return;
+    }
+
+    const { error: erroAtivar } = await banco
+        .from("aulas")
+        .update({
+            aula_do_dia: true,
+            ativo: true
+        })
+        .eq("id", aulaId);
+
+    if (erroAtivar) {
+        alert("Erro ao ativar aula: " + erroAtivar.message);
+        console.log("Erro ao ativar:", erroAtivar);
+        return;
+    }
+
+    alert("Aula ativada como Aula do Dia com sucesso!");
+
+    carregarAulasAdmin();
+}
+
+
+// =====================================================
+// 16. DESATIVAR AULA
 // =====================================================
 
 async function desativarAula(id) {
@@ -714,7 +839,10 @@ async function desativarAula(id) {
 
     const { error } = await banco
         .from("aulas")
-        .update({ ativo: false })
+        .update({
+            ativo: false,
+            aula_do_dia: false
+        })
         .eq("id", id);
 
     if (error) {
@@ -729,7 +857,7 @@ async function desativarAula(id) {
 
 
 // =====================================================
-// 16. EXCLUIR AULA
+// 17. EXCLUIR AULA
 // =====================================================
 
 async function excluirAula(id) {
@@ -756,7 +884,7 @@ async function excluirAula(id) {
 
 
 // =====================================================
-// 17. CARREGAR PORTFÓLIOS NO ADMIN
+// 18. CARREGAR PORTFÓLIOS NO ADMIN
 // =====================================================
 
 const btnCarregarAdmin = document.getElementById("btnCarregarAdmin");
@@ -842,15 +970,15 @@ async function carregarPortfoliosAdmin() {
 
                 <p><strong>Data de envio:</strong> ${new Date(aluno.criado_em).toLocaleString("pt-BR")}</p>
 
-                <button onclick="aprovarPortfolio(${aluno.id})">
+                <button onclick="aprovarPortfolio('${aluno.id}')">
                     ✅ Aprovar
                 </button>
 
-                <button onclick="ocultarPortfolio(${aluno.id})">
+                <button onclick="ocultarPortfolio('${aluno.id}')">
                     🚫 Ocultar
                 </button>
 
-                <button onclick="excluirPortfolio(${aluno.id})">
+                <button onclick="excluirPortfolio('${aluno.id}')">
                     🗑️ Excluir
                 </button>
             </div>
@@ -860,7 +988,7 @@ async function carregarPortfoliosAdmin() {
 
 
 // =====================================================
-// 18. FILTROS DOS PORTFÓLIOS
+// 19. FILTROS DOS PORTFÓLIOS
 // =====================================================
 
 const btnFiltrarPortfolios = document.getElementById("btnFiltrarPortfolios");
@@ -890,7 +1018,7 @@ if (btnLimparFiltroPortfolios) {
 
 
 // =====================================================
-// 19. APROVAR PORTFÓLIO
+// 20. APROVAR PORTFÓLIO
 // =====================================================
 
 async function aprovarPortfolio(id) {
@@ -911,7 +1039,7 @@ async function aprovarPortfolio(id) {
 
 
 // =====================================================
-// 20. OCULTAR PORTFÓLIO
+// 21. OCULTAR PORTFÓLIO
 // =====================================================
 
 async function ocultarPortfolio(id) {
@@ -932,7 +1060,7 @@ async function ocultarPortfolio(id) {
 
 
 // =====================================================
-// 21. EXCLUIR PORTFÓLIO
+// 22. EXCLUIR PORTFÓLIO
 // =====================================================
 
 async function excluirPortfolio(id) {
@@ -959,7 +1087,7 @@ async function excluirPortfolio(id) {
 
 
 // =====================================================
-// 22. UPLOAD DE ARQUIVO PARA SUPABASE STORAGE
+// 23. UPLOAD DE ARQUIVO PARA SUPABASE STORAGE
 // =====================================================
 
 async function enviarArquivoParaStorage(inputFile, pastaDestino) {
@@ -1001,7 +1129,7 @@ async function enviarArquivoParaStorage(inputFile, pastaDestino) {
 
 
 // =====================================================
-// 23. IDENTIFICAR TIPO DE MÍDIA
+// 24. IDENTIFICAR TIPO DE MÍDIA
 // =====================================================
 
 function identificarTipoMidia(url) {
@@ -1038,7 +1166,7 @@ function identificarTipoMidia(url) {
 
 
 // =====================================================
-// 24. CONVERTER YOUTUBE PARA EMBED
+// 25. CONVERTER YOUTUBE PARA EMBED
 // =====================================================
 
 function converterYoutubeParaEmbed(url) {
@@ -1063,7 +1191,7 @@ function converterYoutubeParaEmbed(url) {
 
 
 // =====================================================
-// 25. MOSTRAR PRÉ-VISUALIZAÇÃO DE MÍDIA
+// 26. MOSTRAR PRÉ-VISUALIZAÇÃO DE MÍDIA
 // =====================================================
 
 function mostrarPreviewMidia(url, elementoPreviewId) {
@@ -1138,7 +1266,7 @@ function mostrarPreviewMidia(url, elementoPreviewId) {
 
 
 // =====================================================
-// 26. BOTÃO PRÉ-VISUALIZAR MÍDIA DA TURMA
+// 27. BOTÃO PRÉ-VISUALIZAR MÍDIA DA TURMA
 // =====================================================
 
 const btnPreviewTurmaMidia = document.getElementById("btnPreviewTurmaMidia");
@@ -1153,7 +1281,7 @@ if (btnPreviewTurmaMidia) {
 
 
 // =====================================================
-// 27. BOTÃO DATA DE HOJE
+// 28. BOTÃO DATA DE HOJE
 // =====================================================
 
 const btnDataHoje = document.getElementById("btnDataHoje");
@@ -1161,6 +1289,10 @@ const btnDataHoje = document.getElementById("btnDataHoje");
 if (btnDataHoje) {
     btnDataHoje.addEventListener("click", function () {
         const campoData = document.getElementById("adminDataAula");
+
+        if (!campoData) {
+            return;
+        }
 
         const hoje = new Date();
 
@@ -1176,7 +1308,7 @@ if (btnDataHoje) {
 
 
 // =====================================================
-// 28. VERIFICAR FERIADO OU FIM DE SEMANA
+// 29. VERIFICAR FERIADO OU FIM DE SEMANA
 // =====================================================
 
 const feriadosFixos = [
@@ -1229,67 +1361,44 @@ if (campoDataAula) {
 }
 
 
+// =====================================================
+// 30. FUNÇÕES AUXILIARES
+// =====================================================
+
+function limparCampoSeExistir(idCampo) {
+    const campo = document.getElementById(idCampo);
+
+    if (campo) {
+        campo.value = "";
+    }
+}
+
+function formatarDataAdmin(dataTexto) {
+    if (!dataTexto) {
+        return "Não informada";
+    }
+
+    const partes = dataTexto.split("-");
+
+    if (partes.length !== 3) {
+        return dataTexto;
+    }
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function formatarHorarioAdmin(horario) {
+    if (!horario) {
+        return "--:--";
+    }
+
+    return horario.substring(0, 5);
+}
 
 
 // =====================================================
-// 29. INICIAR FUNÇÕES DE INTERFACE
+// 31. INICIAR FUNÇÕES DE INTERFACE
 // =====================================================
 
 configurarMenuSobrepostoAdmin();
 configurarBotaoSairAdmin();
-
-// =====================================================
-// ATIVAR AULA COMO AULA DO DIA
-// Essa função desmarca as outras aulas da mesma turma
-// e marca somente a aula escolhida como Aula do Dia.
-// =====================================================
-
-async function ativarAulaDoDia(aulaId, turmaId) {
-    if (!banco) {
-        alert("Supabase não conectado.");
-        return;
-    }
-
-    if (!aulaId || !turmaId || turmaId === "undefined") {
-        alert("Erro: não foi possível identificar a turma desta aula.");
-        console.log("aulaId recebido:", aulaId);
-        console.log("turmaId recebido:", turmaId);
-        return;
-    }
-
-    const confirmar = confirm(
-        "Deseja ativar esta aula como Aula do Dia para os alunos?"
-    );
-
-    if (!confirmar) {
-        return;
-    }
-
-    const { error: erroDesmarcar } = await banco
-        .from("aulas")
-        .update({ aula_do_dia: false })
-        .eq("turma_id", turmaId);
-
-    if (erroDesmarcar) {
-        alert("Erro ao desmarcar aulas anteriores: " + erroDesmarcar.message);
-        console.log("Erro ao desmarcar:", erroDesmarcar);
-        return;
-    }
-
-    const { error: erroAtivar } = await banco
-        .from("aulas")
-        .update({ aula_do_dia: true })
-        .eq("id", aulaId);
-
-    if (erroAtivar) {
-        alert("Erro ao ativar aula: " + erroAtivar.message);
-        console.log("Erro ao ativar:", erroAtivar);
-        return;
-    }
-
-    alert("Aula ativada como Aula do Dia com sucesso!");
-
-    if (typeof carregarAulasAdmin === "function") {
-        carregarAulasAdmin();
-    }
-}
