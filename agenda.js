@@ -870,6 +870,74 @@ if (btnProximoMes) {
     });
 }
 
+// =====================================================
+// TROCAR MÊS ARRASTANDO COM O DEDO OU MOUSE
+// Arrastar para esquerda: próximo mês
+// Arrastar para direita: mês anterior
+// =====================================================
+
+let inicioToqueX = 0;
+let fimToqueX = 0;
+let arrastandoCalendario = false;
+
+const areaCalendarioSwipe = document.querySelector(".calendario");
+
+if (areaCalendarioSwipe) {
+    // Celular/tablet
+    areaCalendarioSwipe.addEventListener("touchstart", function (event) {
+        inicioToqueX = event.touches[0].clientX;
+    });
+
+    areaCalendarioSwipe.addEventListener("touchend", async function (event) {
+        fimToqueX = event.changedTouches[0].clientX;
+        await interpretarArrasteDoCalendario();
+    });
+
+    // Computador com mouse
+    areaCalendarioSwipe.addEventListener("mousedown", function (event) {
+        arrastandoCalendario = true;
+        inicioToqueX = event.clientX;
+    });
+
+    areaCalendarioSwipe.addEventListener("mouseup", async function (event) {
+        if (!arrastandoCalendario) {
+            return;
+        }
+
+        fimToqueX = event.clientX;
+        arrastandoCalendario = false;
+
+        await interpretarArrasteDoCalendario();
+    });
+
+    areaCalendarioSwipe.addEventListener("mouseleave", function () {
+        arrastandoCalendario = false;
+    });
+}
+
+async function interpretarArrasteDoCalendario() {
+    const distancia = fimToqueX - inicioToqueX;
+
+    // Evita trocar mês por toque pequeno sem intenção
+    if (Math.abs(distancia) < 70) {
+        return;
+    }
+
+   // Arrastou para esquerda: mês anterior
+if (distancia < 0) {
+    dataAtual.setMonth(dataAtual.getMonth() - 1);
+}
+
+// Arrastou para direita: próximo mês
+if (distancia > 0) {
+    dataAtual.setMonth(dataAtual.getMonth() + 1);
+}
+
+    await carregarEventosDoMes();
+
+    renderizarCalendario();
+}
+
 
 // =====================================================
 // 23. FILTRO ADMIN
@@ -955,3 +1023,4 @@ function nomeBonitoTipo(tipo) {
 
     return nomes[tipo] || tipo;
 }
+
