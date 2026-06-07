@@ -455,6 +455,11 @@
     <span>Planejamento, horários e desafios</span>
 </button>
 
+<button class="item-menu-admin" data-tela="telaAssistenteIA">
+    🤖 Assistente IA
+    <span>Gerar aulas, planos, materiais e rubricas</span>
+</button>
+
 <button class="item-menu-admin" data-tela="telaPortfolios">
     🧑‍💻 Portfólios
     <span>Aprovar, ocultar e filtrar envios</span>
@@ -771,6 +776,93 @@
                 <p id="mensagemDisciplinaAdmin"></p>
 
             </div>
+
+            <!-- =====================================================
+     TELA ASSISTENTE IA DE AULAS
+===================================================== -->
+
+<section id="telaAssistenteIA" class="tela-admin-sobreposta">
+
+    <div class="cabecalho-tela-admin">
+        <div>
+            <h2>🤖 Assistente IA de Aulas</h2>
+            <p>
+                Gere aulas, planos de aula, materiais de apoio e rubricas com apoio da IA.
+            </p>
+        </div>
+
+        <div class="botoes-topo-admin">
+            <button class="btnVoltarMenuAdmin">← Voltar</button>
+            <a href="index.html" class="btnInicioAdmin">🏠 Início</a>
+        </div>
+    </div>
+
+    <div class="card-admin">
+
+        <h3>Pedido para a IA</h3>
+
+        <p>
+            Escreva o que deseja gerar. Exemplo:
+            <strong>Gere um plano de aula de 50 minutos sobre Node.js com 2 exercícios práticos.</strong>
+        </p>
+
+        <label for="promptIA">Pedido principal</label>
+        <textarea
+            id="promptIA"
+            placeholder="Digite aqui seu pedido para a IA..."
+            rows="6"
+        ></textarea>
+
+        <label for="contextoIA">Contexto opcional</label>
+        <textarea
+            id="contextoIA"
+            placeholder="Cole aqui texto base, orientação do AVA, tema da semana ou conteúdo de apoio..."
+            rows="5"
+        ></textarea>
+
+        <div class="botoes-ia-admin">
+            <button type="button" onclick="gerarConteudoIA('aula')">
+                📚 Gerar Aula
+            </button>
+
+            <button type="button" onclick="gerarConteudoIA('plano')">
+                📝 Gerar Plano
+            </button>
+
+            <button type="button" onclick="gerarConteudoIA('material')">
+                📄 Gerar Material
+            </button>
+
+            <button type="button" onclick="gerarConteudoIA('rubrica')">
+                ✅ Gerar Rubrica
+            </button>
+        </div>
+
+        <p id="mensagemIA"></p>
+
+    </div>
+
+    <div class="card-admin resultado-ia-card">
+
+        <h3>Resultado gerado</h3>
+
+        <div id="resultadoIA" class="resultado-ia">
+            <p>O conteúdo gerado pela IA aparecerá aqui.</p>
+        </div>
+
+        <div class="botoes-ia-admin">
+            <button type="button" onclick="copiarResultadoIA()">
+                📋 Copiar Texto
+            </button>
+
+            <button type="button" onclick="enviarResultadoParaAula()">
+                📚 Usar como base da Aula
+            </button>
+        </div>
+
+    </div>
+
+</section>
 
         </section>
 
