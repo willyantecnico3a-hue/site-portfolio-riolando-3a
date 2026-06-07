@@ -931,12 +931,12 @@ async function mudarMes(direcao) {
 
 
 // =====================================================
-// 23. TROCAR MÊS ARRASTANDO NA BARRA DO MÊS
-// Arrastar para esquerda: mês anterior
-// Arrastar para direita: próximo mês
+// TROCAR MÊS ARRASTANDO NA BARRA DO MÊS
+// Arrastar para direita: mês anterior
+// Arrastar para esquerda: próximo mês
 //
-// Fica na .barra-controles-agenda para não atrapalhar
-// a rolagem horizontal do calendário no smartphone.
+// A função fica na barra do mês para não atrapalhar
+// o clique nos dias do calendário.
 // =====================================================
 
 let inicioArrasteX = 0;
@@ -957,7 +957,6 @@ function configurarArrasteTrocaMes() {
 
     swipeConfigurado = true;
 
-    // Pointer Events funcionam bem em celular e computador.
     areaSwipe.addEventListener("pointerdown", function (event) {
         inicioArrasteX = event.clientX;
         fimArrasteX = event.clientX;
@@ -994,21 +993,21 @@ function configurarArrasteTrocaMes() {
 async function interpretarArrasteDoCalendario() {
     const distancia = fimArrasteX - inicioArrasteX;
 
-    // Evita trocar mês com toque pequeno.
+    // Evita trocar o mês quando o toque for muito pequeno
     if (Math.abs(distancia) < 60) {
         return;
     }
 
-    // Conforme solicitado:
-    // arrastar para esquerda = mês anterior
-    if (distancia < 0) {
+    // Arrastou para a direita: mês anterior
+    if (distancia > 0) {
         await mudarMes(-1);
         return;
     }
 
-    // arrastar para direita = próximo mês
-    if (distancia > 0) {
+    // Arrastou para a esquerda: próximo mês
+    if (distancia < 0) {
         await mudarMes(1);
+        return;
     }
 }
 
