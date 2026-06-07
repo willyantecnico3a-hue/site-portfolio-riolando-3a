@@ -1,9 +1,9 @@
 // =====================================================
-// NETLIFY FUNCTION - GERAR CONTEÚDO COM DEEPSEEK
+// NETLIFY FUNCTION - GERAR CONTEÚDO COM OPENROUTER
 // =====================================================
 //
 // Esta função roda no backend da Netlify.
-// A chave DEEPSEEK_API_KEY fica protegida nas variáveis
+// A chave OPENROUTER_API_KEY fica protegida nas variáveis
 // de ambiente da Netlify, e não aparece no navegador.
 //
 // O admin.js continua chamando:
@@ -13,6 +13,7 @@
 
 exports.handler = async function (event) {
     try {
+        // Aceita somente requisições POST
         if (event.httpMethod !== "POST") {
             return {
                 statusCode: 405,
@@ -25,20 +26,22 @@ exports.handler = async function (event) {
             };
         }
 
-        const DEEPSEEK_API_KEY = process.env.OPENROUTER_API_KEY
+        // Pega a chave do OpenRouter configurada no Netlify
+        const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-        if (!DEEPSEEK_API_KEY) {
+        if (!OPENROUTER_API_KEY) {
             return {
                 statusCode: 500,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    error: "DEEPSEEK_API_KEY não configurada na Netlify."
+                    error: "OPENROUTER_API_KEY não configurada na Netlify."
                 })
             };
         }
 
+        // Lê os dados enviados pelo admin.js
         const body = JSON.parse(event.body || "{}");
 
         const tipo = body.tipo || "aula";
@@ -57,6 +60,7 @@ exports.handler = async function (event) {
             };
         }
 
+        // Prompt principal da IA
         const systemPrompt = `
 Você é um assistente pedagógico especializado em cursos técnicos, ensino médio e educação profissional.
 
@@ -130,14 +134,24 @@ PEDIDO DO PROFESSOR:
 ${promptProfessor}
         `;
 
-        const resposta = await fetch("https://api.deepseek.com/chat/completions", {
+        // =====================================================
+        // CHAMADA PARA API DO OPENROUTER
+        // =====================================================
+
+        const resposta = await fetch("https://openrouter.ai/api/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+                "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+
+                // Identificação do seu site no OpenRouter
+                "HTTP-Referer": "https://zingy-swan-0f28aa.netlify.app",
+                "X-OpenRouter-Title": "Portal de Aulas Riolando Canno"
             },
             body: JSON.stringify({
-                model: "openrouter/free"
+                // Modelo gratuito / roteador gratuito do OpenRouter
+                model: "openrouter/free",
+
                 messages: [
                     {
                         role: "system",
@@ -148,26 +162,43 @@ ${promptProfessor}
                         content: userPrompt
                     }
                 ],
+
                 temperature: 0.7,
-                max_tokens: 3500
+                max_tokens: 3000
             })
         });
 
         const dados = await resposta.json();
 
+        // Tratamento de erro vindo do OpenRouter
         if (!resposta.ok) {
+            let mensagemAmigavel = "Erro ao gerar conteúdo com OpenRouter.";
+
+            if (resposta.status === 401) {
+                mensagemAmigavel = "Chave OPENROUTER_API_KEY inválida ou não configurada corretamente.";
+            }
+
+            if (resposta.status === 402) {
+                mensagemAmigavel = "A conta OpenRouter está sem crédito/saldo disponível para este modelo.";
+            }
+
+            if (resposta.status === 429) {
+                mensagemAmigavel = "Limite gratuito do OpenRouter atingido. Aguarde um tempo ou tente outro modelo gratuito.";
+            }
+
             return {
                 statusCode: resposta.status,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    error: "Erro ao gerar conteúdo com DeepSeek.",
+                    error: mensagemAmigavel,
                     details: dados
                 })
             };
         }
 
+        // Pega o texto gerado pela IA
         const textoGerado =
             dados &&
             dados.choices &&
@@ -203,7 +234,7 @@ ${promptProfessor}
         };
 
     } catch (error) {
-        console.error("Erro na função DeepSeek:", error);
+        console.error("Erro na função OpenRouter:", error);
 
         return {
             statusCode: 500,
@@ -211,7 +242,7 @@ ${promptProfessor}
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                error: "Erro interno ao gerar conteúdo com IA.",
+                error: "Erro interno ao gerar conteúdo com OpenRouter.",
                 details: error.message
             })
         };
