@@ -856,3 +856,11 @@ button {
         overscroll-behavior-x: contain;
     }
 }
+
+.barra-controles-agenda,
+.barra-controles-agenda h2,
+.barra-controles-agenda button {
+    touch-action: none !important;
+    user-select: none !important;
+    overscroll-behavior-x: contain !important;
+}

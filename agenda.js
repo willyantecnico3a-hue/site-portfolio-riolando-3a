@@ -22,15 +22,10 @@ const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // =====================================================
 
 let dataAtual = new Date();
-
 let eventosCarregados = [];
-
 let perfilUsuario = null;
-
 let dataSelecionadaNoModal = null;
-
 let eventoEmEdicaoId = null;
-
 let eventoParaExcluirId = null;
 
 
@@ -101,7 +96,6 @@ async function carregarPerfilUsuario() {
 
     console.log("Usuário logado na agenda:", usuario.email);
 
-    // Primeiro tenta encontrar o usuário na tabela perfis.
     const { data: perfil, error: erroPerfil } = await banco
         .from("perfis")
         .select("id, nome, email, funcao, curso")
@@ -118,7 +112,6 @@ async function carregarPerfilUsuario() {
         return;
     }
 
-    // Se não encontrar em perfis, tenta reconhecer como admin pela tabela admins.
     const { data: admin, error: erroAdmin } = await banco
         .from("admins")
         .select("email")
@@ -142,7 +135,6 @@ async function carregarPerfilUsuario() {
         return;
     }
 
-    // Usuário autenticado, mas sem perfil liberado.
     perfilUsuario = {
         id: usuario.id,
         nome: usuario.email,
@@ -235,12 +227,10 @@ function aplicarFiltroDePermissao(eventos) {
     const funcao = perfilUsuario.funcao;
     const curso = perfilUsuario.curso;
 
-    // Admin vê tudo.
     if (funcao === "admin") {
         return eventos;
     }
 
-    // Gestão vê tudo em modo leitura.
     if (
         funcao === "coordenacao" ||
         funcao === "direcao" ||
@@ -250,7 +240,6 @@ function aplicarFiltroDePermissao(eventos) {
         return eventos;
     }
 
-    // Aluno vê eventos gerais e eventos do curso dele.
     if (funcao && funcao.startsWith("aluno")) {
         return eventos.filter(function (evento) {
             return (
@@ -294,14 +283,12 @@ function renderizarCalendario() {
 
     const diaSemanaInicio = primeiroDiaMes.getDay();
 
-    // Espaços vazios antes do primeiro dia do mês.
     for (let i = 0; i < diaSemanaInicio; i++) {
         const vazio = document.createElement("div");
         vazio.className = "dia-vazio";
         gradeCalendario.appendChild(vazio);
     }
 
-    // Dias reais do mês.
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
         const dataDia = new Date(ano, mes, dia);
         const dataISO = formatarDataISO(dataDia);
@@ -706,6 +693,7 @@ if (formEvento) {
             if (mensagemEvento) {
                 mensagemEvento.textContent = "Erro ao salvar evento: " + resultado.error.message;
             }
+
             console.log("Erro evento:", resultado.error);
             return;
         }
@@ -931,19 +919,19 @@ async function mudarMes(direcao) {
 
 
 // =====================================================
-// TROCAR MÊS ARRASTANDO NA BARRA DO MÊS
+// 23. TROCAR MÊS ARRASTANDO NA BARRA DO MÊS
 // Arrastar para direita: mês anterior
 // Arrastar para esquerda: próximo mês
 //
-// Corrigido para evitar que o navegador interprete
-// o gesto como "voltar página" no smartphone.
+// Esta versão usa TOUCH EVENTS, mais compatível com celular.
+// Também mantém MOUSE EVENTS para testar no computador.
 // =====================================================
 
-let inicioArrasteX = 0;
-let fimArrasteX = 0;
-let inicioArrasteY = 0;
-let fimArrasteY = 0;
-let arrasteAtivo = false;
+let toqueInicioX = 0;
+let toqueFimX = 0;
+let toqueInicioY = 0;
+let toqueFimY = 0;
+let gestoAtivo = false;
 let swipeConfigurado = false;
 
 function configurarArrasteTrocaMes() {
@@ -954,95 +942,136 @@ function configurarArrasteTrocaMes() {
     const areaSwipe = document.querySelector(".barra-controles-agenda");
 
     if (!areaSwipe) {
+        console.log("Área de swipe não encontrada.");
         return;
     }
 
     swipeConfigurado = true;
 
-    areaSwipe.addEventListener("pointerdown", function (event) {
-        // Evita iniciar o gesto muito perto da borda da tela,
-        // onde o navegador costuma acionar "voltar página".
+    console.log("Swipe de meses configurado.");
+
+    areaSwipe.style.touchAction = "none";
+    areaSwipe.style.userSelect = "none";
+    areaSwipe.style.overscrollBehaviorX = "contain";
+
+    areaSwipe.addEventListener("touchstart", function (event) {
+        if (!event.touches || event.touches.length === 0) {
+            return;
+        }
+
+        const toque = event.touches[0];
         const larguraTela = window.innerWidth;
 
-        if (event.clientX < 25 || event.clientX > larguraTela - 25) {
+        if (toque.clientX < 20 || toque.clientX > larguraTela - 20) {
             return;
         }
 
+        toqueInicioX = toque.clientX;
+        toqueFimX = toque.clientX;
+
+        toqueInicioY = toque.clientY;
+        toqueFimY = toque.clientY;
+
+        gestoAtivo = true;
+
+        event.preventDefault();
+    }, { passive: false });
+
+    areaSwipe.addEventListener("touchmove", function (event) {
+        if (!gestoAtivo) {
+            return;
+        }
+
+        if (!event.touches || event.touches.length === 0) {
+            return;
+        }
+
+        const toque = event.touches[0];
+
+        toqueFimX = toque.clientX;
+        toqueFimY = toque.clientY;
+
+        event.preventDefault();
+    }, { passive: false });
+
+    areaSwipe.addEventListener("touchend", async function (event) {
+        if (!gestoAtivo) {
+            return;
+        }
+
+        gestoAtivo = false;
+
         event.preventDefault();
 
-        inicioArrasteX = event.clientX;
-        fimArrasteX = event.clientX;
+        await interpretarArrasteDoCalendario();
+    }, { passive: false });
 
-        inicioArrasteY = event.clientY;
-        fimArrasteY = event.clientY;
-
-        arrasteAtivo = true;
-
-        try {
-            areaSwipe.setPointerCapture(event.pointerId);
-        } catch (erro) {
-            console.log("Pointer capture não aplicado:", erro);
-        }
+    areaSwipe.addEventListener("touchcancel", function () {
+        gestoAtivo = false;
     });
 
-    areaSwipe.addEventListener("pointermove", function (event) {
-        if (!arrasteAtivo) {
-            return;
-        }
+    areaSwipe.addEventListener("mousedown", function (event) {
+        toqueInicioX = event.clientX;
+        toqueFimX = event.clientX;
 
-        event.preventDefault();
+        toqueInicioY = event.clientY;
+        toqueFimY = event.clientY;
 
-        fimArrasteX = event.clientX;
-        fimArrasteY = event.clientY;
+        gestoAtivo = true;
     });
 
-    areaSwipe.addEventListener("pointerup", async function (event) {
-        if (!arrasteAtivo) {
+    areaSwipe.addEventListener("mousemove", function (event) {
+        if (!gestoAtivo) {
             return;
         }
 
-        event.preventDefault();
+        toqueFimX = event.clientX;
+        toqueFimY = event.clientY;
+    });
 
-        arrasteAtivo = false;
-
-        try {
-            areaSwipe.releasePointerCapture(event.pointerId);
-        } catch (erro) {
-            console.log("Pointer release não aplicado:", erro);
+    areaSwipe.addEventListener("mouseup", async function () {
+        if (!gestoAtivo) {
+            return;
         }
+
+        gestoAtivo = false;
 
         await interpretarArrasteDoCalendario();
     });
 
-    areaSwipe.addEventListener("pointercancel", function () {
-        arrasteAtivo = false;
+    areaSwipe.addEventListener("mouseleave", function () {
+        gestoAtivo = false;
     });
 }
 
 
 async function interpretarArrasteDoCalendario() {
-    const distanciaX = fimArrasteX - inicioArrasteX;
-    const distanciaY = fimArrasteY - inicioArrasteY;
+    const distanciaX = toqueFimX - toqueInicioX;
+    const distanciaY = toqueFimY - toqueInicioY;
 
-    // Se o usuário moveu mais para cima/baixo do que para os lados,
-    // não troca o mês.
+    console.log("Distância X:", distanciaX);
+    console.log("Distância Y:", distanciaY);
+
     if (Math.abs(distanciaY) > Math.abs(distanciaX)) {
+        console.log("Movimento vertical detectado. Não troca mês.");
         return;
     }
 
-    // Evita trocar mês com toque pequeno.
-    if (Math.abs(distanciaX) < 60) {
+    if (Math.abs(distanciaX) < 45) {
+        console.log("Arraste muito curto. Não troca mês.");
         return;
     }
 
     // Arrastou para direita: mês anterior
     if (distanciaX > 0) {
+        console.log("Arrastou para direita: mês anterior.");
         await mudarMes(-1);
         return;
     }
 
     // Arrastou para esquerda: próximo mês
     if (distanciaX < 0) {
+        console.log("Arrastou para esquerda: próximo mês.");
         await mudarMes(1);
         return;
     }
