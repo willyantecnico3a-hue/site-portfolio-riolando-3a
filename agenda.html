@@ -9,9 +9,14 @@
 
     <link rel="stylesheet" href="agenda.css">
 </head>
+
 <body>
 
+    <!-- =====================================================
+         TOPO DA AGENDA
+    ====================================================== -->
     <header class="topo-agenda">
+
         <div>
             <span class="selo-agenda">Agenda Pedagógica</span>
 
@@ -26,8 +31,13 @@
         <a href="index.html" class="btn-voltar-site">
             🏠 Início do Site
         </a>
+
     </header>
 
+
+    <!-- =====================================================
+         CONTEÚDO PRINCIPAL DA AGENDA
+    ====================================================== -->
     <main class="container-agenda">
 
         <!-- CONTROLES DO MÊS -->
@@ -45,6 +55,7 @@
 
         </section>
 
+
         <!-- FILTRO APENAS PARA ADMIN -->
         <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
 
@@ -53,12 +64,14 @@
             </label>
 
             <select id="filtroCursoAgenda">
-    <option value="todos">Ver tudo</option>
-    <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
-    <option value="vendas">Vendas</option>
-    <option value="substituicoes">Substituições</option>
-</select>
+                <option value="todos">Ver tudo</option>
+                <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                <option value="vendas">Vendas</option>
+                <option value="substituicoes">Substituições</option>
+            </select>
+
         </section>
+
 
         <!-- LEGENDA COM CORES -->
         <section class="legenda-agenda">
@@ -73,6 +86,7 @@
             <span class="tag-legenda tipo-ot">OT</span>
             <span class="tag-legenda tipo-outro">Outro</span>
         </section>
+
 
         <!-- CALENDÁRIO -->
         <section class="calendario">
@@ -94,7 +108,9 @@
     </main>
 
 
-    <!-- MODAL DO DIA -->
+    <!-- =====================================================
+         MODAL DO DIA
+    ====================================================== -->
     <div id="modalDia" class="modal-agenda">
 
         <div class="modal-conteudo-agenda">
@@ -113,12 +129,13 @@
                 + Criar evento neste dia
             </button>
 
-            <!-- FORMULÁRIO DE CADASTRO DO EVENTO -->
+
+            <!-- FORMULÁRIO DE CADASTRO/EDIÇÃO DO EVENTO -->
             <form id="formEvento" class="form-evento" style="display:none;">
 
-                <h3>Novo Evento</h3>
+                <h3 id="tituloFormularioEvento">Novo Evento</h3>
 
-                <label>Tipo do evento</label>
+                <label for="eventoTipo">Tipo do evento</label>
                 <select id="eventoTipo">
                     <option value="aula">Aula</option>
                     <option value="atpcs">ATPCS</option>
@@ -132,27 +149,57 @@
                     <option value="outro">Outro</option>
                 </select>
 
-                <label>Nome/Título do evento</label>
+                <label for="eventoTitulo">Nome/Título do evento</label>
                 <input type="text" id="eventoTitulo" placeholder="Ex: Aula de Front-End">
 
-                <label>Horário de início</label>
-                <input type="time" id="eventoHorarioInicio">
+                <div class="linha-form-evento">
+                    <div>
+                        <label for="eventoHorarioInicio">Horário de início</label>
+                        <input type="time" id="eventoHorarioInicio">
+                    </div>
 
-                <label>Horário de fim</label>
-                <input type="time" id="eventoHorarioFim">
+                    <div>
+                        <label for="eventoHorarioFim">Horário de fim</label>
+                        <input type="time" id="eventoHorarioFim">
+                    </div>
+                </div>
 
-               <label>Curso alvo</label>
-<select id="eventoCursoAlvo">
-    <option value="todos">Todos</option>
-    <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
-    <option value="vendas">Vendas</option>
-    <option value="substituicoes">Substituições</option>
-</select>
-                <label>Descrição do evento</label>
+                <label for="eventoCursoAlvo">Curso alvo</label>
+                <select id="eventoCursoAlvo">
+                    <option value="todos">Todos</option>
+                    <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                    <option value="vendas">Vendas</option>
+                    <option value="substituicoes">Substituições</option>
+                </select>
+
+                <label for="eventoDescricao">Descrição do evento</label>
                 <textarea id="eventoDescricao" placeholder="Descreva o evento, aula, orientação, plano de aula ou recado"></textarea>
 
-                <label>Link do material</label>
+                <label for="eventoLinkMaterial">Link do material</label>
                 <input type="url" id="eventoLinkMaterial" placeholder="Link do PDF, vídeo, slide ou atividade">
+
+                <!-- REPETIÇÃO ESTILO GOOGLE AGENDA -->
+                <div class="area-repeticao-evento">
+
+                    <h4>🔁 Repetição do evento</h4>
+
+                    <label for="eventoRepeticao">Repetir</label>
+                    <select id="eventoRepeticao">
+                        <option value="nao_repete">Não se repete</option>
+                        <option value="diariamente">Todos os dias úteis</option>
+                        <option value="semanalmente">Todas as semanas</option>
+                        <option value="mensalmente">Todos os meses</option>
+                        <option value="anualmente">Todos os anos</option>
+                    </select>
+
+                    <label for="eventoRepetirAte">Repetir até</label>
+                    <input type="date" id="eventoRepetirAte">
+
+                    <p class="observacao-repeticao">
+                        Sábados, domingos e feriados fixos serão ignorados automaticamente.
+                    </p>
+
+                </div>
 
                 <button type="submit">
                     💾 Salvar Evento
@@ -167,7 +214,9 @@
     </div>
 
 
-    <!-- MODAL DE DETALHES DO EVENTO -->
+    <!-- =====================================================
+         MODAL DE DETALHES DO EVENTO
+    ====================================================== -->
     <div id="modalDetalheEvento" class="modal-agenda">
 
         <div class="modal-conteudo-agenda detalhe-evento">
@@ -186,34 +235,39 @@
 
     </div>
 
-    <!-- MODAL DE CONFIRMAÇÃO PARA EXCLUIR EVENTO -->
-<div id="modalConfirmarExclusao" class="modal-agenda">
 
-    <div class="modal-confirmacao-exclusao">
+    <!-- =====================================================
+         MODAL DE CONFIRMAÇÃO DE EXCLUSÃO
+    ====================================================== -->
+    <div id="modalConfirmarExclusao" class="modal-agenda">
 
-        <h2>Confirmar exclusão</h2>
+        <div class="modal-confirmacao-exclusao">
 
-        <p>
-            Tem certeza que deseja excluir este evento?
-        </p>
+            <h2>Confirmar exclusão</h2>
 
-        <p class="aviso-exclusao">
-            Essa ação não poderá ser desfeita.
-        </p>
+            <p>
+                Tem certeza que deseja excluir este evento?
+            </p>
 
-        <div class="botoes-confirmacao">
-            <button id="btnCancelarExclusao" class="btn-nao-excluir">
-                Não, cancelar
-            </button>
+            <p class="aviso-exclusao">
+                Essa ação não poderá ser desfeita.
+            </p>
 
-            <button id="btnConfirmarExclusao" class="btn-sim-excluir">
-                Sim, excluir
-            </button>
+            <div class="botoes-confirmacao">
+
+                <button id="btnCancelarExclusao" class="btn-nao-excluir">
+                    Não, cancelar
+                </button>
+
+                <button id="btnConfirmarExclusao" class="btn-sim-excluir">
+                    Sim, excluir
+                </button>
+
+            </div>
+
         </div>
 
     </div>
-
-</div>
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

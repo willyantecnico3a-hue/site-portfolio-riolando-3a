@@ -489,3 +489,219 @@
     font-weight: normal;
     color: #475569;
 }
+
+/* =====================================================
+   SEÇÕES DINÂMICAS DO ALUNO
+===================================================== */
+
+.secao-aluno-dinamica {
+    animation: aparecerSecaoAluno 0.25s ease;
+}
+
+@keyframes aparecerSecaoAluno {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =====================================================
+   BOTÕES E CARDS DOS MATERIAIS DA AULA
+===================================================== */
+
+.material-aula-card {
+    margin: 14px 0;
+    padding: 14px;
+    background-color: #f8fafc;
+    border-radius: 14px;
+    border-left: 5px solid #1e40af;
+}
+
+.material-aula-card button,
+.material-aula-card a {
+    display: inline-block;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background-color: #1e40af;
+    color: white;
+    border: none;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.material-aula-card button:hover,
+.material-aula-card a:hover {
+    background-color: #2563eb;
+}
+
+.conteudo-material-aula {
+    margin-top: 14px;
+    background-color: white;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+}
+
+.conteudo-material-aula iframe {
+    border-radius: 12px;
+    border: none;
+}
+
+
+/* =====================================================
+   BADGE AULA MAIS RECENTE
+===================================================== */
+
+.badge-aula-atual {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 6px 12px;
+    background-color: #dcfce7;
+    color: #166534;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   LINHA DO TEMPO DAS AULAS - ESTILO AGENDA
+===================================================== */
+
+.linha-tempo-aulas {
+    position: relative;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 24px 10px 28px 42px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+}
+
+.linha-tempo-aulas::before {
+    content: "";
+    position: sticky;
+    left: 14px;
+    top: 0;
+    align-self: stretch;
+    width: 4px;
+    min-width: 4px;
+    background: linear-gradient(#0f766e, #1e40af);
+    border-radius: 999px;
+}
+
+.card-linha-tempo-aula {
+    min-width: 290px;
+    max-width: 320px;
+    background-color: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #cbd5e1;
+    border-left: 7px solid #0f766e;
+    padding: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    scroll-snap-align: start;
+    position: relative;
+}
+
+.card-linha-tempo-aula::before {
+    content: "";
+    position: absolute;
+    left: -36px;
+    top: 22px;
+    width: 15px;
+    height: 15px;
+    background-color: #0f766e;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px #ccfbf1;
+}
+
+.data-linha-tempo {
+    color: #1e40af;
+    font-weight: bold;
+    font-size: 13px;
+    margin-top: 0;
+}
+
+.card-linha-tempo-aula h3 {
+    color: #0f766e;
+    font-size: 18px;
+    margin: 8px 0;
+}
+
+.card-linha-tempo-aula p {
+    font-size: 14px;
+    color: #334155;
+}
+
+.card-linha-tempo-aula button {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: none;
+    background-color: #1e40af;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.card-linha-tempo-aula button:hover {
+    background-color: #2563eb;
+}
+
+
+/* =====================================================
+   FILTRO DA LINHA DO TEMPO
+   Use se você adicionar campos de busca depois no HTML
+===================================================== */
+
+.filtros-linha-tempo {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.filtros-linha-tempo input,
+.filtros-linha-tempo select {
+    padding: 11px;
+    border: 2px solid #0f766e;
+    border-radius: 10px;
+    font-size: 15px;
+}
+
+
+/* =====================================================
+   SMARTPHONE
+===================================================== */
+
+@media (max-width: 700px) {
+    .conteudo-material-aula iframe {
+        height: 360px;
+    }
+
+    .material-aula-card button,
+    .material-aula-card a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .linha-tempo-aulas {
+        padding-left: 36px;
+    }
+
+    .card-linha-tempo-aula {
+        min-width: 82vw;
+    }
+
+    .filtros-linha-tempo {
+        grid-template-columns: 1fr;
+    }
+}
