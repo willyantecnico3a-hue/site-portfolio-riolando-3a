@@ -3,27 +3,25 @@
 <head>
     <meta charset="UTF-8">
 
-    <!-- Garante que o site fique responsivo em celular, tablet e computador -->
+    <!-- Garante responsividade em celular, tablet e computador -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Portal de Aulas e Portfólios</title>
 
-    <!-- Arquivo de estilos do site -->
+    <!-- Arquivo principal de estilos -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
-    
+<body>
 
     <!-- =====================================================
          TOPO DO SITE
-         Área inicial com nome do portal, professor e acesso admin
+         Mostra o nome do portal, professor e botão discreto admin
     ====================================================== -->
-   
-
     <header class="topo-site novo-topo-aluno">
 
         <div class="topo-conteudo-aluno">
+
             <span class="selo-escola">
                 PEI Professor Riolando Canno
             </span>
@@ -33,9 +31,10 @@
             <p>
                 Professor/PAEET Willyan Vieira — Aulas, materiais, atividades e projetos dos alunos.
             </p>
+
         </div>
 
-        <!-- Link discreto para o painel administrativo -->
+        <!-- Acesso discreto para área administrativa -->
         <a href="admin.html" class="link-admin-discreto">
             🔐 Admin
         </a>
@@ -48,25 +47,26 @@
     ====================================================== -->
     <main class="tela-inicial nova-tela-aluno">
 
+
         <!-- =====================================================
-             BLOCO DE ESCOLHA DA TURMA
-             Primeira ação do aluno no site
+             ESCOLHA DA TURMA
+             Primeira ação do aluno na página
         ====================================================== -->
         <section class="card-escolha-turma card-principal-aluno">
 
             <div class="cabecalho-card-aluno">
+
                 <span class="icone-card-aluno">🎓</span>
 
                 <div>
                     <h2>Escolha sua Turma</h2>
 
-                    
-
                     <p>
                         Selecione sua turma para visualizar aulas, materiais,
-                        atividades, portfólios e orientações do professor.
+                        atividades, portfólios, linha do tempo e orientações do professor.
                     </p>
                 </div>
+
             </div>
 
             <label for="selectTurma" class="label-aluno">
@@ -82,11 +82,14 @@
 
         <!-- =====================================================
              AMBIENTE DA TURMA
-             Só aparece depois que o aluno escolhe uma turma
+             Esta área só aparece depois que o aluno seleciona uma turma
         ====================================================== -->
         <section id="ambienteTurma" class="ambiente-turma painel-turma-aluno" style="display: none;">
 
-            <!-- Cabeçalho da turma escolhida -->
+
+            <!-- =====================================================
+                 CABEÇALHO DA TURMA SELECIONADA
+            ====================================================== -->
             <section class="cabecalho-turma-aluno">
 
                 <div>
@@ -108,7 +111,10 @@
             </section>
 
 
-            <!-- Foto da turma -->
+            <!-- =====================================================
+                 FOTO DA TURMA
+                 Aparece ou oculta quando clicar no botão Ver Foto
+            ====================================================== -->
             <section class="area-foto-turma-aluno">
 
                 <img
@@ -120,74 +126,92 @@
 
             </section>
 
-            
-
 
             <!-- =====================================================
                  MENU RÁPIDO DO ALUNO
-                 Ajuda o aluno a entender as seções disponíveis
+                 Cada botão abre apenas uma seção por vez
             ====================================================== -->
-            
+            <section class="menu-rapido-aluno">
 
-    <a href="#areaAulaDia" class="card-menu-aluno">
-        📚
-        <strong>Aula do Dia</strong>
-        <small>Veja o conteúdo cadastrado pelo professor</small>
-    </a>
+                <button
+                    type="button"
+                    class="card-menu-aluno"
+                    onclick="mostrarSecaoAluno('areaAulaDia')"
+                >
+                    <span class="icone-menu-aluno">📚</span>
 
-    <a href="agenda.html" class="card-menu-aluno">
-        📅
-        <strong>Agenda Pedagógica</strong>
-        <small>Veja aulas, OTs, EFAPE e materiais</small>
-    </a>
-<section class="menu-rapido-aluno">
+                    <div>
+                        <strong>Aula do Dia</strong>
+                        <small>Veja a aula mais recente cadastrada pelo professor</small>
+                    </div>
+                </button>
 
-    <a href="#areaAulaDia" class="card-menu-aluno">
-        <span class="icone-menu-aluno">📚</span>
 
-        <div>
-            <strong>Aula do Dia</strong>
-            <small>Veja o conteúdo cadastrado pelo professor</small>
-        </div>
-    </a>
+                <a href="agenda.html" class="card-menu-aluno">
+                    <span class="icone-menu-aluno">📅</span>
 
-    <a href="agenda.html" class="card-menu-aluno">
-        <span class="icone-menu-aluno">📅</span>
+                    <div>
+                        <strong>Agenda Pedagógica</strong>
+                        <small>Veja aulas, ATPCs, EFAPE e eventos</small>
+                    </div>
+                </a>
 
-        <div>
-            <strong>Agenda Pedagógica</strong>
-            <small>Veja aulas, OTs, EFAPE e materiais</small>
-        </div>
-    </a>
 
-    <a href="#areaEnvioPortfolio" class="card-menu-aluno">
-        <span class="icone-menu-aluno">🧑‍💻</span>
+                <button
+                    type="button"
+                    class="card-menu-aluno"
+                    onclick="mostrarSecaoAluno('areaLinhaTempoAulas')"
+                >
+                    <span class="icone-menu-aluno">🕒</span>
 
-        <div>
-            <strong>Enviar Portfólio</strong>
-            <small>Cadastre seu projeto para avaliação</small>
-        </div>
-    </a>
+                    <div>
+                        <strong>Linha do Tempo</strong>
+                        <small>Consulte aulas anteriores da turma</small>
+                    </div>
+                </button>
 
-    <a href="#areaPortfoliosPublicados" class="card-menu-aluno">
-        <span class="icone-menu-aluno">🌐</span>
 
-        <div>
-            <strong>Portfólios Publicados</strong>
-            <small>Veja os projetos aprovados</small>
-        </div>
-    </a>
+                <button
+                    type="button"
+                    class="card-menu-aluno"
+                    onclick="mostrarSecaoAluno('areaEnvioPortfolio')"
+                >
+                    <span class="icone-menu-aluno">🧑‍💻</span>
 
-</section>
+                    <div>
+                        <strong>Enviar Portfólio</strong>
+                        <small>Cadastre seu projeto para avaliação</small>
+                    </div>
+                </button>
+
+
+                <button
+                    type="button"
+                    class="card-menu-aluno"
+                    onclick="mostrarSecaoAluno('areaPortfoliosPublicados')"
+                >
+                    <span class="icone-menu-aluno">🌐</span>
+
+                    <div>
+                        <strong>Portfólios Publicados</strong>
+                        <small>Veja os projetos aprovados</small>
+                    </div>
+                </button>
+
+            </section>
 
 
             <!-- =====================================================
-                 AULA DO DIA
-                 Conteúdo carregado do Supabase conforme a turma
+                 SEÇÃO 1: AULA DO DIA
+                 Aparece automaticamente ao selecionar a turma
             ====================================================== -->
-            <section id="areaAulaDia" class="area-aula-dia bloco-aluno">
+            <section
+                id="areaAulaDia"
+                class="area-aula-dia bloco-aluno secao-aluno-dinamica"
+            >
 
                 <div class="titulo-bloco-aluno">
+
                     <span>📚</span>
 
                     <div>
@@ -197,6 +221,7 @@
                             Informações cadastradas pelo professor para a turma selecionada.
                         </p>
                     </div>
+
                 </div>
 
                 <div id="aulaDiaConteudo" class="conteudo-aula-aluno">
@@ -209,11 +234,50 @@
 
 
             <!-- =====================================================
-                 ENVIO DE PORTFÓLIO DO ALUNO
+                 SEÇÃO 2: LINHA DO TEMPO DAS AULAS
+                 Fica oculta até o aluno clicar no card Linha do Tempo
             ====================================================== -->
-            <section id="areaEnvioPortfolio" class="area-portfolio-aluno bloco-aluno">
+            <section
+                id="areaLinhaTempoAulas"
+                class="bloco-aluno secao-aluno-dinamica"
+                style="display: none;"
+            >
 
                 <div class="titulo-bloco-aluno">
+
+                    <span>🕒</span>
+
+                    <div>
+                        <h2>Linha do Tempo das Aulas</h2>
+
+                        <p>
+                            Consulte aulas anteriores da turma selecionada por data e horário.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div id="linhaTempoAulas" class="linha-tempo-aulas">
+                    <p>
+                        Selecione uma turma para carregar a linha do tempo.
+                    </p>
+                </div>
+
+            </section>
+
+
+            <!-- =====================================================
+                 SEÇÃO 3: ENVIAR PORTFÓLIO
+                 Fica oculta e só aparece ao clicar no card Enviar Portfólio
+            ====================================================== -->
+            <section
+                id="areaEnvioPortfolio"
+                class="area-portfolio-aluno bloco-aluno secao-aluno-dinamica"
+                style="display: none;"
+            >
+
+                <div class="titulo-bloco-aluno">
+
                     <span>🧑‍💻</span>
 
                     <div>
@@ -223,27 +287,49 @@
                             Envie o link do projeto desenvolvido para avaliação e publicação após aprovação.
                         </p>
                     </div>
+
                 </div>
 
                 <div class="formulario-portfolio-aluno">
 
                     <label for="nomeAluno">Nome do aluno</label>
-                    <input type="text" id="nomeAluno" placeholder="Digite seu nome completo">
+                    <input
+                        type="text"
+                        id="nomeAluno"
+                        placeholder="Digite seu nome completo"
+                    >
 
                     <label for="telefoneAluno">Telefone</label>
-                    <input type="text" id="telefoneAluno" placeholder="Ex: (11) 99999-9999">
+                    <input
+                        type="text"
+                        id="telefoneAluno"
+                        placeholder="Ex: (11) 99999-9999"
+                    >
 
                     <label for="emailAluno">E-mail</label>
-                    <input type="email" id="emailAluno" placeholder="Digite seu e-mail">
+                    <input
+                        type="email"
+                        id="emailAluno"
+                        placeholder="Digite seu e-mail"
+                    >
 
                     <label for="linkSiteAluno">Link do site criado</label>
-                    <input type="url" id="linkSiteAluno" placeholder="Cole aqui o link do seu site">
+                    <input
+                        type="url"
+                        id="linkSiteAluno"
+                        placeholder="Cole aqui o link do seu site"
+                    >
 
                     <label for="linkVideoAluno">Link do vídeo de apresentação</label>
-                    <input type="url" id="linkVideoAluno" placeholder="Cole aqui o link do vídeo">
+                    <input
+                        type="url"
+                        id="linkVideoAluno"
+                        placeholder="Cole aqui o link do vídeo"
+                    >
 
                     <label class="autorizacao">
                         <input type="checkbox" id="autorizacaoAluno">
+
                         Autorizo divulgar meus dados, site e vídeo para fins de portfólio escolar e oportunidades profissionais.
                     </label>
 
@@ -257,12 +343,17 @@
 
 
             <!-- =====================================================
-                 PORTFÓLIOS PUBLICADOS
-                 Mostra os projetos aprovados pelo professor
+                 SEÇÃO 4: PORTFÓLIOS PUBLICADOS
+                 Fica oculta e só aparece ao clicar no card
             ====================================================== -->
-            <section id="areaPortfoliosPublicados" class="secao-portfolios-publicados bloco-aluno">
+            <section
+                id="areaPortfoliosPublicados"
+                class="secao-portfolios-publicados bloco-aluno secao-aluno-dinamica"
+                style="display: none;"
+            >
 
                 <div class="titulo-bloco-aluno">
+
                     <span>🌐</span>
 
                     <div>
@@ -272,6 +363,7 @@
                             Confira os projetos aprovados desta turma.
                         </p>
                     </div>
+
                 </div>
 
                 <button id="btnCarregarPortfolios" class="botao-secundario-aluno">
@@ -287,36 +379,28 @@
     </main>
 
 
-    <!-- =============================
-             TELA 5: AGENDA PEDAGÓGICA 
-        ============================== -->
-
-    
-</a>
-
     <!-- =====================================================
-         RODAPÉ SIMPLES
+         RODAPÉ DO SITE
     ====================================================== -->
-    
     <footer class="rodape-aluno">
+
         <p>
-            Portal desenvolvido para apoio às aulas, projetos e portfólios dos alunos.
-        </p>                                                                           
-                                                                                        
-        <p>                                                                            
-            PEI Professor Riolando Canno — Professor/PAEET : Willyan Vieira
+            Portal desenvolvido para Apoio da gestão Escolar, apoio às aulas, projetos e portfólios dos alunos.
         </p>
 
-        
+        <p>
+            PEI Professor Riolando Canno — Professor/PAEET: Willyan Vieira
+        </p>
 
-        
-    </footer> 
+    </footer>
 
 
-    <!-- Biblioteca do Supabase -->
+    <!-- =====================================================
+         SCRIPTS
+         Primeiro carrega Supabase, depois o script do site
+    ====================================================== -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Arquivo JavaScript principal do site dos alunos -->
     <script src="script.js"></script>
 
 </body>
