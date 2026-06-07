@@ -12,7 +12,7 @@ const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
 // COLE AQUI SUA CHAVE PUBLIC / ANON / PUBLISHABLE DO SUPABASE
 // IMPORTANTE: mantenha a chave entre aspas.
-const SUPABASE_KEY = ""sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
+const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
