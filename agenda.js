@@ -8,6 +8,8 @@
 // 1. CONEXÃO COM SUPABASE
 // =====================================================
 
+
+
 const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
 const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
@@ -16,7 +18,7 @@ const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
 // =====================================================
-// 2. VARIÁVEIS GLOBAIS DA AGENDA
+// 2. VARIÁVEIS GLOBAIS
 // =====================================================
 
 let dataAtual = new Date();
@@ -33,32 +35,29 @@ let dataSelecionadaNoModal = null;
 // =====================================================
 
 const gradeCalendario = document.getElementById("gradeCalendario");
-
 const tituloMesAno = document.getElementById("tituloMesAno");
 
 const btnMesAnterior = document.getElementById("btnMesAnterior");
-
 const btnProximoMes = document.getElementById("btnProximoMes");
 
 const modalDia = document.getElementById("modalDia");
-
 const modalTituloData = document.getElementById("modalTituloData");
-
 const listaEventosDia = document.getElementById("listaEventosDia");
-
 const btnFecharModal = document.getElementById("btnFecharModal");
 
 const btnAbrirFormEvento = document.getElementById("btnAbrirFormEvento");
-
 const formEvento = document.getElementById("formEvento");
 
 const areaFiltroAdmin = document.getElementById("areaFiltroAdmin");
-
 const filtroCursoAgenda = document.getElementById("filtroCursoAgenda");
+
+const modalDetalheEvento = document.getElementById("modalDetalheEvento");
+const conteudoDetalheEvento = document.getElementById("conteudoDetalheEvento");
+const btnFecharDetalheEvento = document.getElementById("btnFecharDetalheEvento");
 
 
 // =====================================================
-// 4. INICIALIZAÇÃO
+// 4. INICIAR A AGENDA
 // =====================================================
 
 iniciarAgenda();
@@ -102,7 +101,7 @@ async function carregarPerfilUsuario() {
 
 
 // =====================================================
-// 6. CONFIGURAR PERMISSÕES DA TELA
+// 6. CONFIGURAR PERMISSÕES NA TELA
 // =====================================================
 
 function configurarPermissoesDaTela() {
@@ -110,21 +109,10 @@ function configurarPermissoesDaTela() {
         return;
     }
 
-    const funcao = perfilUsuario.funcao;
-
-    if (funcao === "admin") {
+    if (perfilUsuario.funcao === "admin") {
         areaFiltroAdmin.style.display = "block";
-        btnAbrirFormEvento.style.display = "block";
-    }
-
-    if (funcao === "coordenacao") {
+    } else {
         areaFiltroAdmin.style.display = "none";
-        btnAbrirFormEvento.style.display = "none";
-    }
-
-    if (funcao.startsWith("aluno")) {
-        areaFiltroAdmin.style.display = "none";
-        btnAbrirFormEvento.style.display = "none";
     }
 }
 
@@ -139,15 +127,12 @@ async function carregarEventosDoMes() {
     }
 
     const ano = dataAtual.getFullYear();
-
     const mes = dataAtual.getMonth();
 
     const primeiroDia = new Date(ano, mes, 1);
-
     const ultimoDia = new Date(ano, mes + 1, 0);
 
     const inicio = formatarDataISO(primeiroDia);
-
     const fim = formatarDataISO(ultimoDia);
 
     let consulta = banco
@@ -155,9 +140,9 @@ async function carregarEventosDoMes() {
         .select("*")
         .gte("data", inicio)
         .lte("data", fim)
-        .order("data", { ascending: true });
+        .order("data", { ascending: true })
+        .order("horario_inicio", { ascending: true });
 
-    // Filtro visual do admin.
     if (perfilUsuario.funcao === "admin" && filtroCursoAgenda) {
         const filtro = filtroCursoAgenda.value;
 
@@ -178,7 +163,7 @@ async function carregarEventosDoMes() {
 
 
 // =====================================================
-// 8. FILTRO DE PERMISSÃO EM JAVASCRIPT
+// 8. FILTRO DE PERMISSÃO
 // =====================================================
 
 function aplicarFiltroDePermissao(eventos) {
@@ -189,22 +174,34 @@ function aplicarFiltroDePermissao(eventos) {
     const funcao = perfilUsuario.funcao;
     const curso = perfilUsuario.curso;
 
-    // Admin vê tudo.
+    // Professor/admin vê tudo.
     if (funcao === "admin") {
         return eventos;
     }
 
-    // Coordenação vê tudo, mas só leitura.
-    if (funcao === "coordenacao") {
+    // Direção, vices e coordenação veem tudo, mas sem criar/editar.
+    if (
+        funcao === "coordenacao" ||
+        funcao === "direcao" ||
+        funcao === "vice_direcao" ||
+        funcao === "gestao"
+    ) {
         return eventos;
     }
 
-    // Aluno vê apenas eventos do seu curso ou eventos para todos.
+    // Aluno vê:
+    // 1. Eventos gerais: todos
+    // 2. Eventos do próprio curso
+    // 3. OT direcionada ao curso dele
     if (funcao.startsWith("aluno")) {
         return eventos.filter(function (evento) {
             return (
+                evento.curso_alvo === "todos" ||
                 evento.curso_alvo === curso ||
-                evento.curso_alvo === "todos"
+                (
+                    evento.tipo === "ot" &&
+                    evento.curso_alvo === curso
+                )
             );
         });
     }
@@ -214,18 +211,16 @@ function aplicarFiltroDePermissao(eventos) {
 
 
 // =====================================================
-// 9. RENDERIZAR CALENDÁRIO
+// 9. RENDERIZAR O CALENDÁRIO
 // =====================================================
 
 function renderizarCalendario() {
     gradeCalendario.innerHTML = "";
 
     const ano = dataAtual.getFullYear();
-
     const mes = dataAtual.getMonth();
 
     const primeiroDiaMes = new Date(ano, mes, 1);
-
     const ultimoDiaMes = new Date(ano, mes + 1, 0);
 
     const nomeMes = dataAtual.toLocaleDateString("pt-BR", {
@@ -237,15 +232,16 @@ function renderizarCalendario() {
 
     const diaSemanaInicio = primeiroDiaMes.getDay();
 
+    // Espaços vazios antes do dia 1.
     for (let i = 0; i < diaSemanaInicio; i++) {
         const vazio = document.createElement("div");
         vazio.className = "dia-vazio";
         gradeCalendario.appendChild(vazio);
     }
 
+    // Cria os dias do mês.
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
         const dataDia = new Date(ano, mes, dia);
-
         const dataISO = formatarDataISO(dataDia);
 
         const eventosDoDia = eventosCarregados.filter(function (evento) {
@@ -253,7 +249,6 @@ function renderizarCalendario() {
         });
 
         const cardDia = document.createElement("div");
-
         cardDia.className = "dia-calendario";
 
         if (dataISO === formatarDataISO(new Date())) {
@@ -261,18 +256,28 @@ function renderizarCalendario() {
         }
 
         cardDia.innerHTML = `
-            <div class="numero-dia">${dia}</div>
+            <div class="cabecalho-dia">
+                <span class="numero-dia">${dia}</span>
+                <span class="quantidade-eventos">${eventosDoDia.length} evento(s)</span>
+            </div>
+
             <div class="eventos-mini-dia">
-                ${eventosDoDia.slice(0, 3).map(function (evento) {
+                ${eventosDoDia.map(function (evento) {
                     return `
-                        <span class="evento-mini tipo-${normalizarTipo(evento.tipo)}">
+                        <div
+                            class="evento-mini tipo-${normalizarTipo(evento.tipo)}"
+                            title="${evento.descricao || evento.titulo}"
+                            onclick="event.stopPropagation(); abrirDetalheEvento('${evento.id}')"
+                        >
+                            <span>${formatarHorarioCurto(evento.horario_inicio)}</span>
                             ${evento.titulo}
-                        </span>
+                        </div>
                     `;
                 }).join("")}
             </div>
         `;
 
+        // Clicar no dia abre modal do dia.
         cardDia.addEventListener("click", function () {
             abrirModalDoDia(dataISO, eventosDoDia);
         });
@@ -300,10 +305,16 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
             listaEventosDia.innerHTML += `
                 <div class="card-evento-dia">
                     <span class="tag-legenda tipo-${normalizarTipo(evento.tipo)}">
-                        ${evento.tipo}
+                        ${nomeBonitoTipo(evento.tipo)}
                     </span>
 
                     <h3>${evento.titulo}</h3>
+
+                    <p>
+                        <strong>Horário:</strong>
+                        ${formatarHorarioCurto(evento.horario_inicio)}
+                        ${evento.horario_fim ? " às " + formatarHorarioCurto(evento.horario_fim) : ""}
+                    </p>
 
                     <p>${evento.descricao || "Sem descrição."}</p>
 
@@ -314,11 +325,16 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
                         ? `<p><a href="${evento.link_material}" target="_blank">📎 Acessar material</a></p>`
                         : ""
                     }
+
+                    <button onclick="abrirDetalheEvento('${evento.id}')">
+                        Ver detalhes
+                    </button>
                 </div>
             `;
         });
     }
 
+    // Só admin pode criar evento.
     if (perfilUsuario && perfilUsuario.funcao === "admin") {
         btnAbrirFormEvento.style.display = "block";
     } else {
@@ -332,16 +348,67 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
 
 
 // =====================================================
-// 11. FECHAR MODAL
+// 11. ABRIR DETALHE DO EVENTO
+// =====================================================
+
+function abrirDetalheEvento(idEvento) {
+    const evento = eventosCarregados.find(function (item) {
+        return item.id === idEvento;
+    });
+
+    if (!evento) {
+        return;
+    }
+
+    conteudoDetalheEvento.innerHTML = `
+        <div class="detalhe-card-evento">
+            <span class="tag-legenda tipo-${normalizarTipo(evento.tipo)}">
+                ${nomeBonitoTipo(evento.tipo)}
+            </span>
+
+            <h2>${evento.titulo}</h2>
+
+            <p><strong>Data:</strong> ${formatarDataBR(evento.data)}</p>
+
+            <p>
+                <strong>Horário:</strong>
+                ${formatarHorarioCurto(evento.horario_inicio)}
+                ${evento.horario_fim ? " às " + formatarHorarioCurto(evento.horario_fim) : ""}
+            </p>
+
+            <p><strong>Curso alvo:</strong> ${evento.curso_alvo}</p>
+
+            <p><strong>Descrição:</strong></p>
+
+            <p>${evento.descricao || "Sem descrição cadastrada."}</p>
+
+            ${
+                evento.link_material
+                ? `<p><a href="${evento.link_material}" target="_blank">📎 Abrir material</a></p>`
+                : ""
+            }
+        </div>
+    `;
+
+    modalDetalheEvento.classList.add("aberto");
+}
+
+
+// =====================================================
+// 12. FECHAR MODAIS
 // =====================================================
 
 btnFecharModal.addEventListener("click", function () {
     modalDia.classList.remove("aberto");
 });
 
+btnFecharDetalheEvento.addEventListener("click", function () {
+    modalDetalheEvento.classList.remove("aberto");
+});
+
 
 // =====================================================
-// 12. ABRIR FORMULÁRIO DE NOVO EVENTO
+// 13. ABRIR FORMULÁRIO DE EVENTO
 // =====================================================
 
 btnAbrirFormEvento.addEventListener("click", function () {
@@ -351,19 +418,21 @@ btnAbrirFormEvento.addEventListener("click", function () {
 
 
 // =====================================================
-// 13. SALVAR EVENTO NOVO
+// 14. SALVAR EVENTO NOVO
 // =====================================================
 
 formEvento.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas admin pode criar eventos.");
+        alert("Apenas o administrador pode criar eventos.");
         return;
     }
 
     const tipo = document.getElementById("eventoTipo").value;
     const titulo = document.getElementById("eventoTitulo").value.trim();
+    const horarioInicio = document.getElementById("eventoHorarioInicio").value;
+    const horarioFim = document.getElementById("eventoHorarioFim").value;
     const descricao = document.getElementById("eventoDescricao").value.trim();
     const cursoAlvo = document.getElementById("eventoCursoAlvo").value;
     const linkMaterial = document.getElementById("eventoLinkMaterial").value.trim();
@@ -371,6 +440,11 @@ formEvento.addEventListener("submit", async function (event) {
 
     if (!titulo) {
         mensagemEvento.textContent = "Preencha o título do evento.";
+        return;
+    }
+
+    if (!horarioInicio) {
+        mensagemEvento.textContent = "Preencha o horário de início.";
         return;
     }
 
@@ -383,6 +457,8 @@ formEvento.addEventListener("submit", async function (event) {
                 data: dataSelecionadaNoModal,
                 tipo: tipo,
                 titulo: titulo,
+                horario_inicio: horarioInicio,
+                horario_fim: horarioFim || null,
                 descricao: descricao,
                 curso_alvo: cursoAlvo,
                 link_material: linkMaterial,
@@ -398,24 +474,35 @@ formEvento.addEventListener("submit", async function (event) {
 
     mensagemEvento.textContent = "Evento salvo com sucesso!";
 
-    document.getElementById("eventoTitulo").value = "";
-    document.getElementById("eventoDescricao").value = "";
-    document.getElementById("eventoLinkMaterial").value = "";
+    limparFormularioEvento();
 
     await carregarEventosDoMes();
 
     renderizarCalendario();
 
-    const eventosDoDiaAtualizado = eventosCarregados.filter(function (evento) {
+    const eventosAtualizados = eventosCarregados.filter(function (evento) {
         return evento.data === dataSelecionadaNoModal;
     });
 
-    abrirModalDoDia(dataSelecionadaNoModal, eventosDoDiaAtualizado);
+    abrirModalDoDia(dataSelecionadaNoModal, eventosAtualizados);
 });
 
 
 // =====================================================
-// 14. NAVEGAÇÃO ENTRE MESES
+// 15. LIMPAR FORMULÁRIO
+// =====================================================
+
+function limparFormularioEvento() {
+    document.getElementById("eventoTitulo").value = "";
+    document.getElementById("eventoHorarioInicio").value = "";
+    document.getElementById("eventoHorarioFim").value = "";
+    document.getElementById("eventoDescricao").value = "";
+    document.getElementById("eventoLinkMaterial").value = "";
+}
+
+
+// =====================================================
+// 16. NAVEGAÇÃO ENTRE MESES
 // =====================================================
 
 btnMesAnterior.addEventListener("click", async function () {
@@ -436,7 +523,7 @@ btnProximoMes.addEventListener("click", async function () {
 
 
 // =====================================================
-// 15. FILTRO DO ADMIN
+// 17. FILTRO ADMIN
 // =====================================================
 
 if (filtroCursoAgenda) {
@@ -449,7 +536,7 @@ if (filtroCursoAgenda) {
 
 
 // =====================================================
-// 16. FUNÇÕES AUXILIARES
+// 18. FUNÇÕES AUXILIARES
 // =====================================================
 
 function formatarDataISO(data) {
@@ -473,9 +560,32 @@ function primeiraLetraMaiuscula(texto) {
 function normalizarTipo(tipo) {
     return tipo
         .toLowerCase()
-        .replace("ç", "c")
-        .replace("ã", "a")
-        .replace("á", "a")
-        .replace("é", "e")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
         .replace(/\s+/g, "_");
+}
+
+function formatarHorarioCurto(horario) {
+    if (!horario) {
+        return "--:--";
+    }
+
+    return horario.substring(0, 5);
+}
+
+function nomeBonitoTipo(tipo) {
+    const nomes = {
+        aula: "Aula",
+        atpcs: "ATPCS",
+        atpcg: "ATPCG",
+        apd: "APD",
+        efape: "EFAPE",
+        multiplica: "Multiplica",
+        visita_tecnica: "Visita Técnica",
+        apoio_pedagogico: "Apoio Pedagógico",
+        ot: "OT",
+        outro: "Outro"
+    };
+
+    return nomes[tipo] || tipo;
 }
