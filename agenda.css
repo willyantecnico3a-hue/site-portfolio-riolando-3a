@@ -727,72 +727,87 @@ button {
 
     /* O calendário usa 99% da tela e permite arrastar horizontal */
     .calendario {
-        width: 99vw;
-        max-width: 99vw;
-        margin: 0 auto;
-        padding: 6px;
-        border-radius: 14px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        touch-action: pan-x pan-y;
-    }
+    width: 99vw;
+    max-width: 99vw;
+    margin: 0 auto;
+    padding: 4px;
+    border-radius: 12px;
+    overflow-x: hidden;
+    overflow-y: visible;
+}
 
-    /* Largura parecida com desktop: cada dia tem 130px */
-    .dias-semana {
-        display: grid;
-        grid-template-columns: repeat(7, 130px);
-        width: 910px;
-        min-width: 910px;
-        gap: 6px;
-        font-size: 12px;
-    }
+    /* =====================================================
+   CALENDÁRIO MOBILE COM TODAS AS SEMANAS VISÍVEIS
+   Estilo mais próximo do Google Agenda no modo mês
+===================================================== */
 
-    .grade-calendario {
-        display: grid;
-        grid-template-columns: repeat(7, 130px);
-        width: 910px;
-        min-width: 910px;
-        gap: 6px;
-    }
+.dias-semana {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    min-width: 100%;
+    gap: 2px;
+    font-size: 10px;
+}
 
-    .dia-vazio {
-        min-height: 130px;
-        border-radius: 12px;
-    }
+.dias-semana div {
+    padding: 4px 1px;
+    text-align: center;
+    font-weight: bold;
+}
 
-    .dia-calendario {
-        min-height: 130px;
-        height: 130px;
-        padding: 7px;
-        border-radius: 12px;
-    }
+.grade-calendario {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    min-width: 100%;
+    gap: 2px;
+}
 
-    .numero-dia {
-        font-size: 14px;
-    }
+.dia-vazio {
+    min-height: 62px;
+    height: 62px;
+    border-radius: 7px;
+}
 
-    .quantidade-eventos {
-        font-size: 8px;
-    }
+.dia-calendario {
+    min-height: 62px;
+    height: 62px;
+    padding: 3px;
+    border-radius: 7px;
+}
 
-    .evento-mini {
-        font-size: 9px;
-        line-height: 1.15;
-        padding: 4px 5px;
-        border-radius: 6px;
-        white-space: normal;
-        max-height: 34px;
-    }
+.numero-dia {
+    font-size: 11px;
+}
 
-    .evento-mini span {
-        display: inline;
-        font-weight: 800;
-    }
+.quantidade-eventos {
+    display: none;
+}
 
-    .eventos-mini-dia .evento-mini:nth-child(n+4) {
-        display: none;
-    }
+.eventos-mini-dia {
+    gap: 2px;
+}
+
+.evento-mini {
+    font-size: 7px;
+    line-height: 1.05;
+    padding: 2px 3px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 14px;
+}
+
+.evento-mini span {
+    display: none;
+}
+
+/* Mostra só 1 evento por dia no modo compacto */
+.eventos-mini-dia .evento-mini:nth-child(n+2) {
+    display: none;
+}
 
     .modal-agenda {
         padding: 8px;
