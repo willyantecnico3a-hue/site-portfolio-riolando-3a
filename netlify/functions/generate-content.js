@@ -64,9 +64,9 @@ exports.handler = async function (event) {
         // IMPORTANTE:
         // O modelo gemini-1.5-flash está retornando 404 no endpoint atual.
         // Por isso usamos gemini-2.0-flash.
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash"
-        });
+       const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash-lite"
+});
 
         const promptSistema = `
 Você é um assistente pedagógico especializado em cursos técnicos, ensino médio e educação profissional.
