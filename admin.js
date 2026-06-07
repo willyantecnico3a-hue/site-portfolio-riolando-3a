@@ -1507,6 +1507,8 @@ async function gerarConteudoIA(tipo) {
 }
 
 
+
+
 // =====================================================
 // FORMATAR TEXTO DA IA PARA EXIBIR NO HTML
 // =====================================================
@@ -1587,3 +1589,5 @@ function enviarResultadoParaAula() {
 window.gerarConteudoIA = gerarConteudoIA;
 window.copiarResultadoIA = copiarResultadoIA;
 window.enviarResultadoParaAula = enviarResultadoParaAula;
+
+console.log("Funções do Assistente IA carregadas com sucesso.");
