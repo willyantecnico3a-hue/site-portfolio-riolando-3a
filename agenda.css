@@ -755,3 +755,79 @@ button {
         width: 100%;
     }
 }
+
+/* =====================================================
+   MODAL PERSONALIZADO DE CONFIRMAÇÃO DE EXCLUSÃO
+===================================================== */
+
+.modal-confirmacao-exclusao {
+    width: 100%;
+    max-width: 430px;
+    background-color: white;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 14px 38px rgba(0,0,0,0.35);
+    border-left: 7px solid #991b1b;
+    text-align: center;
+}
+
+.modal-confirmacao-exclusao h2 {
+    margin-top: 0;
+    color: #991b1b;
+}
+
+.modal-confirmacao-exclusao p {
+    color: #0f172a;
+    font-size: 17px;
+}
+
+.aviso-exclusao {
+    color: #64748b !important;
+    font-size: 14px !important;
+}
+
+.botoes-confirmacao {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.btn-nao-excluir,
+.btn-sim-excluir {
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.btn-nao-excluir {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.btn-nao-excluir:hover {
+    background-color: #cbd5e1;
+}
+
+.btn-sim-excluir {
+    background-color: #dc2626;
+    color: white;
+}
+
+.btn-sim-excluir:hover {
+    background-color: #991b1b;
+}
+
+@media (max-width: 600px) {
+    .botoes-confirmacao {
+        flex-direction: column;
+    }
+
+    .btn-nao-excluir,
+    .btn-sim-excluir {
+        width: 100%;
+    }
+}

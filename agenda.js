@@ -29,6 +29,10 @@ let perfilUsuario = null;
 
 let dataSelecionadaNoModal = null;
 
+let eventoEmEdicaoId = null;
+
+let eventoParaExcluirId = null;
+
 
 // =====================================================
 // 3. ELEMENTOS DA TELA
@@ -54,6 +58,10 @@ const filtroCursoAgenda = document.getElementById("filtroCursoAgenda");
 const modalDetalheEvento = document.getElementById("modalDetalheEvento");
 const conteudoDetalheEvento = document.getElementById("conteudoDetalheEvento");
 const btnFecharDetalheEvento = document.getElementById("btnFecharDetalheEvento");
+
+const modalConfirmarExclusao = document.getElementById("modalConfirmarExclusao");
+const btnCancelarExclusao = document.getElementById("btnCancelarExclusao");
+const btnConfirmarExclusao = document.getElementById("btnConfirmarExclusao");
 
 
 // =====================================================
@@ -254,6 +262,26 @@ async function carregarEventosDoMes() {
 
     eventosCarregados = aplicarFiltroDePermissao(data || []);
 }
+async function excluirEvento(idEvento) {
+
+// =====================================================
+// ABRIR CAIXA DE CONFIRMAÇÃO PARA EXCLUIR EVENTO
+// Esta função NÃO exclui direto.
+// Ela apenas abre uma caixa perguntando SIM ou NÃO.
+// =====================================================
+
+function excluirEvento(idEvento) {
+    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+        alert("Apenas o administrador pode excluir eventos.");
+        return;
+    }
+
+    eventoParaExcluirId = idEvento;
+
+    if (modalConfirmarExclusao) {
+        modalConfirmarExclusao.classList.add("aberto");
+    }
+}
 
 
 // =====================================================
@@ -443,6 +471,8 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
 
 // =====================================================
 // 11. ABRIR DETALHE DO EVENTO
+// Mostra os dados completos do evento.
+// Se o usuário for admin, mostra botão de editar e excluir.
 // =====================================================
 
 function abrirDetalheEvento(idEvento) {
@@ -454,11 +484,34 @@ function abrirDetalheEvento(idEvento) {
         return;
     }
 
+    const usuarioPodeEditar =
+        perfilUsuario &&
+        perfilUsuario.funcao === "admin";
+
     conteudoDetalheEvento.innerHTML = `
         <div class="detalhe-card-evento">
-            <span class="tag-legenda tipo-${normalizarTipo(evento.tipo)}">
-                ${nomeBonitoTipo(evento.tipo)}
-            </span>
+
+            <div class="topo-detalhe-evento">
+                <span class="tag-legenda tipo-${normalizarTipo(evento.tipo)}">
+                    ${nomeBonitoTipo(evento.tipo)}
+                </span>
+
+                ${
+                    usuarioPodeEditar
+                    ? `
+                        <div class="acoes-evento-admin">
+                            <button class="btn-editar-evento" onclick="prepararEdicaoEvento('${evento.id}')">
+                                ✏️
+                            </button>
+
+                            <button class="btn-excluir-evento" onclick="excluirEvento('${evento.id}')">
+                                🗑️
+                            </button>
+                        </div>
+                    `
+                    : ""
+                }
+            </div>
 
             <h2>${evento.titulo}</h2>
 
@@ -487,7 +540,59 @@ function abrirDetalheEvento(idEvento) {
     modalDetalheEvento.classList.add("aberto");
 }
 
+// =====================================================
+// PREPARAR EDIÇÃO DO EVENTO
+// Pega os dados do evento clicado e coloca no formulário.
+// =====================================================
 
+function prepararEdicaoEvento(idEvento) {
+    const evento = eventosCarregados.find(function (item) {
+        return item.id === idEvento;
+    });
+
+    if (!evento) {
+        alert("Evento não encontrado para edição.");
+        return;
+    }
+
+    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+        alert("Apenas o administrador pode editar eventos.");
+        return;
+    }
+
+    eventoEmEdicaoId = evento.id;
+    dataSelecionadaNoModal = evento.data;
+
+    modalDetalheEvento.classList.remove("aberto");
+
+    const eventosDoDia = eventosCarregados.filter(function (item) {
+        return item.data === evento.data;
+    });
+
+    abrirModalDoDia(evento.data, eventosDoDia);
+
+    formEvento.style.display = "block";
+
+    document.getElementById("eventoTipo").value = evento.tipo;
+    document.getElementById("eventoTitulo").value = evento.titulo || "";
+    document.getElementById("eventoHorarioInicio").value = formatarHorarioParaInput(evento.horario_inicio);
+    document.getElementById("eventoHorarioFim").value = formatarHorarioParaInput(evento.horario_fim);
+    document.getElementById("eventoDescricao").value = evento.descricao || "";
+    document.getElementById("eventoCursoAlvo").value = evento.curso_alvo || "todos";
+    document.getElementById("eventoLinkMaterial").value = evento.link_material || "";
+
+    const mensagemEvento = document.getElementById("mensagemEvento");
+
+    if (mensagemEvento) {
+        mensagemEvento.textContent = "Editando evento selecionado.";
+    }
+
+    const botaoSalvar = formEvento.querySelector("button[type='submit']");
+
+    if (botaoSalvar) {
+        botaoSalvar.textContent = "💾 Atualizar Evento";
+    }
+}
 // =====================================================
 // 12. FECHAR MODAIS
 // =====================================================
@@ -512,14 +617,16 @@ btnAbrirFormEvento.addEventListener("click", function () {
 
 
 // =====================================================
-// 14. SALVAR EVENTO NOVO
+// 14. SALVAR OU ATUALIZAR EVENTO
+// Se eventoEmEdicaoId estiver vazio, cria novo evento.
+// Se tiver ID, atualiza o evento existente.
 // =====================================================
 
 formEvento.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas o administrador pode criar eventos.");
+        alert("Apenas o administrador pode criar ou editar eventos.");
         return;
     }
 
@@ -542,33 +649,72 @@ formEvento.addEventListener("submit", async function (event) {
         return;
     }
 
-    const { data: userData } = await banco.auth.getUser();
+    const dadosEvento = {
+        data: dataSelecionadaNoModal,
+        tipo: tipo,
+        titulo: titulo,
+        horario_inicio: horarioInicio,
+        horario_fim: horarioFim || null,
+        descricao: descricao,
+        curso_alvo: cursoAlvo,
+        link_material: linkMaterial
+    };
 
-    const { error } = await banco
-        .from("eventos")
-        .insert([
-            {
-                data: dataSelecionadaNoModal,
-                tipo: tipo,
-                titulo: titulo,
-                horario_inicio: horarioInicio,
-                horario_fim: horarioFim || null,
-                descricao: descricao,
-                curso_alvo: cursoAlvo,
-                link_material: linkMaterial,
-                criado_por: userData.user.id
-            }
-        ]);
+    let resultado;
 
-    if (error) {
-        mensagemEvento.textContent = "Erro ao salvar evento: " + error.message;
-        console.log("Erro evento:", error);
+    if (eventoEmEdicaoId) {
+        resultado = await banco
+            .from("eventos")
+            .update(dadosEvento)
+            .eq("id", eventoEmEdicaoId);
+    } else {
+        const { data: userData } = await banco.auth.getUser();
+
+        dadosEvento.criado_por = userData.user.id;
+
+        resultado = await banco
+            .from("eventos")
+            .insert([dadosEvento]);
+    }
+
+    if (resultado.error) {
+        mensagemEvento.textContent = "Erro ao salvar evento: " + resultado.error.message;
+        console.log("Erro evento:", resultado.error);
         return;
     }
 
-    mensagemEvento.textContent = "Evento salvo com sucesso!";
+    if (eventoEmEdicaoId) {
+        mensagemEvento.textContent = "Evento atualizado com sucesso!";
+    } else {
+        mensagemEvento.textContent = "Evento salvo com sucesso!";
+    }
+// =====================================================
+// 15. LIMPAR FORMULÁRIO
+// Limpa os campos e volta o botão para "Salvar Evento".
+// =====================================================
 
-    limparFormularioEvento();
+function limparFormularioEvento() {
+    document.getElementById("eventoTitulo").value = "";
+    document.getElementById("eventoHorarioInicio").value = "";
+    document.getElementById("eventoHorarioFim").value = "";
+    document.getElementById("eventoDescricao").value = "";
+    document.getElementById("eventoLinkMaterial").value = "";
+
+    eventoEmEdicaoId = null;
+
+    const mensagemEvento = document.getElementById("mensagemEvento");
+
+    if (mensagemEvento) {
+        mensagemEvento.textContent = "";
+    }
+
+    const botaoSalvar = formEvento.querySelector("button[type='submit']");
+
+    if (botaoSalvar) {
+        botaoSalvar.textContent = "💾 Salvar Evento";
+    }
+}
+    }
 
     await carregarEventosDoMes();
 
@@ -580,20 +726,6 @@ formEvento.addEventListener("submit", async function (event) {
 
     abrirModalDoDia(dataSelecionadaNoModal, eventosAtualizados);
 });
-
-
-// =====================================================
-// 15. LIMPAR FORMULÁRIO
-// =====================================================
-
-function limparFormularioEvento() {
-    document.getElementById("eventoTitulo").value = "";
-    document.getElementById("eventoHorarioInicio").value = "";
-    document.getElementById("eventoHorarioFim").value = "";
-    document.getElementById("eventoDescricao").value = "";
-    document.getElementById("eventoLinkMaterial").value = "";
-}
-
 
 // =====================================================
 // 16. NAVEGAÇÃO ENTRE MESES
@@ -632,6 +764,21 @@ if (filtroCursoAgenda) {
 // =====================================================
 // 18. FUNÇÕES AUXILIARES
 // =====================================================
+
+
+// =====================================================
+// FORMATAR HORÁRIO PARA INPUT TYPE TIME
+// O banco pode retornar 18:10:00.
+// O input time usa 18:10.
+// =====================================================
+
+function formatarHorarioParaInput(horario) {
+    if (!horario) {
+        return "";
+    }
+
+    return horario.substring(0, 5);
+}
 
 function formatarDataISO(data) {
     const ano = data.getFullYear();
@@ -682,4 +829,65 @@ function nomeBonitoTipo(tipo) {
     };
 
     return nomes[tipo] || tipo;
+}
+
+// =====================================================
+// CONFIRMAR EXCLUSÃO DO EVENTO
+// Só executa quando o usuário clicar em "Sim, excluir"
+// =====================================================
+
+if (btnConfirmarExclusao) {
+    btnConfirmarExclusao.addEventListener("click", async function () {
+        if (!eventoParaExcluirId) {
+            return;
+        }
+
+        const { error } = await banco
+            .from("eventos")
+            .delete()
+            .eq("id", eventoParaExcluirId);
+
+        if (error) {
+            alert("Erro ao excluir evento: " + error.message);
+            console.log("Erro ao excluir evento:", error);
+            return;
+        }
+
+        // Fecha todos os modais relacionados
+        if (modalConfirmarExclusao) {
+            modalConfirmarExclusao.classList.remove("aberto");
+        }
+
+        if (modalDetalheEvento) {
+            modalDetalheEvento.classList.remove("aberto");
+        }
+
+        if (modalDia) {
+            modalDia.classList.remove("aberto");
+        }
+
+        eventoParaExcluirId = null;
+
+        alert("Evento excluído com sucesso!");
+
+        await carregarEventosDoMes();
+
+        renderizarCalendario();
+    });
+}
+
+
+// =====================================================
+// CANCELAR EXCLUSÃO DO EVENTO
+// Fecha a caixa e mantém o evento cadastrado.
+// =====================================================
+
+if (btnCancelarExclusao) {
+    btnCancelarExclusao.addEventListener("click", function () {
+        eventoParaExcluirId = null;
+
+        if (modalConfirmarExclusao) {
+            modalConfirmarExclusao.classList.remove("aberto");
+        }
+    });
 }
