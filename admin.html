@@ -460,10 +460,7 @@
     <span>Aprovar, ocultar e filtrar envios</span>
 </button>
 
-<button class="item-menu-admin" data-tela="telaMateriais">
-    📎 Materiais
-    <span>PDFs, vídeos, links e imagens</span>
-</button>
+
 
 <button class="item-menu-admin" data-tela="telaGerenciarSite">
     ⚙️ Gerenciar Site
@@ -547,12 +544,55 @@
                 <input type="text" id="adminLocalAula" placeholder="Ex: Laboratório de Informática">
 
                 <label>Desafio prático</label>
-                <textarea id="adminDesafioAula" placeholder="Descreva a atividade prática"></textarea>
+<textarea id="adminDesafioAula" placeholder="Descreva a atividade prática"></textarea>
 
-                <button id="btnSalvarAula" type="button">
-                    💾 Salvar Aula
-                </button>
+<!-- =====================================================
+     MATERIAIS DA AULA
+     Esses links serão exibidos para os alunos na Aula do Dia
+===================================================== -->
 
+<div class="area-materiais-aula-admin">
+
+    <h3>📎 Materiais da Aula</h3>
+
+    <p>
+        Insira aqui os links dos materiais que devem aparecer para o aluno
+        junto com a Aula do Dia.
+    </p>
+
+    <label>Link do PDF da aula</label>
+    <input
+        type="url"
+        id="adminPdfAula"
+        placeholder="Cole aqui o link do PDF, slide ou apostila"
+    >
+
+    <label>Link do vídeo da aula</label>
+    <input
+        type="url"
+        id="adminVideoAula"
+        placeholder="Cole aqui o link do YouTube ou vídeo"
+    >
+
+    <label>Link da atividade / quiz / desafio</label>
+    <input
+        type="url"
+        id="adminAtividadeAula"
+        placeholder="Cole aqui o link da atividade, quiz ou formulário"
+    >
+
+    <label>Material complementar</label>
+    <input
+        type="url"
+        id="adminMaterialExtraAula"
+        placeholder="Cole aqui outro link importante para a aula"
+    >
+
+</div>
+
+<button id="btnSalvarAula">
+    💾 Salvar Aula
+</button>
                 <p id="mensagemAulaAdmin"></p>
 
             </div>
@@ -641,36 +681,7 @@
 
         </section>
 
-        <!-- =============================
-             TELA 3: MATERIAIS
-        ============================== -->
-        <section id="telaMateriais" class="tela-admin-sobreposta">
 
-            <div class="barra-tela-admin">
-                <button class="btnVoltarMenuAdmin" type="button">
-                    ← Voltar
-                </button>
-
-                <a href="index.html" class="botao-inicio-admin">
-                    🏠 Início do Site
-                </a>
-            </div>
-
-            <h2>📎 Materiais</h2>
-
-            <p>
-                Área para organizar PDFs, vídeos, imagens, links, slides e atividades.
-            </p>
-
-            <div class="card-admin-form">
-                <h3>Em desenvolvimento</h3>
-
-                <p>
-                    Aqui entraremos na próxima sprint com upload de PDF, links de vídeo e materiais por aula.
-                </p>
-            </div>
-
-        </section>
 
         <!-- =============================
              TELA 4: GERENCIAR SITE

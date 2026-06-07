@@ -523,6 +523,10 @@ if (btnSalvarAula) {
         const horarioFim = document.getElementById("adminHorarioFim").value;
         const local = document.getElementById("adminLocalAula").value.trim();
         const desafio = document.getElementById("adminDesafioAula").value.trim();
+        const pdfUrl = document.getElementById("adminPdfAula").value.trim();
+const videoUrl = document.getElementById("adminVideoAula").value.trim();
+const atividadeUrl = document.getElementById("adminAtividadeAula").value.trim();
+const materialExtraUrl = document.getElementById("adminMaterialExtraAula").value.trim();
 
         if (!turmaId || !disciplinaId || !titulo) {
             mensagem.textContent = "Preencha pelo menos turma, disciplina e título da aula.";
@@ -550,18 +554,24 @@ if (btnSalvarAula) {
             .from("aulas")
             .insert([
                 {
-                    turma_id: Number(turmaId),
-                    disciplina_id: Number(disciplinaId),
-                    titulo_aula: titulo,
-                    subtitulo: subtitulo,
-                    descricao: descricao,
-                    data_aula: dataAula || null,
-                    horario_inicio: horarioInicio || null,
-                    horario_fim: horarioFim || null,
-                    local_aula: local,
-                    desafio_pratico: desafio,
-                    ativo: true
-                }
+    turma_id: Number(turmaId),
+    disciplina_id: Number(disciplinaId),
+    titulo_aula: titulo,
+    subtitulo: subtitulo,
+    descricao: descricao,
+    data_aula: dataAula || null,
+    horario_inicio: horarioInicio || null,
+    horario_fim: horarioFim || null,
+    local_aula: local,
+    desafio_pratico: desafio,
+
+    pdf_url: pdfUrl,
+    video_url: videoUrl,
+    atividade_url: atividadeUrl,
+    material_extra_url: materialExtraUrl,
+
+    ativo: true
+}
             ]);
 
         if (error) {
@@ -570,18 +580,25 @@ if (btnSalvarAula) {
             return;
         }
 
-        mensagem.textContent = "Aula salva com sucesso!";
+       mensagem.textContent = "Aula salva com sucesso!";
 
-        document.getElementById("adminTituloAula").value = "";
-        document.getElementById("adminSubtituloAula").value = "";
-        document.getElementById("adminDescricaoAula").value = "";
-        document.getElementById("adminDataAula").value = "";
-        document.getElementById("adminHorarioInicio").value = "";
-        document.getElementById("adminHorarioFim").value = "";
-        document.getElementById("adminLocalAula").value = "";
-        document.getElementById("adminDesafioAula").value = "";
+// Limpa os campos principais da aula
+document.getElementById("adminTituloAula").value = "";
+document.getElementById("adminSubtituloAula").value = "";
+document.getElementById("adminDescricaoAula").value = "";
+document.getElementById("adminDataAula").value = "";
+document.getElementById("adminHorarioInicio").value = "";
+document.getElementById("adminHorarioFim").value = "";
+document.getElementById("adminLocalAula").value = "";
+document.getElementById("adminDesafioAula").value = "";
 
-        carregarAulasAdmin();
+// Limpa os campos de materiais da aula
+document.getElementById("adminPdfAula").value = "";
+document.getElementById("adminVideoAula").value = "";
+document.getElementById("adminAtividadeAula").value = "";
+document.getElementById("adminMaterialExtraAula").value = "";
+
+carregarAulasAdmin();
     });
 }
 
