@@ -11,7 +11,7 @@
     <!-- CSS geral do site -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- CSS específico do painel admin minimalista -->
+    <!-- CSS específico do painel admin -->
     <style>
         /* =============================
            BASE DO PAINEL ADMIN
@@ -125,7 +125,72 @@
         }
 
         /* =============================
-           FUNDO E MENU LATERAL SOBREPOSTO
+           CARD DO ADMIN LOGADO
+        ============================= */
+
+        .card-status-admin {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            background: linear-gradient(135deg, #f0fdfa, #ffffff);
+            border-left: 6px solid #0f766e;
+            border-radius: 18px;
+            padding: 18px;
+            margin: 18px 0 22px 0;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+
+        .perfil-admin-foto-area {
+            flex-shrink: 0;
+        }
+
+        .foto-perfil-admin {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #0f766e;
+            background-color: #e0f2fe;
+        }
+
+        .perfil-admin-info {
+            flex: 1;
+        }
+
+        .selo-login-ativo {
+            display: inline-block;
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .perfil-admin-info h2 {
+            margin: 6px 0;
+            color: #0f766e;
+        }
+
+        .perfil-admin-info p {
+            margin: 5px 0;
+            color: #0f172a;
+        }
+
+        .frase-motivacional-admin {
+            margin-top: 10px !important;
+            font-style: italic;
+            color: #1e40af !important;
+            font-weight: 600;
+        }
+
+        .perfil-admin-acoes button {
+            background-color: #0f766e !important;
+        }
+
+        /* =============================
+           FUNDO E MENU LATERAL
         ============================= */
 
         .fundo-menu-admin {
@@ -216,7 +281,7 @@
         }
 
         /* =============================
-           TELAS SOBREPOSTAS INTERNAS
+           TELAS SOBREPOSTAS
         ============================= */
 
         .tela-admin-sobreposta {
@@ -257,7 +322,7 @@
         }
 
         /* =============================
-           CARDS E FORMULÁRIOS INTERNOS
+           CARDS E FORMULÁRIOS
         ============================= */
 
         .card-admin-form,
@@ -378,10 +443,10 @@
         }
 
         /* =============================
-           RESPONSIVIDADE PARA SMARTPHONE
+           RESPONSIVIDADE
         ============================= */
 
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
             body {
                 padding: 8px;
             }
@@ -453,6 +518,22 @@
             .resultado-ia {
                 max-height: 420px;
             }
+
+            .card-status-admin {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            .foto-perfil-admin {
+                width: 74px;
+                height: 74px;
+            }
+
+            .perfil-admin-acoes,
+            .perfil-admin-acoes button {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -461,9 +542,8 @@
 
     <!-- =============================
          LOGIN DO ADMINISTRADOR
-         Esta seção fica visível antes do login.
     ============================== -->
-    <section class="painel-admin">
+    <section id="secaoLoginAdmin" class="painel-admin">
         <h1>Painel Administrativo</h1>
 
         <p>
@@ -486,7 +566,6 @@
 
     <!-- =============================
          ÁREA ADMINISTRATIVA
-         Esta seção aparece somente depois do login.
     ============================== -->
     <section id="areaAdmin" class="painel-admin" style="display:none;">
 
@@ -502,6 +581,51 @@
                 🏠 Início
             </a>
         </div>
+
+
+        <!-- CARD DE STATUS DO ADMIN LOGADO -->
+        <section class="card-status-admin">
+
+            <div class="perfil-admin-foto-area">
+                <img
+                    id="fotoPerfilAdmin"
+                    src="https://ui-avatars.com/api/?name=Willyan+Vieira&background=0f766e&color=ffffff"
+                    alt="Foto de perfil do administrador"
+                    class="foto-perfil-admin"
+                >
+            </div>
+
+            <div class="perfil-admin-info">
+                <span class="selo-login-ativo">
+                    ✅ Login administrativo ativo
+                </span>
+
+                <h2 id="nomePerfilAdmin">
+                    Professor e PAEET Willyan Vieira
+                </h2>
+
+                <p>
+                    <strong>Meu e-mail:</strong>
+                    <span id="emailPerfilAdmin">willyancruz@prof.educacao.sp.gov.br</span>
+                </p>
+
+                <p>
+                    <strong>Escola:</strong>
+                    <span id="escolaPerfilAdmin">PEI Prof. Riolando Canno</span>
+                </p>
+
+                <p class="frase-motivacional-admin" id="frasePerfilAdmin">
+                    “Educar é transformar oportunidades em caminhos possíveis.”
+                </p>
+            </div>
+
+            <div class="perfil-admin-acoes">
+                <button type="button" id="btnEditarPerfilAdmin">
+                    ✏️ Editar Perfil
+                </button>
+            </div>
+
+        </section>
 
 
         <!-- FUNDO ESCURO DO MENU -->
@@ -537,6 +661,11 @@
             <button class="item-menu-admin" data-tela="telaGerenciarSite" type="button">
                 ⚙️ Gerenciar Site
                 <span>Turmas, disciplinas e estrutura</span>
+            </button>
+
+            <button class="item-menu-admin" data-tela="telaEditarPerfilAdmin" type="button">
+                👤 Perfil Admin
+                <span>Editar foto, função, escola e frase</span>
             </button>
 
             <a href="agenda.html" class="item-menu-admin link-menu-admin">
@@ -619,10 +748,6 @@
                 <label>Desafio prático</label>
                 <textarea id="adminDesafioAula" placeholder="Descreva a atividade prática"></textarea>
 
-                <!-- =====================================================
-                     MATERIAIS DA AULA
-                     Esses links serão exibidos para os alunos na Aula do Dia
-                ====================================================== -->
                 <div class="area-materiais-aula-admin">
 
                     <h3>📎 Materiais da Aula</h3>
@@ -707,7 +832,7 @@
             <h2>🤖 Assistente IA de Aulas</h2>
 
             <p>
-                Gere aulas, planos de aula, materiais de apoio e rubricas com apoio da IA Gemini.
+                Gere aulas, planos de aula, materiais de apoio e rubricas com apoio da IA.
             </p>
 
             <div class="card-admin-form">
@@ -931,6 +1056,78 @@
                 </button>
 
                 <p id="mensagemDisciplinaAdmin"></p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =============================
+             TELA 5: EDITAR PERFIL ADMIN
+        ============================== -->
+        <section id="telaEditarPerfilAdmin" class="tela-admin-sobreposta">
+
+            <div class="barra-tela-admin">
+                <button class="btnVoltarMenuAdmin" type="button">
+                    ← Voltar
+                </button>
+
+                <a href="index.html" class="botao-inicio-admin">
+                    🏠 Início do Site
+                </a>
+            </div>
+
+            <h2>👤 Editar Perfil Administrativo</h2>
+
+            <p>
+                Personalize as informações exibidas no topo do painel administrativo.
+            </p>
+
+            <div class="card-admin-form">
+
+                <label>Foto de perfil</label>
+                <input
+                    type="file"
+                    id="inputFotoPerfilAdmin"
+                    accept="image/*"
+                >
+
+                <p class="texto-ajuda">
+                    Escolha uma foto pequena do computador ou celular.
+                </p>
+
+                <label>Nome e função</label>
+                <input
+                    type="text"
+                    id="inputNomePerfilAdmin"
+                    placeholder="Ex: Professor e PAEET Willyan Vieira"
+                >
+
+                <label>E-mail administrativo</label>
+                <input
+                    type="email"
+                    id="inputEmailPerfilAdmin"
+                    placeholder="Ex: willyancruz@prof.educacao.sp.gov.br"
+                >
+
+                <label>Nome da escola</label>
+                <input
+                    type="text"
+                    id="inputEscolaPerfilAdmin"
+                    placeholder="Ex: PEI Prof. Riolando Canno"
+                >
+
+                <label>Frase motivacional</label>
+                <textarea
+                    id="inputFrasePerfilAdmin"
+                    placeholder="Digite uma frase motivacional para aparecer no painel"
+                ></textarea>
+
+                <button type="button" id="btnSalvarPerfilAdmin">
+                    💾 Salvar Perfil
+                </button>
+
+                <p id="mensagemPerfilAdmin"></p>
 
             </div>
 

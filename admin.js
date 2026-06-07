@@ -5,14 +5,16 @@
 //
 // Este arquivo controla:
 // 1. Login administrativo com Supabase Auth
-// 2. Menu lateral sobreposto do painel admin
-// 3. Cadastro de turmas
-// 4. Cadastro de disciplinas
-// 5. Cadastro e listagem de aulas
-// 6. Ativar aula como Aula do Dia
-// 7. Aprovação, ocultação e exclusão de portfólios
-// 8. Upload e pré-visualização de mídias
-// 9. Botão de data atual e alerta para fim de semana/feriado fixo
+// 2. Ocultar login depois que o admin entra
+// 3. Perfil administrativo editável
+// 4. Menu lateral sobreposto do painel admin
+// 5. Cadastro de turmas
+// 6. Cadastro de disciplinas
+// 7. Cadastro e listagem de aulas
+// 8. Ativar aula como Aula do Dia
+// 9. Aprovação, ocultação e exclusão de portfólios
+// 10. Upload e pré-visualização de mídias
+// 11. Assistente IA via Netlify Function
 //
 // =====================================================
 
@@ -23,9 +25,10 @@
 
 const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
-// COLE AQUI SUA CHAVE PUBLIC / ANON / PUBLISHABLE DO SUPABASE.
+// Chave pública do Supabase.
 // Nunca coloque service_role ou sb_secret no navegador.
 const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
+
 const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 console.log("Painel admin conectado ao Supabase.");
@@ -37,11 +40,57 @@ console.log("Painel admin conectado ao Supabase.");
 
 const btnLoginAdmin = document.getElementById("btnLoginAdmin");
 const areaAdmin = document.getElementById("areaAdmin");
+const secaoLoginAdmin = document.getElementById("secaoLoginAdmin");
 const mensagemLogin = document.getElementById("mensagemLogin");
 
 
 // =====================================================
-// 3. LOGIN ADMINISTRATIVO COM SUPABASE AUTH
+// 3. PERFIL ADMINISTRATIVO PADRÃO
+// =====================================================
+
+const perfilPadraoAdmin = {
+    nome: "Professor e PAEET Willyan Vieira",
+    email: "willyancruz@prof.educacao.sp.gov.br",
+    escola: "PEI Prof. Riolando Canno",
+    frase: "“Educar é transformar oportunidades em caminhos possíveis.”",
+    foto: "https://ui-avatars.com/api/?name=Willyan+Vieira&background=0f766e&color=ffffff"
+};
+
+
+// =====================================================
+// 4. MOSTRAR PAINEL LOGADO E OCULTAR LOGIN
+// =====================================================
+
+function mostrarPainelAdminLogado() {
+    if (areaAdmin) {
+        areaAdmin.style.display = "block";
+    }
+
+    if (secaoLoginAdmin) {
+        secaoLoginAdmin.style.display = "none";
+    }
+
+    carregarPerfilAdminEditavel();
+}
+
+
+// =====================================================
+// 5. MOSTRAR LOGIN E OCULTAR PAINEL
+// =====================================================
+
+function mostrarTelaLoginAdmin() {
+    if (areaAdmin) {
+        areaAdmin.style.display = "none";
+    }
+
+    if (secaoLoginAdmin) {
+        secaoLoginAdmin.style.display = "block";
+    }
+}
+
+
+// =====================================================
+// 6. LOGIN ADMINISTRATIVO COM SUPABASE AUTH
 // =====================================================
 
 if (btnLoginAdmin) {
@@ -79,14 +128,13 @@ if (btnLoginAdmin) {
         if (!adminAutorizado) {
             mensagemLogin.textContent = "Este usuário não tem permissão de administrador.";
             await banco.auth.signOut();
+            mostrarTelaLoginAdmin();
             return;
         }
 
         mensagemLogin.textContent = "Login administrativo realizado com sucesso!";
 
-        if (areaAdmin) {
-            areaAdmin.style.display = "block";
-        }
+        mostrarPainelAdminLogado();
 
         carregarDadosIniciaisAdmin();
     });
@@ -94,7 +142,7 @@ if (btnLoginAdmin) {
 
 
 // =====================================================
-// 4. VERIFICAR SE O USUÁRIO LOGADO É ADMIN
+// 7. VERIFICAR SE O USUÁRIO LOGADO É ADMIN
 // =====================================================
 
 async function verificarSeUsuarioEAdmin(emailUsuario) {
@@ -114,39 +162,36 @@ async function verificarSeUsuarioEAdmin(emailUsuario) {
 
 
 // =====================================================
-// 5. MANTER SESSÃO ADMINISTRATIVA ATIVA
+// 8. MANTER SESSÃO ADMINISTRATIVA ATIVA
 // =====================================================
 
 async function verificarSessaoAtual() {
-    if (!areaAdmin || !mensagemLogin) {
-        return;
-    }
-
     const { data, error } = await banco.auth.getUser();
 
     if (error || !data.user) {
-        areaAdmin.style.display = "none";
+        mostrarTelaLoginAdmin();
         return;
     }
 
     const adminAutorizado = await verificarSeUsuarioEAdmin(data.user.email);
 
     if (adminAutorizado) {
-        mensagemLogin.textContent = "Sessão administrativa ativa.";
-        areaAdmin.style.display = "block";
+        if (mensagemLogin) {
+            mensagemLogin.textContent = "Sessão administrativa ativa.";
+        }
+
+        mostrarPainelAdminLogado();
 
         carregarDadosIniciaisAdmin();
     } else {
         await banco.auth.signOut();
-        areaAdmin.style.display = "none";
+        mostrarTelaLoginAdmin();
     }
 }
 
-verificarSessaoAtual();
-
 
 // =====================================================
-// 6. CARREGAR DADOS INICIAIS DO ADMIN
+// 9. CARREGAR DADOS INICIAIS DO ADMIN
 // =====================================================
 
 function carregarDadosIniciaisAdmin() {
@@ -169,7 +214,7 @@ function carregarDadosIniciaisAdmin() {
 
 
 // =====================================================
-// 7. BOTÃO SAIR DO PAINEL ADMIN
+// 10. BOTÃO SAIR DO PAINEL ADMIN
 // =====================================================
 
 function configurarBotaoSairAdmin() {
@@ -182,9 +227,7 @@ function configurarBotaoSairAdmin() {
     btnSairAdmin.addEventListener("click", async function () {
         await banco.auth.signOut();
 
-        if (areaAdmin) {
-            areaAdmin.style.display = "none";
-        }
+        mostrarTelaLoginAdmin();
 
         if (mensagemLogin) {
             mensagemLogin.textContent = "Você saiu do painel administrativo.";
@@ -205,67 +248,251 @@ function configurarBotaoSairAdmin() {
         if (listaAdminPortfolios) {
             listaAdminPortfolios.innerHTML = "";
         }
+
+        fecharTodasAsTelasAdmin();
     });
 }
 
 
 // =====================================================
-// 8. MENU LATERAL SOBREPOSTO DO ADMIN
+// 11. PERFIL ADMINISTRATIVO EDITÁVEL
+// Salva no navegador usando localStorage.
+// Depois podemos migrar para Supabase para sincronizar em todos os dispositivos.
 // =====================================================
+
+function carregarPerfilAdminEditavel() {
+    const perfilSalvo = localStorage.getItem("perfilAdminRiolando");
+
+    let perfil = perfilPadraoAdmin;
+
+    if (perfilSalvo) {
+        try {
+            perfil = JSON.parse(perfilSalvo);
+        } catch (erro) {
+            console.log("Erro ao ler perfil salvo:", erro);
+            perfil = perfilPadraoAdmin;
+        }
+    }
+
+    aplicarPerfilAdminNaTela(perfil);
+}
+
+
+// =====================================================
+// 12. APLICAR PERFIL NA TELA
+// =====================================================
+
+function aplicarPerfilAdminNaTela(perfil) {
+    const fotoPerfilAdmin = document.getElementById("fotoPerfilAdmin");
+    const nomePerfilAdmin = document.getElementById("nomePerfilAdmin");
+    const emailPerfilAdmin = document.getElementById("emailPerfilAdmin");
+    const escolaPerfilAdmin = document.getElementById("escolaPerfilAdmin");
+    const frasePerfilAdmin = document.getElementById("frasePerfilAdmin");
+
+    if (fotoPerfilAdmin) {
+        fotoPerfilAdmin.src = perfil.foto || perfilPadraoAdmin.foto;
+    }
+
+    if (nomePerfilAdmin) {
+        nomePerfilAdmin.textContent = perfil.nome || perfilPadraoAdmin.nome;
+    }
+
+    if (emailPerfilAdmin) {
+        emailPerfilAdmin.textContent = perfil.email || perfilPadraoAdmin.email;
+    }
+
+    if (escolaPerfilAdmin) {
+        escolaPerfilAdmin.textContent = perfil.escola || perfilPadraoAdmin.escola;
+    }
+
+    if (frasePerfilAdmin) {
+        frasePerfilAdmin.textContent = perfil.frase || perfilPadraoAdmin.frase;
+    }
+
+    preencherFormularioPerfilAdmin(perfil);
+}
+
+
+// =====================================================
+// 13. PREENCHER FORMULÁRIO DE EDIÇÃO DO PERFIL
+// =====================================================
+
+function preencherFormularioPerfilAdmin(perfil) {
+    const inputNome = document.getElementById("inputNomePerfilAdmin");
+    const inputEmail = document.getElementById("inputEmailPerfilAdmin");
+    const inputEscola = document.getElementById("inputEscolaPerfilAdmin");
+    const inputFrase = document.getElementById("inputFrasePerfilAdmin");
+
+    if (inputNome) {
+        inputNome.value = perfil.nome || perfilPadraoAdmin.nome;
+    }
+
+    if (inputEmail) {
+        inputEmail.value = perfil.email || perfilPadraoAdmin.email;
+    }
+
+    if (inputEscola) {
+        inputEscola.value = perfil.escola || perfilPadraoAdmin.escola;
+    }
+
+    if (inputFrase) {
+        inputFrase.value = perfil.frase || perfilPadraoAdmin.frase;
+    }
+}
+
+
+// =====================================================
+// 14. ABRIR TELA DE EDIÇÃO DO PERFIL
+// =====================================================
+
+function abrirTelaEditarPerfilAdmin() {
+    fecharTodasAsTelasAdmin();
+
+    const telaEditarPerfil = document.getElementById("telaEditarPerfilAdmin");
+
+    if (telaEditarPerfil) {
+        telaEditarPerfil.classList.add("ativa");
+    }
+
+    fecharMenuAdmin();
+}
+
+
+// =====================================================
+// 15. SALVAR PERFIL ADMIN
+// =====================================================
+
+function salvarPerfilAdminEditavel() {
+    const inputNome = document.getElementById("inputNomePerfilAdmin");
+    const inputEmail = document.getElementById("inputEmailPerfilAdmin");
+    const inputEscola = document.getElementById("inputEscolaPerfilAdmin");
+    const inputFrase = document.getElementById("inputFrasePerfilAdmin");
+    const fotoPerfilAdmin = document.getElementById("fotoPerfilAdmin");
+    const mensagem = document.getElementById("mensagemPerfilAdmin");
+
+    const perfilAtual = {
+        nome: inputNome ? inputNome.value.trim() : perfilPadraoAdmin.nome,
+        email: inputEmail ? inputEmail.value.trim() : perfilPadraoAdmin.email,
+        escola: inputEscola ? inputEscola.value.trim() : perfilPadraoAdmin.escola,
+        frase: inputFrase ? inputFrase.value.trim() : perfilPadraoAdmin.frase,
+        foto: fotoPerfilAdmin ? fotoPerfilAdmin.src : perfilPadraoAdmin.foto
+    };
+
+    localStorage.setItem("perfilAdminRiolando", JSON.stringify(perfilAtual));
+
+    aplicarPerfilAdminNaTela(perfilAtual);
+
+    if (mensagem) {
+        mensagem.textContent = "Perfil administrativo salvo com sucesso!";
+    }
+}
+
+
+// =====================================================
+// 16. CONFIGURAR EVENTOS DO PERFIL ADMIN
+// =====================================================
+
+function configurarPerfilAdminEditavel() {
+    const btnEditarPerfilAdmin = document.getElementById("btnEditarPerfilAdmin");
+    const btnSalvarPerfilAdmin = document.getElementById("btnSalvarPerfilAdmin");
+    const inputFotoPerfilAdmin = document.getElementById("inputFotoPerfilAdmin");
+
+    if (btnEditarPerfilAdmin) {
+        btnEditarPerfilAdmin.addEventListener("click", abrirTelaEditarPerfilAdmin);
+    }
+
+    if (btnSalvarPerfilAdmin) {
+        btnSalvarPerfilAdmin.addEventListener("click", salvarPerfilAdminEditavel);
+    }
+
+    if (inputFotoPerfilAdmin) {
+        inputFotoPerfilAdmin.addEventListener("change", function (event) {
+            const arquivo = event.target.files[0];
+
+            if (!arquivo) {
+                return;
+            }
+
+            const leitor = new FileReader();
+
+            leitor.onload = function (e) {
+                const fotoBase64 = e.target.result;
+                const fotoPerfilAdmin = document.getElementById("fotoPerfilAdmin");
+
+                if (fotoPerfilAdmin) {
+                    fotoPerfilAdmin.src = fotoBase64;
+                }
+            };
+
+            leitor.readAsDataURL(arquivo);
+        });
+    }
+}
+
+
+// =====================================================
+// 17. MENU LATERAL SOBREPOSTO DO ADMIN
+// =====================================================
+
+function abrirMenuAdmin() {
+    const menu = document.getElementById("menuLateralAdmin");
+    const fundo = document.getElementById("fundoMenuAdmin");
+
+    if (menu) {
+        menu.classList.add("aberto");
+    }
+
+    if (fundo) {
+        fundo.classList.add("aberto");
+    }
+}
+
+function fecharMenuAdmin() {
+    const menu = document.getElementById("menuLateralAdmin");
+    const fundo = document.getElementById("fundoMenuAdmin");
+
+    if (menu) {
+        menu.classList.remove("aberto");
+    }
+
+    if (fundo) {
+        fundo.classList.remove("aberto");
+    }
+}
+
+function fecharTodasAsTelasAdmin() {
+    const telas = document.querySelectorAll(".tela-admin-sobreposta");
+
+    telas.forEach(function (tela) {
+        tela.classList.remove("ativa");
+    });
+}
 
 function configurarMenuSobrepostoAdmin() {
     const btnAbrirMenu = document.getElementById("btnAbrirMenuAdmin");
     const btnFecharMenu = document.getElementById("btnFecharMenuAdmin");
-    const menu = document.getElementById("menuLateralAdmin");
     const fundo = document.getElementById("fundoMenuAdmin");
 
     const itensMenu = document.querySelectorAll(".item-menu-admin[data-tela]");
-    const telas = document.querySelectorAll(".tela-admin-sobreposta");
     const botoesVoltar = document.querySelectorAll(".btnVoltarMenuAdmin");
 
-    function abrirMenu() {
-        if (menu) {
-            menu.classList.add("aberto");
-        }
-
-        if (fundo) {
-            fundo.classList.add("aberto");
-        }
-    }
-
-    function fecharMenu() {
-        if (menu) {
-            menu.classList.remove("aberto");
-        }
-
-        if (fundo) {
-            fundo.classList.remove("aberto");
-        }
-    }
-
-    function fecharTelas() {
-        telas.forEach(function (tela) {
-            tela.classList.remove("ativa");
-        });
-    }
-
     if (btnAbrirMenu) {
-        btnAbrirMenu.addEventListener("click", abrirMenu);
+        btnAbrirMenu.addEventListener("click", abrirMenuAdmin);
     }
 
     if (btnFecharMenu) {
-        btnFecharMenu.addEventListener("click", fecharMenu);
+        btnFecharMenu.addEventListener("click", fecharMenuAdmin);
     }
 
     if (fundo) {
-        fundo.addEventListener("click", fecharMenu);
+        fundo.addEventListener("click", fecharMenuAdmin);
     }
 
     itensMenu.forEach(function (item) {
         item.addEventListener("click", function () {
             const telaEscolhida = item.dataset.tela;
 
-            fecharTelas();
+            fecharTodasAsTelasAdmin();
 
             const tela = document.getElementById(telaEscolhida);
 
@@ -273,7 +500,7 @@ function configurarMenuSobrepostoAdmin() {
                 tela.classList.add("ativa");
             }
 
-            fecharMenu();
+            fecharMenuAdmin();
 
             if (telaEscolhida === "telaAulas") {
                 carregarTurmasAdmin();
@@ -284,20 +511,24 @@ function configurarMenuSobrepostoAdmin() {
             if (telaEscolhida === "telaPortfolios") {
                 carregarPortfoliosAdmin();
             }
+
+            if (telaEscolhida === "telaEditarPerfilAdmin") {
+                carregarPerfilAdminEditavel();
+            }
         });
     });
 
     botoesVoltar.forEach(function (botao) {
         botao.addEventListener("click", function () {
-            fecharTelas();
-            abrirMenu();
+            fecharTodasAsTelasAdmin();
+            abrirMenuAdmin();
         });
     });
 }
 
 
 // =====================================================
-// 9. CARREGAR TURMAS NO SELECT DO ADMIN
+// 18. CARREGAR TURMAS NO SELECT DO ADMIN
 // =====================================================
 
 async function carregarTurmasAdmin() {
@@ -331,7 +562,7 @@ async function carregarTurmasAdmin() {
 
 
 // =====================================================
-// 10. CARREGAR DISCIPLINAS NO SELECT DO ADMIN
+// 19. CARREGAR DISCIPLINAS NO SELECT DO ADMIN
 // =====================================================
 
 async function carregarDisciplinasAdmin() {
@@ -365,7 +596,7 @@ async function carregarDisciplinasAdmin() {
 
 
 // =====================================================
-// 11. CADASTRAR NOVA TURMA
+// 20. CADASTRAR NOVA TURMA
 // =====================================================
 
 const btnCadastrarTurma = document.getElementById("btnCadastrarTurma");
@@ -443,7 +674,7 @@ if (btnCadastrarTurma) {
 
 
 // =====================================================
-// 12. CADASTRAR NOVA DISCIPLINA
+// 21. CADASTRAR NOVA DISCIPLINA
 // =====================================================
 
 const btnCadastrarDisciplina = document.getElementById("btnCadastrarDisciplina");
@@ -492,7 +723,7 @@ if (btnCadastrarDisciplina) {
 
 
 // =====================================================
-// 13. SALVAR NOVA AULA
+// 22. SALVAR NOVA AULA
 // =====================================================
 
 const btnSalvarAula = document.getElementById("btnSalvarAula");
@@ -602,7 +833,7 @@ if (btnSalvarAula) {
 
 
 // =====================================================
-// 14. CARREGAR AULAS CADASTRADAS
+// 23. CARREGAR AULAS CADASTRADAS
 // =====================================================
 
 const btnCarregarAulasAdmin = document.getElementById("btnCarregarAulasAdmin");
@@ -771,7 +1002,7 @@ async function carregarAulasAdmin() {
 
 
 // =====================================================
-// 15. ATIVAR AULA COMO AULA DO DIA
+// 24. ATIVAR AULA COMO AULA DO DIA
 // =====================================================
 
 async function ativarAulaDoDia(aulaId, turmaId) {
@@ -827,7 +1058,7 @@ async function ativarAulaDoDia(aulaId, turmaId) {
 
 
 // =====================================================
-// 16. DESATIVAR AULA
+// 25. DESATIVAR AULA
 // =====================================================
 
 async function desativarAula(id) {
@@ -857,7 +1088,7 @@ async function desativarAula(id) {
 
 
 // =====================================================
-// 17. EXCLUIR AULA
+// 26. EXCLUIR AULA
 // =====================================================
 
 async function excluirAula(id) {
@@ -884,7 +1115,7 @@ async function excluirAula(id) {
 
 
 // =====================================================
-// 18. CARREGAR PORTFÓLIOS NO ADMIN
+// 27. CARREGAR PORTFÓLIOS NO ADMIN
 // =====================================================
 
 const btnCarregarAdmin = document.getElementById("btnCarregarAdmin");
@@ -988,7 +1219,7 @@ async function carregarPortfoliosAdmin() {
 
 
 // =====================================================
-// 19. FILTROS DOS PORTFÓLIOS
+// 28. FILTROS DOS PORTFÓLIOS
 // =====================================================
 
 const btnFiltrarPortfolios = document.getElementById("btnFiltrarPortfolios");
@@ -1018,7 +1249,7 @@ if (btnLimparFiltroPortfolios) {
 
 
 // =====================================================
-// 20. APROVAR PORTFÓLIO
+// 29. APROVAR PORTFÓLIO
 // =====================================================
 
 async function aprovarPortfolio(id) {
@@ -1039,7 +1270,7 @@ async function aprovarPortfolio(id) {
 
 
 // =====================================================
-// 21. OCULTAR PORTFÓLIO
+// 30. OCULTAR PORTFÓLIO
 // =====================================================
 
 async function ocultarPortfolio(id) {
@@ -1060,7 +1291,7 @@ async function ocultarPortfolio(id) {
 
 
 // =====================================================
-// 22. EXCLUIR PORTFÓLIO
+// 31. EXCLUIR PORTFÓLIO
 // =====================================================
 
 async function excluirPortfolio(id) {
@@ -1087,7 +1318,7 @@ async function excluirPortfolio(id) {
 
 
 // =====================================================
-// 23. UPLOAD DE ARQUIVO PARA SUPABASE STORAGE
+// 32. UPLOAD DE ARQUIVO PARA SUPABASE STORAGE
 // =====================================================
 
 async function enviarArquivoParaStorage(inputFile, pastaDestino) {
@@ -1129,7 +1360,7 @@ async function enviarArquivoParaStorage(inputFile, pastaDestino) {
 
 
 // =====================================================
-// 24. IDENTIFICAR TIPO DE MÍDIA
+// 33. IDENTIFICAR TIPO DE MÍDIA
 // =====================================================
 
 function identificarTipoMidia(url) {
@@ -1166,7 +1397,7 @@ function identificarTipoMidia(url) {
 
 
 // =====================================================
-// 25. CONVERTER YOUTUBE PARA EMBED
+// 34. CONVERTER YOUTUBE PARA EMBED
 // =====================================================
 
 function converterYoutubeParaEmbed(url) {
@@ -1191,7 +1422,7 @@ function converterYoutubeParaEmbed(url) {
 
 
 // =====================================================
-// 26. MOSTRAR PRÉ-VISUALIZAÇÃO DE MÍDIA
+// 35. MOSTRAR PRÉ-VISUALIZAÇÃO DE MÍDIA
 // =====================================================
 
 function mostrarPreviewMidia(url, elementoPreviewId) {
@@ -1266,7 +1497,7 @@ function mostrarPreviewMidia(url, elementoPreviewId) {
 
 
 // =====================================================
-// 27. BOTÃO PRÉ-VISUALIZAR MÍDIA DA TURMA
+// 36. BOTÃO PRÉ-VISUALIZAR MÍDIA DA TURMA
 // =====================================================
 
 const btnPreviewTurmaMidia = document.getElementById("btnPreviewTurmaMidia");
@@ -1281,7 +1512,7 @@ if (btnPreviewTurmaMidia) {
 
 
 // =====================================================
-// 28. BOTÃO DATA DE HOJE
+// 37. BOTÃO DATA DE HOJE
 // =====================================================
 
 const btnDataHoje = document.getElementById("btnDataHoje");
@@ -1308,7 +1539,7 @@ if (btnDataHoje) {
 
 
 // =====================================================
-// 29. VERIFICAR FERIADO OU FIM DE SEMANA
+// 38. VERIFICAR FERIADO OU FIM DE SEMANA
 // =====================================================
 
 const feriadosFixos = [
@@ -1362,7 +1593,7 @@ if (campoDataAula) {
 
 
 // =====================================================
-// 30. FUNÇÕES AUXILIARES
+// 39. FUNÇÕES AUXILIARES
 // =====================================================
 
 function limparCampoSeExistir(idCampo) {
@@ -1396,23 +1627,8 @@ function formatarHorarioAdmin(horario) {
 }
 
 
-
 // =====================================================
-// 31. INICIAR FUNÇÕES DE INTERFACE
-// =====================================================
-
-configurarMenuSobrepostoAdmin();
-configurarBotaoSairAdmin();
-
-
-// =====================================================
-// ASSISTENTE IA DE AULAS - GEMINI VIA NETLIFY FUNCTION
-// =====================================================
-// Essas funções são chamadas pelos botões do admin.html:
-// gerarConteudoIA('aula')
-// gerarConteudoIA('plano')
-// gerarConteudoIA('material')
-// gerarConteudoIA('rubrica')
+// 40. ASSISTENTE IA DE AULAS VIA NETLIFY FUNCTION
 // =====================================================
 
 let ultimoConteudoGeradoIA = "";
@@ -1472,7 +1688,7 @@ async function gerarConteudoIA(tipo) {
 
             resultadoIA.innerHTML = `
                 <p><strong>Erro:</strong> ${dados.error || "Falha desconhecida."}</p>
-                <p>${dados.details || ""}</p>
+                <p>${typeof dados.details === "string" ? dados.details : JSON.stringify(dados.details)}</p>
             `;
 
             console.log("Erro da função IA:", dados);
@@ -1499,7 +1715,7 @@ async function gerarConteudoIA(tipo) {
             <p>
                 Não foi possível conectar com a IA.
                 Verifique se a função Netlify foi publicada e se a variável
-                <strong>GEMINI_API_KEY</strong> está configurada no Netlify.
+                <strong>OPENROUTER_API_KEY</strong> está configurada no Netlify.
             </p>
             <p><strong>Detalhes:</strong> ${erro.message}</p>
         `;
@@ -1507,10 +1723,8 @@ async function gerarConteudoIA(tipo) {
 }
 
 
-
-
 // =====================================================
-// FORMATAR TEXTO DA IA PARA EXIBIR NO HTML
+// 41. FORMATAR TEXTO DA IA PARA HTML
 // =====================================================
 
 function formatarTextoIAParaHTML(texto) {
@@ -1531,7 +1745,7 @@ function formatarTextoIAParaHTML(texto) {
 
 
 // =====================================================
-// COPIAR RESULTADO DA IA
+// 42. COPIAR RESULTADO DA IA
 // =====================================================
 
 async function copiarResultadoIA() {
@@ -1551,8 +1765,7 @@ async function copiarResultadoIA() {
 
 
 // =====================================================
-// USAR RESULTADO DA IA COMO BASE DA AULA
-// Preenche os campos principais do cadastro de aula
+// 43. USAR RESULTADO DA IA COMO BASE DA AULA
 // =====================================================
 
 function enviarResultadoParaAula() {
@@ -1582,12 +1795,30 @@ function enviarResultadoParaAula() {
 
 
 // =====================================================
-// GARANTIR QUE AS FUNÇÕES FIQUEM VISÍVEIS PARA O HTML
-// Isso é importante porque os botões usam onclick no admin.html
+// 44. EXPOR FUNÇÕES PARA O HTML
 // =====================================================
 
 window.gerarConteudoIA = gerarConteudoIA;
 window.copiarResultadoIA = copiarResultadoIA;
 window.enviarResultadoParaAula = enviarResultadoParaAula;
 
-console.log("Funções do Assistente IA carregadas com sucesso.");
+window.ativarAulaDoDia = ativarAulaDoDia;
+window.desativarAula = desativarAula;
+window.excluirAula = excluirAula;
+
+window.aprovarPortfolio = aprovarPortfolio;
+window.ocultarPortfolio = ocultarPortfolio;
+window.excluirPortfolio = excluirPortfolio;
+
+
+// =====================================================
+// 45. INICIAR FUNÇÕES DE INTERFACE
+// =====================================================
+
+configurarMenuSobrepostoAdmin();
+configurarBotaoSairAdmin();
+configurarPerfilAdminEditavel();
+carregarPerfilAdminEditavel();
+verificarSessaoAtual();
+
+console.log("Funções do painel admin carregadas com sucesso.");
