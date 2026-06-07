@@ -1,17 +1,15 @@
 // =====================================================
-// NETLIFY FUNCTION - GERAR CONTEÚDO COM GEMINI
+// NETLIFY FUNCTION - GERAR CONTEÚDO COM DEEPSEEK
 // =====================================================
 //
 // Esta função roda no backend da Netlify.
-// A chave GEMINI_API_KEY fica protegida nas variáveis
+// A chave DEEPSEEK_API_KEY fica protegida nas variáveis
 // de ambiente da Netlify, e não aparece no navegador.
 //
-// O admin.js chama esta função pelo endereço:
+// O admin.js continua chamando:
 // /.netlify/functions/generate-content
 //
 // =====================================================
-
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async function (event) {
     try {
@@ -27,16 +25,16 @@ exports.handler = async function (event) {
             };
         }
 
-        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+        const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
-        if (!GEMINI_API_KEY) {
+        if (!DEEPSEEK_API_KEY) {
             return {
                 statusCode: 500,
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    error: "GEMINI_API_KEY não configurada na Netlify."
+                    error: "DEEPSEEK_API_KEY não configurada na Netlify."
                 })
             };
         }
@@ -59,16 +57,7 @@ exports.handler = async function (event) {
             };
         }
 
-        const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-
-        // IMPORTANTE:
-        // O modelo gemini-1.5-flash está retornando 404 no endpoint atual.
-        // Por isso usamos gemini-2.0-flash.
-       const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-lite"
-});
-
-        const promptSistema = `
+        const systemPrompt = `
 Você é um assistente pedagógico especializado em cursos técnicos, ensino médio e educação profissional.
 
 Você ajuda o professor Willyan Vieira, da Escola PEI Professor Riolando Canno, a criar aulas, planos de aula, materiais de apoio, glossários, rubricas e atividades para alunos do curso técnico.
@@ -131,19 +120,75 @@ Crie uma rubrica de avaliação com:
 4. O que caracteriza desempenho excelente
 5. O que caracteriza desempenho suficiente
 6. O que precisa melhorar
+        `;
 
+        const userPrompt = `
 CONTEXTO ENVIADO PELO PROFESSOR:
-${contexto}
+${contexto || "Nenhum contexto adicional informado."}
 
 PEDIDO DO PROFESSOR:
 ${promptProfessor}
         `;
 
-        const result = await model.generateContent(promptSistema);
+        const resposta = await fetch("https://api.deepseek.com/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [
+                    {
+                        role: "system",
+                        content: systemPrompt
+                    },
+                    {
+                        role: "user",
+                        content: userPrompt
+                    }
+                ],
+                temperature: 0.7,
+                max_tokens: 3500
+            })
+        });
 
-        const response = await result.response;
+        const dados = await resposta.json();
 
-        const textoGerado = response.text();
+        if (!resposta.ok) {
+            return {
+                statusCode: resposta.status,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    error: "Erro ao gerar conteúdo com DeepSeek.",
+                    details: dados
+                })
+            };
+        }
+
+        const textoGerado =
+            dados &&
+            dados.choices &&
+            dados.choices[0] &&
+            dados.choices[0].message &&
+            dados.choices[0].message.content
+                ? dados.choices[0].message.content
+                : "";
+
+        if (!textoGerado) {
+            return {
+                statusCode: 500,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    error: "A IA respondeu, mas não retornou conteúdo em texto.",
+                    details: dados
+                })
+            };
+        }
 
         return {
             statusCode: 200,
@@ -158,7 +203,7 @@ ${promptProfessor}
         };
 
     } catch (error) {
-        console.error("Erro na função Gemini:", error);
+        console.error("Erro na função DeepSeek:", error);
 
         return {
             statusCode: 500,
@@ -166,7 +211,7 @@ ${promptProfessor}
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                error: "Erro ao gerar conteúdo com IA.",
+                error: "Erro interno ao gerar conteúdo com IA.",
                 details: error.message
             })
         };
