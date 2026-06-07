@@ -25,7 +25,7 @@ exports.handler = async function (event) {
             };
         }
 
-        const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+        const DEEPSEEK_API_KEY = process.env.OPENROUTER_API_KEY
 
         if (!DEEPSEEK_API_KEY) {
             return {
@@ -137,7 +137,7 @@ ${promptProfessor}
                 "Authorization": `Bearer ${DEEPSEEK_API_KEY}`
             },
             body: JSON.stringify({
-                model: "deepseek-chat",
+                model: "openrouter/free"
                 messages: [
                     {
                         role: "system",
