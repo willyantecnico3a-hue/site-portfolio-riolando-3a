@@ -623,24 +623,30 @@ async function carregarAulasAdmin() {
     lista.innerHTML = "<p>Carregando aulas...</p>";
 
     const { data, error } = await banco
-        .from("aulas")
-        .select(`
-            
-            id,
-            titulo_aula,
-            subtitulo,
-            descricao,
-            data_aula,
-            horario_inicio,
-            horario_fim,
-            local_aula,
-            desafio_pratico,
-            aula_do_dia,
-            ativo,
-            turmas (
-                nome_turma,
-                curso
-            ),
+    .from("aulas")
+    .select(`
+        id,
+        turma_id,
+        disciplina_id,
+        titulo_aula,
+        subtitulo,
+        descricao,
+        data_aula,
+        horario_inicio,
+        horario_fim,
+        local_aula,
+        desafio_pratico,
+        aula_do_dia,
+        ativo,
+        turmas (
+            nome_turma,
+            curso
+        ),
+        disciplinas (
+            nome_disciplina
+        )
+    `)
+    .order("data_aula", { ascending: false });
             disciplinas (
                 nome_disciplina
             )
@@ -678,9 +684,9 @@ async function carregarAulasAdmin() {
                 <p><strong>Local:</strong> ${aula.local_aula || "Não informado"}</p>
 
                 <p><strong>Status:</strong> ${aula.ativo ? "Ativa" : "Inativa"}</p>
-                <button onclick="ativarAulaDoDia(${aula.id}, ${aula.turma_id})" class="btn-ativar-aula-dia">
-    ⭐ Ativar como Aula do Dia
-</button>
+                <button onclick="ativarAulaDoDia('${aula.id}', '${aula.turma_id}')" class="btn-ativar-aula-dia">
+                    ⭐ Ativar como Aula do Dia
+                 </button>
 
                 <button onclick="desativarAula(${aula.id})">
                     🚫 Desativar
@@ -1244,6 +1250,13 @@ async function ativarAulaDoDia(aulaId, turmaId) {
         return;
     }
 
+    if (!aulaId || !turmaId || turmaId === "undefined") {
+        alert("Erro: não foi possível identificar a turma desta aula.");
+        console.log("aulaId recebido:", aulaId);
+        console.log("turmaId recebido:", turmaId);
+        return;
+    }
+
     const confirmar = confirm(
         "Deseja ativar esta aula como Aula do Dia para os alunos?"
     );
@@ -1252,7 +1265,6 @@ async function ativarAulaDoDia(aulaId, turmaId) {
         return;
     }
 
-    // 1. Desmarca todas as aulas da mesma turma
     const { error: erroDesmarcar } = await banco
         .from("aulas")
         .update({ aula_do_dia: false })
@@ -1264,7 +1276,6 @@ async function ativarAulaDoDia(aulaId, turmaId) {
         return;
     }
 
-    // 2. Marca a aula escolhida como Aula do Dia
     const { error: erroAtivar } = await banco
         .from("aulas")
         .update({ aula_do_dia: true })
@@ -1278,7 +1289,6 @@ async function ativarAulaDoDia(aulaId, turmaId) {
 
     alert("Aula ativada como Aula do Dia com sucesso!");
 
-    // 3. Recarrega os cards no painel admin
     if (typeof carregarAulasAdmin === "function") {
         carregarAulasAdmin();
     }
