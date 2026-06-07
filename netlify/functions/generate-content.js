@@ -15,7 +15,6 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 exports.handler = async function (event) {
     try {
-        // Aceita somente requisições POST
         if (event.httpMethod !== "POST") {
             return {
                 statusCode: 405,
@@ -28,7 +27,6 @@ exports.handler = async function (event) {
             };
         }
 
-        // Pega a chave da IA nas variáveis de ambiente da Netlify
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
         if (!GEMINI_API_KEY) {
@@ -43,7 +41,6 @@ exports.handler = async function (event) {
             };
         }
 
-        // Lê os dados enviados pelo admin.js
         const body = JSON.parse(event.body || "{}");
 
         const tipo = body.tipo || "aula";
@@ -62,14 +59,15 @@ exports.handler = async function (event) {
             };
         }
 
-        // Inicializa o Gemini
         const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
+        // IMPORTANTE:
+        // O modelo gemini-1.5-flash está retornando 404 no endpoint atual.
+        // Por isso usamos gemini-2.0-flash.
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash"
+            model: "gemini-2.0-flash"
         });
 
-        // Prompt pedagógico personalizado para seu uso escolar
         const promptSistema = `
 Você é um assistente pedagógico especializado em cursos técnicos, ensino médio e educação profissional.
 
@@ -141,7 +139,6 @@ PEDIDO DO PROFESSOR:
 ${promptProfessor}
         `;
 
-        // Chama o Gemini
         const result = await model.generateContent(promptSistema);
 
         const response = await result.response;
