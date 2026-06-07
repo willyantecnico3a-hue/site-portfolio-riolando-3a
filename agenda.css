@@ -834,3 +834,25 @@ button {
         width: 100%;
     }
 }
+
+/* =====================================================
+   IMPEDIR QUE O SWIPE DA BARRA DO MÊS VOLTE A PÁGINA
+===================================================== */
+
+.barra-controles-agenda {
+    touch-action: none;
+    user-select: none;
+    overscroll-behavior-x: contain;
+}
+
+@media (max-width: 800px) {
+    .barra-controles-agenda {
+        touch-action: none !important;
+        user-select: none !important;
+        overscroll-behavior-x: contain !important;
+    }
+
+    body {
+        overscroll-behavior-x: contain;
+    }
+}

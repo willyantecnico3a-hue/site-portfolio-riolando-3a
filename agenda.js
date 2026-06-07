@@ -935,13 +935,15 @@ async function mudarMes(direcao) {
 // Arrastar para direita: mês anterior
 // Arrastar para esquerda: próximo mês
 //
-// A função fica na barra do mês para não atrapalhar
-// o clique nos dias do calendário.
+// Corrigido para evitar que o navegador interprete
+// o gesto como "voltar página" no smartphone.
 // =====================================================
 
 let inicioArrasteX = 0;
 let fimArrasteX = 0;
-let mousePressionado = false;
+let inicioArrasteY = 0;
+let fimArrasteY = 0;
+let arrasteAtivo = false;
 let swipeConfigurado = false;
 
 function configurarArrasteTrocaMes() {
@@ -958,54 +960,89 @@ function configurarArrasteTrocaMes() {
     swipeConfigurado = true;
 
     areaSwipe.addEventListener("pointerdown", function (event) {
+        // Evita iniciar o gesto muito perto da borda da tela,
+        // onde o navegador costuma acionar "voltar página".
+        const larguraTela = window.innerWidth;
+
+        if (event.clientX < 25 || event.clientX > larguraTela - 25) {
+            return;
+        }
+
+        event.preventDefault();
+
         inicioArrasteX = event.clientX;
         fimArrasteX = event.clientX;
-        mousePressionado = true;
+
+        inicioArrasteY = event.clientY;
+        fimArrasteY = event.clientY;
+
+        arrasteAtivo = true;
+
+        try {
+            areaSwipe.setPointerCapture(event.pointerId);
+        } catch (erro) {
+            console.log("Pointer capture não aplicado:", erro);
+        }
     });
 
     areaSwipe.addEventListener("pointermove", function (event) {
-        if (!mousePressionado) {
+        if (!arrasteAtivo) {
             return;
         }
+
+        event.preventDefault();
 
         fimArrasteX = event.clientX;
+        fimArrasteY = event.clientY;
     });
 
-    areaSwipe.addEventListener("pointerup", async function () {
-        if (!mousePressionado) {
+    areaSwipe.addEventListener("pointerup", async function (event) {
+        if (!arrasteAtivo) {
             return;
         }
 
-        mousePressionado = false;
+        event.preventDefault();
+
+        arrasteAtivo = false;
+
+        try {
+            areaSwipe.releasePointerCapture(event.pointerId);
+        } catch (erro) {
+            console.log("Pointer release não aplicado:", erro);
+        }
 
         await interpretarArrasteDoCalendario();
     });
 
     areaSwipe.addEventListener("pointercancel", function () {
-        mousePressionado = false;
-    });
-
-    areaSwipe.addEventListener("mouseleave", function () {
-        mousePressionado = false;
+        arrasteAtivo = false;
     });
 }
 
-async function interpretarArrasteDoCalendario() {
-    const distancia = fimArrasteX - inicioArrasteX;
 
-    // Evita trocar o mês quando o toque for muito pequeno
-    if (Math.abs(distancia) < 60) {
+async function interpretarArrasteDoCalendario() {
+    const distanciaX = fimArrasteX - inicioArrasteX;
+    const distanciaY = fimArrasteY - inicioArrasteY;
+
+    // Se o usuário moveu mais para cima/baixo do que para os lados,
+    // não troca o mês.
+    if (Math.abs(distanciaY) > Math.abs(distanciaX)) {
         return;
     }
 
-    // Arrastou para a direita: mês anterior
-    if (distancia > 0) {
+    // Evita trocar mês com toque pequeno.
+    if (Math.abs(distanciaX) < 60) {
+        return;
+    }
+
+    // Arrastou para direita: mês anterior
+    if (distanciaX > 0) {
         await mudarMes(-1);
         return;
     }
 
-    // Arrastou para a esquerda: próximo mês
-    if (distancia < 0) {
+    // Arrastou para esquerda: próximo mês
+    if (distanciaX < 0) {
         await mudarMes(1);
         return;
     }
