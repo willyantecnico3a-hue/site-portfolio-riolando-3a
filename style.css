@@ -476,3 +476,16 @@
     }
 }
 
+
+.link-menu-admin {
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.link-menu-admin span {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: normal;
+    color: #475569;
+}

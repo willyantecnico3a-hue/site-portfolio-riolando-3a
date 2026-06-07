@@ -75,6 +75,14 @@ async function iniciarAgenda() {
 
 // =====================================================
 // 5. CARREGAR PERFIL DO USUÁRIO LOGADO
+// Esta função identifica se o usuário é:
+// - admin/professor
+// - coordenação/direção
+// - aluno
+//
+// Primeiro ela tenta buscar na tabela "perfis".
+// Se não encontrar, ela verifica também a tabela "admins",
+// porque seu painel administrativo atual já usa essa tabela.
 // =====================================================
 
 async function carregarPerfilUsuario() {
@@ -82,37 +90,123 @@ async function carregarPerfilUsuario() {
 
     if (userError || !userData.user) {
         alert("Você precisa estar logado para acessar a agenda.");
+        console.log("Usuário não logado na agenda.");
         return;
     }
 
-    const { data, error } = await banco
+    const usuario = userData.user;
+
+    console.log("Usuário logado na agenda:", usuario.email);
+
+    // 1. Tenta buscar o usuário na tabela perfis
+    const { data: perfil, error: erroPerfil } = await banco
         .from("perfis")
         .select("id, nome, email, funcao, curso")
-        .eq("id", userData.user.id)
+        .eq("id", usuario.id)
         .maybeSingle();
 
-    if (error) {
-        console.log("Erro ao carregar perfil:", error);
+    if (erroPerfil) {
+        console.log("Erro ao buscar perfil:", erroPerfil);
+    }
+
+    if (perfil) {
+        perfilUsuario = perfil;
+        console.log("Perfil encontrado na tabela perfis:", perfilUsuario);
         return;
     }
 
-    perfilUsuario = data;
+    // 2. Se não encontrou na tabela perfis, tenta buscar na tabela admins
+    const { data: admin, error: erroAdmin } = await banco
+        .from("admins")
+        .select("email")
+        .eq("email", usuario.email)
+        .maybeSingle();
+
+    if (erroAdmin) {
+        console.log("Erro ao buscar admin:", erroAdmin);
+    }
+
+    if (admin) {
+        perfilUsuario = {
+            id: usuario.id,
+            nome: usuario.email,
+            email: usuario.email,
+            funcao: "admin",
+            curso: "todos"
+        };
+
+        console.log("Usuário reconhecido como admin pela tabela admins:", perfilUsuario);
+        return;
+    }
+
+    // 3. Se não encontrou em nenhuma tabela, trata como usuário sem permissão
+    perfilUsuario = {
+        id: usuario.id,
+        nome: usuario.email,
+        email: usuario.email,
+        funcao: "visitante",
+        curso: "nenhum"
+    };
+
+    console.log("Usuário sem perfil administrativo:", perfilUsuario);
 }
 
 
 // =====================================================
 // 6. CONFIGURAR PERMISSÕES NA TELA
+// Define quem pode criar evento e quem só visualiza
 // =====================================================
 
 function configurarPermissoesDaTela() {
     if (!perfilUsuario) {
+        console.log("Perfil do usuário não carregado.");
         return;
     }
 
+    console.log("Função do usuário na agenda:", perfilUsuario.funcao);
+
+    // Admin/professor pode ver filtro e criar eventos
     if (perfilUsuario.funcao === "admin") {
-        areaFiltroAdmin.style.display = "block";
-    } else {
-        areaFiltroAdmin.style.display = "none";
+        if (areaFiltroAdmin) {
+            areaFiltroAdmin.style.display = "block";
+        }
+
+        if (btnAbrirFormEvento) {
+            btnAbrirFormEvento.style.display = "block";
+        }
+
+        return;
+    }
+
+    // Gestão vê tudo, mas não cria evento
+    if (
+        perfilUsuario.funcao === "coordenacao" ||
+        perfilUsuario.funcao === "direcao" ||
+        perfilUsuario.funcao === "vice_direcao" ||
+        perfilUsuario.funcao === "gestao"
+    ) {
+        if (areaFiltroAdmin) {
+            areaFiltroAdmin.style.display = "none";
+        }
+
+        if (btnAbrirFormEvento) {
+            btnAbrirFormEvento.style.display = "none";
+        }
+
+        return;
+    }
+
+    // Aluno só visualiza eventos permitidos
+    if (perfilUsuario.funcao.startsWith("aluno")) {
+        if (areaFiltroAdmin) {
+            areaFiltroAdmin.style.display = "none";
+        }
+
+        if (btnAbrirFormEvento) {
+            btnAbrirFormEvento.style.display = "none";
+        }
+
+        return;
     }
 }
 

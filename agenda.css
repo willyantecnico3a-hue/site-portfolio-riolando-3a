@@ -317,7 +317,6 @@ button {
 @media (max-width: 768px) {
   .topo-agenda {
     flex-direction: column;
-    align-items: flex-start;
   }
 
   .barra-controles-agenda,
@@ -480,6 +479,7 @@ button {
             </form>
 
         </div>
+    align-items: flex-start;
 
     </div>
 
