@@ -1396,9 +1396,194 @@ function formatarHorarioAdmin(horario) {
 }
 
 
+
 // =====================================================
 // 31. INICIAR FUNÇÕES DE INTERFACE
 // =====================================================
 
 configurarMenuSobrepostoAdmin();
 configurarBotaoSairAdmin();
+
+
+// =====================================================
+// ASSISTENTE IA DE AULAS - GEMINI VIA NETLIFY FUNCTION
+// =====================================================
+// Essas funções são chamadas pelos botões do admin.html:
+// gerarConteudoIA('aula')
+// gerarConteudoIA('plano')
+// gerarConteudoIA('material')
+// gerarConteudoIA('rubrica')
+// =====================================================
+
+let ultimoConteudoGeradoIA = "";
+let ultimoTipoGeradoIA = "";
+
+async function gerarConteudoIA(tipo) {
+    const promptCampo = document.getElementById("promptIA");
+    const contextoCampo = document.getElementById("contextoIA");
+    const resultadoIA = document.getElementById("resultadoIA");
+    const mensagemIA = document.getElementById("mensagemIA");
+
+    if (!promptCampo || !resultadoIA || !mensagemIA) {
+        alert("Erro: área da IA não encontrada no HTML.");
+        console.log("promptIA:", promptCampo);
+        console.log("resultadoIA:", resultadoIA);
+        console.log("mensagemIA:", mensagemIA);
+        return;
+    }
+
+    const prompt = promptCampo.value.trim();
+    const contexto = contextoCampo ? contextoCampo.value.trim() : "";
+
+    if (!prompt) {
+        mensagemIA.textContent = "Digite um pedido para a IA antes de gerar.";
+        return;
+    }
+
+    mensagemIA.textContent = "Gerando conteúdo com IA. Aguarde...";
+    resultadoIA.innerHTML = "<p>⏳ A IA está preparando o conteúdo...</p>";
+
+    try {
+        const resposta = await fetch("/.netlify/functions/generate-content", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                tipo: tipo,
+                prompt: prompt,
+                contexto: contexto
+            })
+        });
+
+        let dados = {};
+
+        try {
+            dados = await resposta.json();
+        } catch (erroJson) {
+            dados = {
+                error: "A resposta da função não veio em JSON.",
+                details: "Verifique se a Netlify Function foi publicada corretamente."
+            };
+        }
+
+        if (!resposta.ok) {
+            mensagemIA.textContent = "Erro ao gerar conteúdo.";
+
+            resultadoIA.innerHTML = `
+                <p><strong>Erro:</strong> ${dados.error || "Falha desconhecida."}</p>
+                <p>${dados.details || ""}</p>
+            `;
+
+            console.log("Erro da função IA:", dados);
+            return;
+        }
+
+        ultimoConteudoGeradoIA = dados.conteudo || "";
+        ultimoTipoGeradoIA = tipo;
+
+        mensagemIA.textContent = "Conteúdo gerado com sucesso!";
+
+        resultadoIA.innerHTML = `
+            <div class="conteudo-gerado-ia">
+                ${formatarTextoIAParaHTML(ultimoConteudoGeradoIA)}
+            </div>
+        `;
+
+    } catch (erro) {
+        console.log("Erro ao chamar IA:", erro);
+
+        mensagemIA.textContent = "Erro de conexão com a função da IA.";
+
+        resultadoIA.innerHTML = `
+            <p>
+                Não foi possível conectar com a IA.
+                Verifique se a função Netlify foi publicada e se a variável
+                <strong>GEMINI_API_KEY</strong> está configurada no Netlify.
+            </p>
+            <p><strong>Detalhes:</strong> ${erro.message}</p>
+        `;
+    }
+}
+
+
+// =====================================================
+// FORMATAR TEXTO DA IA PARA EXIBIR NO HTML
+// =====================================================
+
+function formatarTextoIAParaHTML(texto) {
+    if (!texto) {
+        return "<p>Nenhum conteúdo gerado.</p>";
+    }
+
+    return texto
+        .toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replace(/\n\n/g, "</p><p>")
+        .replace(/\n/g, "<br>")
+        .replace(/^/, "<p>")
+        .replace(/$/, "</p>");
+}
+
+
+// =====================================================
+// COPIAR RESULTADO DA IA
+// =====================================================
+
+async function copiarResultadoIA() {
+    if (!ultimoConteudoGeradoIA) {
+        alert("Nenhum conteúdo gerado ainda.");
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(ultimoConteudoGeradoIA);
+        alert("Conteúdo copiado com sucesso!");
+    } catch (erro) {
+        alert("Não foi possível copiar automaticamente. Selecione o texto manualmente.");
+        console.log("Erro ao copiar:", erro);
+    }
+}
+
+
+// =====================================================
+// USAR RESULTADO DA IA COMO BASE DA AULA
+// Preenche os campos principais do cadastro de aula
+// =====================================================
+
+function enviarResultadoParaAula() {
+    if (!ultimoConteudoGeradoIA) {
+        alert("Nenhum conteúdo gerado ainda.");
+        return;
+    }
+
+    const tituloAula = document.getElementById("adminTituloAula");
+    const descricaoAula = document.getElementById("adminDescricaoAula");
+    const desafioAula = document.getElementById("adminDesafioAula");
+
+    if (tituloAula && !tituloAula.value) {
+        tituloAula.value = `Conteúdo gerado por IA - ${ultimoTipoGeradoIA}`;
+    }
+
+    if (descricaoAula) {
+        descricaoAula.value = ultimoConteudoGeradoIA;
+    }
+
+    if (desafioAula && ultimoTipoGeradoIA === "rubrica") {
+        desafioAula.value = ultimoConteudoGeradoIA;
+    }
+
+    alert("Conteúdo enviado para os campos da aula. Abra a seção Aulas para revisar e salvar.");
+}
+
+
+// =====================================================
+// GARANTIR QUE AS FUNÇÕES FIQUEM VISÍVEIS PARA O HTML
+// Isso é importante porque os botões usam onclick no admin.html
+// =====================================================
+
+window.gerarConteudoIA = gerarConteudoIA;
+window.copiarResultadoIA = copiarResultadoIA;
+window.enviarResultadoParaAula = enviarResultadoParaAula;
