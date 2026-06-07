@@ -625,6 +625,7 @@ async function carregarAulasAdmin() {
     const { data, error } = await banco
         .from("aulas")
         .select(`
+            
             id,
             titulo_aula,
             subtitulo,
@@ -634,6 +635,7 @@ async function carregarAulasAdmin() {
             horario_fim,
             local_aula,
             desafio_pratico,
+            aula_do_dia,
             ativo,
             turmas (
                 nome_turma,
@@ -676,6 +678,9 @@ async function carregarAulasAdmin() {
                 <p><strong>Local:</strong> ${aula.local_aula || "Não informado"}</p>
 
                 <p><strong>Status:</strong> ${aula.ativo ? "Ativa" : "Inativa"}</p>
+                <button onclick="ativarAulaDoDia(${aula.id}, ${aula.turma_id})" class="btn-ativar-aula-dia">
+    ⭐ Ativar como Aula do Dia
+</button>
 
                 <button onclick="desativarAula(${aula.id})">
                     🚫 Desativar
@@ -1226,3 +1231,55 @@ if (campoDataAula) {
 
 configurarMenuSobrepostoAdmin();
 configurarBotaoSairAdmin();
+
+// =====================================================
+// ATIVAR AULA COMO AULA DO DIA
+// Essa função desmarca as outras aulas da mesma turma
+// e marca somente a aula escolhida como Aula do Dia.
+// =====================================================
+
+async function ativarAulaDoDia(aulaId, turmaId) {
+    if (!banco) {
+        alert("Supabase não conectado.");
+        return;
+    }
+
+    const confirmar = confirm(
+        "Deseja ativar esta aula como Aula do Dia para os alunos?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    // 1. Desmarca todas as aulas da mesma turma
+    const { error: erroDesmarcar } = await banco
+        .from("aulas")
+        .update({ aula_do_dia: false })
+        .eq("turma_id", turmaId);
+
+    if (erroDesmarcar) {
+        alert("Erro ao desmarcar aulas anteriores: " + erroDesmarcar.message);
+        console.log("Erro ao desmarcar:", erroDesmarcar);
+        return;
+    }
+
+    // 2. Marca a aula escolhida como Aula do Dia
+    const { error: erroAtivar } = await banco
+        .from("aulas")
+        .update({ aula_do_dia: true })
+        .eq("id", aulaId);
+
+    if (erroAtivar) {
+        alert("Erro ao ativar aula: " + erroAtivar.message);
+        console.log("Erro ao ativar:", erroAtivar);
+        return;
+    }
+
+    alert("Aula ativada como Aula do Dia com sucesso!");
+
+    // 3. Recarrega os cards no painel admin
+    if (typeof carregarAulasAdmin === "function") {
+        carregarAulasAdmin();
+    }
+}

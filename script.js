@@ -421,32 +421,34 @@ async function carregarAulaDaTurma(turmaId) {
 
     aulaDiaConteudo.innerHTML = `<p>Carregando aula mais recente da turma...</p>`;
 
-    const { data, error } = await banco
-        .from("aulas")
-        .select(`
-            id,
-            titulo_aula,
-            subtitulo,
-            descricao,
-            data_aula,
-            horario_inicio,
-            horario_fim,
-            local_aula,
-            desafio_pratico,
-            pdf_url,
-            video_url,
-            atividade_url,
-            material_extra_url,
-            disciplinas (
-                nome_disciplina
-            )
-        `)
-        .eq("turma_id", turmaId)
-        .eq("ativo", true)
-        .order("data_aula", { ascending: false })
-        .order("horario_inicio", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+   const { data, error } = await banco
+    .from("aulas")
+    .select(`
+        id,
+        titulo_aula,
+        subtitulo,
+        descricao,
+        data_aula,
+        horario_inicio,
+        horario_fim,
+        local_aula,
+        desafio_pratico,
+        pdf_url,
+        video_url,
+        atividade_url,
+        material_extra_url,
+        aula_do_dia,
+        disciplinas (
+            nome_disciplina
+        )
+    `)
+    .eq("turma_id", turmaId)
+    .eq("ativo", true)
+    .eq("aula_do_dia", true)
+    .order("data_aula", { ascending: false })
+    .order("horario_inicio", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
     if (error) {
         aulaDiaConteudo.innerHTML = `<p>Erro ao carregar aula: ${error.message}</p>`;
@@ -454,10 +456,18 @@ async function carregarAulaDaTurma(turmaId) {
         return;
     }
 
-    if (!data) {
-        aulaDiaConteudo.innerHTML = `<p>Nenhuma aula cadastrada para esta turma ainda.</p>`;
-        return;
-    }
+   if (!data) {
+    aulaDiaConteudo.innerHTML = `
+        <p>
+            Nenhuma aula foi marcada como <strong>Aula do Dia</strong> para esta turma.
+        </p>
+
+        <p>
+            O professor pode ativar uma aula no painel administrativo.
+        </p>
+    `;
+    return;
+}
 
     aulaDiaConteudo.innerHTML = montarCardAulaCompleta(data, true);
 }

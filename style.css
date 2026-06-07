@@ -705,3 +705,34 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* =====================================================
+   BOTÃO ATIVAR AULA DO DIA NO ADMIN
+===================================================== */
+
+.btn-ativar-aula-dia {
+    margin-top: 12px;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 10px;
+    background-color: #0f766e;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-ativar-aula-dia:hover {
+    background-color: #115e59;
+}
+
+.badge-aula-dia-admin {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background-color: #dcfce7;
+    color: #166534;
+    font-weight: bold;
+    font-size: 13px;
+}
+
