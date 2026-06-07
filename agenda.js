@@ -1,4 +1,3 @@
-
 // =====================================================
 // AGENDA PEDAGÓGICA INTERATIVA
 // HTML + CSS + JAVASCRIPT PURO + SUPABASE
@@ -12,6 +11,7 @@
 const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
 // COLE AQUI SUA CHAVE PUBLIC / ANON / PUBLISHABLE DO SUPABASE
+// IMPORTANTE: mantenha a chave entre aspas.
 const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -79,6 +79,8 @@ async function iniciarAgenda() {
     await carregarEventosDoMes();
 
     renderizarCalendario();
+
+    configurarArrasteTrocaMes();
 }
 
 
@@ -99,6 +101,7 @@ async function carregarPerfilUsuario() {
 
     console.log("Usuário logado na agenda:", usuario.email);
 
+    // Primeiro tenta encontrar o usuário na tabela perfis.
     const { data: perfil, error: erroPerfil } = await banco
         .from("perfis")
         .select("id, nome, email, funcao, curso")
@@ -115,6 +118,7 @@ async function carregarPerfilUsuario() {
         return;
     }
 
+    // Se não encontrar em perfis, tenta reconhecer como admin pela tabela admins.
     const { data: admin, error: erroAdmin } = await banco
         .from("admins")
         .select("email")
@@ -138,6 +142,7 @@ async function carregarPerfilUsuario() {
         return;
     }
 
+    // Usuário autenticado, mas sem perfil liberado.
     perfilUsuario = {
         id: usuario.id,
         nome: usuario.email,
@@ -230,10 +235,12 @@ function aplicarFiltroDePermissao(eventos) {
     const funcao = perfilUsuario.funcao;
     const curso = perfilUsuario.curso;
 
+    // Admin vê tudo.
     if (funcao === "admin") {
         return eventos;
     }
 
+    // Gestão vê tudo em modo leitura.
     if (
         funcao === "coordenacao" ||
         funcao === "direcao" ||
@@ -243,7 +250,8 @@ function aplicarFiltroDePermissao(eventos) {
         return eventos;
     }
 
-    if (funcao.startsWith("aluno")) {
+    // Aluno vê eventos gerais e eventos do curso dele.
+    if (funcao && funcao.startsWith("aluno")) {
         return eventos.filter(function (evento) {
             return (
                 evento.curso_alvo === "todos" ||
@@ -286,12 +294,14 @@ function renderizarCalendario() {
 
     const diaSemanaInicio = primeiroDiaMes.getDay();
 
+    // Espaços vazios antes do primeiro dia do mês.
     for (let i = 0; i < diaSemanaInicio; i++) {
         const vazio = document.createElement("div");
         vazio.className = "dia-vazio";
         gradeCalendario.appendChild(vazio);
     }
 
+    // Dias reais do mês.
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
         const dataDia = new Date(ano, mes, dia);
         const dataISO = formatarDataISO(dataDia);
@@ -318,11 +328,11 @@ function renderizarCalendario() {
                     return `
                         <div
                             class="evento-mini tipo-${normalizarTipo(evento.tipo)}"
-                            title="${evento.descricao || evento.titulo}"
+                            title="${escaparHTML(evento.descricao || evento.titulo || "")}"
                             onclick="event.stopPropagation(); abrirDetalheEvento('${evento.id}')"
                         >
                             <span>${formatarHorarioCurto(evento.horario_inicio)}</span>
-                            ${evento.titulo}
+                            ${escaparHTML(evento.titulo || "Sem título")}
                         </div>
                     `;
                 }).join("")}
@@ -343,6 +353,10 @@ function renderizarCalendario() {
 // =====================================================
 
 function abrirModalDoDia(dataISO, eventosDoDia) {
+    if (!modalDia || !modalTituloData || !listaEventosDia) {
+        return;
+    }
+
     dataSelecionadaNoModal = dataISO;
 
     modalTituloData.textContent = `Eventos de ${formatarDataBR(dataISO)}`;
@@ -359,7 +373,7 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
                         ${nomeBonitoTipo(evento.tipo)}
                     </span>
 
-                    <h3>${evento.titulo}</h3>
+                    <h3>${escaparHTML(evento.titulo || "Sem título")}</h3>
 
                     <p>
                         <strong>Horário:</strong>
@@ -367,9 +381,9 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
                         ${evento.horario_fim ? " às " + formatarHorarioCurto(evento.horario_fim) : ""}
                     </p>
 
-                    <p>${evento.descricao || "Sem descrição."}</p>
+                    <p>${escaparHTML(evento.descricao || "Sem descrição.")}</p>
 
-                    <p><strong>Curso alvo:</strong> ${evento.curso_alvo}</p>
+                    <p><strong>Curso alvo:</strong> ${escaparHTML(evento.curso_alvo || "Não informado")}</p>
 
                     ${
                         evento.link_material
@@ -385,13 +399,18 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
         });
     }
 
-    if (perfilUsuario && perfilUsuario.funcao === "admin") {
-        btnAbrirFormEvento.style.display = "block";
-    } else {
-        btnAbrirFormEvento.style.display = "none";
+    if (btnAbrirFormEvento) {
+        if (perfilUsuario && perfilUsuario.funcao === "admin") {
+            btnAbrirFormEvento.style.display = "block";
+        } else {
+            btnAbrirFormEvento.style.display = "none";
+        }
     }
 
-    formEvento.style.display = "none";
+    if (formEvento) {
+        formEvento.style.display = "none";
+    }
+
     modalDia.classList.add("aberto");
 }
 
@@ -401,8 +420,12 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
 // =====================================================
 
 function abrirDetalheEvento(idEvento) {
+    if (!modalDetalheEvento || !conteudoDetalheEvento) {
+        return;
+    }
+
     const evento = eventosCarregados.find(function (item) {
-        return item.id === idEvento;
+        return String(item.id) === String(idEvento);
     });
 
     if (!evento) {
@@ -438,7 +461,7 @@ function abrirDetalheEvento(idEvento) {
                 }
             </div>
 
-            <h2>${evento.titulo}</h2>
+            <h2>${escaparHTML(evento.titulo || "Sem título")}</h2>
 
             <p><strong>Data:</strong> ${formatarDataBR(evento.data)}</p>
 
@@ -448,11 +471,11 @@ function abrirDetalheEvento(idEvento) {
                 ${evento.horario_fim ? " às " + formatarHorarioCurto(evento.horario_fim) : ""}
             </p>
 
-            <p><strong>Curso alvo:</strong> ${evento.curso_alvo}</p>
+            <p><strong>Curso alvo:</strong> ${escaparHTML(evento.curso_alvo || "Não informado")}</p>
 
             <p><strong>Descrição:</strong></p>
 
-            <p>${evento.descricao || "Sem descrição cadastrada."}</p>
+            <p>${escaparHTML(evento.descricao || "Sem descrição cadastrada.")}</p>
 
             ${
                 evento.link_material
@@ -472,7 +495,7 @@ function abrirDetalheEvento(idEvento) {
 
 function prepararEdicaoEvento(idEvento) {
     const evento = eventosCarregados.find(function (item) {
-        return item.id === idEvento;
+        return String(item.id) === String(idEvento);
     });
 
     if (!evento) {
@@ -488,7 +511,9 @@ function prepararEdicaoEvento(idEvento) {
     eventoEmEdicaoId = evento.id;
     dataSelecionadaNoModal = evento.data;
 
-    modalDetalheEvento.classList.remove("aberto");
+    if (modalDetalheEvento) {
+        modalDetalheEvento.classList.remove("aberto");
+    }
 
     const eventosDoDia = eventosCarregados.filter(function (item) {
         return item.data === evento.data;
@@ -496,22 +521,23 @@ function prepararEdicaoEvento(idEvento) {
 
     abrirModalDoDia(evento.data, eventosDoDia);
 
-    formEvento.style.display = "block";
+    if (formEvento) {
+        formEvento.style.display = "block";
+    }
 
     if (tituloFormularioEvento) {
         tituloFormularioEvento.textContent = "Editar Evento";
     }
 
-    document.getElementById("eventoTipo").value = evento.tipo;
-    document.getElementById("eventoTitulo").value = evento.titulo || "";
-    document.getElementById("eventoHorarioInicio").value = formatarHorarioParaInput(evento.horario_inicio);
-    document.getElementById("eventoHorarioFim").value = formatarHorarioParaInput(evento.horario_fim);
-    document.getElementById("eventoDescricao").value = evento.descricao || "";
-    document.getElementById("eventoCursoAlvo").value = evento.curso_alvo || "todos";
-    document.getElementById("eventoLinkMaterial").value = evento.link_material || "";
-
-    document.getElementById("eventoRepeticao").value = "nao_repete";
-    document.getElementById("eventoRepetirAte").value = "";
+    setValorCampo("eventoTipo", evento.tipo);
+    setValorCampo("eventoTitulo", evento.titulo || "");
+    setValorCampo("eventoHorarioInicio", formatarHorarioParaInput(evento.horario_inicio));
+    setValorCampo("eventoHorarioFim", formatarHorarioParaInput(evento.horario_fim));
+    setValorCampo("eventoDescricao", evento.descricao || "");
+    setValorCampo("eventoCursoAlvo", evento.curso_alvo || "todos");
+    setValorCampo("eventoLinkMaterial", evento.link_material || "");
+    setValorCampo("eventoRepeticao", "nao_repete");
+    setValorCampo("eventoRepetirAte", "");
 
     const mensagemEvento = document.getElementById("mensagemEvento");
 
@@ -519,7 +545,7 @@ function prepararEdicaoEvento(idEvento) {
         mensagemEvento.textContent = "Editando evento selecionado.";
     }
 
-    const botaoSalvar = formEvento.querySelector("button[type='submit']");
+    const botaoSalvar = formEvento ? formEvento.querySelector("button[type='submit']") : null;
 
     if (botaoSalvar) {
         botaoSalvar.textContent = "💾 Atualizar Evento";
@@ -551,13 +577,17 @@ function excluirEvento(idEvento) {
 
 if (btnFecharModal) {
     btnFecharModal.addEventListener("click", function () {
-        modalDia.classList.remove("aberto");
+        if (modalDia) {
+            modalDia.classList.remove("aberto");
+        }
     });
 }
 
 if (btnFecharDetalheEvento) {
     btnFecharDetalheEvento.addEventListener("click", function () {
-        modalDetalheEvento.classList.remove("aberto");
+        if (modalDetalheEvento) {
+            modalDetalheEvento.classList.remove("aberto");
+        }
     });
 }
 
@@ -576,8 +606,12 @@ if (btnAbrirFormEvento) {
             tituloFormularioEvento.textContent = "Novo Evento";
         }
 
-        formEvento.style.display =
-            formEvento.style.display === "none" ? "block" : "none";
+        if (formEvento) {
+            formEvento.style.display =
+                formEvento.style.display === "none" || formEvento.style.display === ""
+                    ? "block"
+                    : "none";
+        }
     });
 }
 
@@ -595,24 +629,28 @@ if (formEvento) {
             return;
         }
 
-        const tipo = document.getElementById("eventoTipo").value;
-        const titulo = document.getElementById("eventoTitulo").value.trim();
-        const horarioInicio = document.getElementById("eventoHorarioInicio").value;
-        const horarioFim = document.getElementById("eventoHorarioFim").value;
-        const descricao = document.getElementById("eventoDescricao").value.trim();
-        const cursoAlvo = document.getElementById("eventoCursoAlvo").value;
-        const linkMaterial = document.getElementById("eventoLinkMaterial").value.trim();
-        const repeticao = document.getElementById("eventoRepeticao").value;
-        const repetirAte = document.getElementById("eventoRepetirAte").value;
+        const tipo = getValorCampo("eventoTipo");
+        const titulo = getValorCampo("eventoTitulo").trim();
+        const horarioInicio = getValorCampo("eventoHorarioInicio");
+        const horarioFim = getValorCampo("eventoHorarioFim");
+        const descricao = getValorCampo("eventoDescricao").trim();
+        const cursoAlvo = getValorCampo("eventoCursoAlvo");
+        const linkMaterial = getValorCampo("eventoLinkMaterial").trim();
+        const repeticao = getValorCampo("eventoRepeticao") || "nao_repete";
+        const repetirAte = getValorCampo("eventoRepetirAte");
         const mensagemEvento = document.getElementById("mensagemEvento");
 
         if (!titulo) {
-            mensagemEvento.textContent = "Preencha o título do evento.";
+            if (mensagemEvento) {
+                mensagemEvento.textContent = "Preencha o título do evento.";
+            }
             return;
         }
 
         if (!horarioInicio) {
-            mensagemEvento.textContent = "Preencha o horário de início.";
+            if (mensagemEvento) {
+                mensagemEvento.textContent = "Preencha o horário de início.";
+            }
             return;
         }
 
@@ -639,6 +677,13 @@ if (formEvento) {
         } else {
             const { data: userData } = await banco.auth.getUser();
 
+            if (!userData || !userData.user) {
+                if (mensagemEvento) {
+                    mensagemEvento.textContent = "Usuário não autenticado.";
+                }
+                return;
+            }
+
             const eventosParaSalvar = gerarEventosComRepeticao({
                 ...dadosBase,
                 data: dataSelecionadaNoModal,
@@ -646,7 +691,9 @@ if (formEvento) {
             }, repeticao, repetirAte);
 
             if (eventosParaSalvar.length === 0) {
-                mensagemEvento.textContent = "Nenhuma data válida encontrada para salvar.";
+                if (mensagemEvento) {
+                    mensagemEvento.textContent = "Nenhuma data válida encontrada para salvar.";
+                }
                 return;
             }
 
@@ -656,14 +703,18 @@ if (formEvento) {
         }
 
         if (resultado.error) {
-            mensagemEvento.textContent = "Erro ao salvar evento: " + resultado.error.message;
+            if (mensagemEvento) {
+                mensagemEvento.textContent = "Erro ao salvar evento: " + resultado.error.message;
+            }
             console.log("Erro evento:", resultado.error);
             return;
         }
 
-        mensagemEvento.textContent = eventoEmEdicaoId
-            ? "Evento atualizado com sucesso!"
-            : "Evento salvo com sucesso!";
+        if (mensagemEvento) {
+            mensagemEvento.textContent = eventoEmEdicaoId
+                ? "Evento atualizado com sucesso!"
+                : "Evento salvo com sucesso!";
+        }
 
         limparFormularioEvento();
 
@@ -699,6 +750,10 @@ function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
     let dataCursor = criarDataLocal(eventoBase.data);
     const dataLimite = criarDataLocal(repetirAte);
 
+    if (dataLimite < dataCursor) {
+        return [];
+    }
+
     while (dataCursor <= dataLimite) {
         if (dataEhDiaLetivo(dataCursor)) {
             eventos.push({
@@ -709,18 +764,14 @@ function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
 
         if (repeticao === "diariamente") {
             dataCursor.setDate(dataCursor.getDate() + 1);
-        }
-
-        if (repeticao === "semanalmente") {
+        } else if (repeticao === "semanalmente") {
             dataCursor.setDate(dataCursor.getDate() + 7);
-        }
-
-        if (repeticao === "mensalmente") {
+        } else if (repeticao === "mensalmente") {
             dataCursor.setMonth(dataCursor.getMonth() + 1);
-        }
-
-        if (repeticao === "anualmente") {
+        } else if (repeticao === "anualmente") {
             dataCursor.setFullYear(dataCursor.getFullYear() + 1);
+        } else {
+            break;
         }
     }
 
@@ -767,13 +818,13 @@ function dataEhDiaLetivo(data) {
 // =====================================================
 
 function limparFormularioEvento() {
-    document.getElementById("eventoTitulo").value = "";
-    document.getElementById("eventoHorarioInicio").value = "";
-    document.getElementById("eventoHorarioFim").value = "";
-    document.getElementById("eventoDescricao").value = "";
-    document.getElementById("eventoLinkMaterial").value = "";
-    document.getElementById("eventoRepeticao").value = "nao_repete";
-    document.getElementById("eventoRepetirAte").value = "";
+    setValorCampo("eventoTitulo", "");
+    setValorCampo("eventoHorarioInicio", "");
+    setValorCampo("eventoHorarioFim", "");
+    setValorCampo("eventoDescricao", "");
+    setValorCampo("eventoLinkMaterial", "");
+    setValorCampo("eventoRepeticao", "nao_repete");
+    setValorCampo("eventoRepetirAte", "");
 
     eventoEmEdicaoId = null;
 
@@ -783,7 +834,7 @@ function limparFormularioEvento() {
         mensagemEvento.textContent = "";
     }
 
-    const botaoSalvar = formEvento.querySelector("button[type='submit']");
+    const botaoSalvar = formEvento ? formEvento.querySelector("button[type='submit']") : null;
 
     if (botaoSalvar) {
         botaoSalvar.textContent = "💾 Salvar Evento";
@@ -816,9 +867,17 @@ if (btnConfirmarExclusao) {
             return;
         }
 
-        modalConfirmarExclusao.classList.remove("aberto");
-        modalDetalheEvento.classList.remove("aberto");
-        modalDia.classList.remove("aberto");
+        if (modalConfirmarExclusao) {
+            modalConfirmarExclusao.classList.remove("aberto");
+        }
+
+        if (modalDetalheEvento) {
+            modalDetalheEvento.classList.remove("aberto");
+        }
+
+        if (modalDia) {
+            modalDia.classList.remove("aberto");
+        }
 
         eventoParaExcluirId = null;
 
@@ -847,91 +906,23 @@ if (btnCancelarExclusao) {
 
 
 // =====================================================
-// 22. NAVEGAÇÃO ENTRE MESES
+// 22. NAVEGAÇÃO ENTRE MESES PELOS BOTÕES
 // =====================================================
 
 if (btnMesAnterior) {
     btnMesAnterior.addEventListener("click", async function () {
-        dataAtual.setMonth(dataAtual.getMonth() - 1);
-
-        await carregarEventosDoMes();
-
-        renderizarCalendario();
+        await mudarMes(-1);
     });
 }
 
 if (btnProximoMes) {
     btnProximoMes.addEventListener("click", async function () {
-        dataAtual.setMonth(dataAtual.getMonth() + 1);
-
-        await carregarEventosDoMes();
-
-        renderizarCalendario();
+        await mudarMes(1);
     });
 }
 
-// =====================================================
-// TROCAR MÊS ARRASTANDO COM O DEDO OU MOUSE
-// Arrastar para esquerda: próximo mês
-// Arrastar para direita: mês anterior
-// =====================================================
-
-let inicioToqueX = 0;
-let fimToqueX = 0;
-let arrastandoCalendario = false;
-
-const areaCalendarioSwipe = document.querySelector(".barra-controles-agenda");
-
-if (areaCalendarioSwipe) {
-    // Celular/tablet
-    areaCalendarioSwipe.addEventListener("touchstart", function (event) {
-        inicioToqueX = event.touches[0].clientX;
-    });
-
-    areaCalendarioSwipe.addEventListener("touchend", async function (event) {
-        fimToqueX = event.changedTouches[0].clientX;
-        await interpretarArrasteDoCalendario();
-    });
-
-    // Computador com mouse
-    areaCalendarioSwipe.addEventListener("mousedown", function (event) {
-        arrastandoCalendario = true;
-        inicioToqueX = event.clientX;
-    });
-
-    areaCalendarioSwipe.addEventListener("mouseup", async function (event) {
-        if (!arrastandoCalendario) {
-            return;
-        }
-
-        fimToqueX = event.clientX;
-        arrastandoCalendario = false;
-
-        await interpretarArrasteDoCalendario();
-    });
-
-    areaCalendarioSwipe.addEventListener("mouseleave", function () {
-        arrastandoCalendario = false;
-    });
-}
-
-async function interpretarArrasteDoCalendario() {
-    const distancia = fimToqueX - inicioToqueX;
-
-    // Evita trocar mês por toque pequeno sem intenção
-    if (Math.abs(distancia) < 70) {
-        return;
-    }
-
-    // Arrastou para esquerda: próximo mês
-    if (distancia < 0) {
-        dataAtual.setMonth(dataAtual.getMonth() + 1);
-    }
-
-    // Arrastou para direita: mês anterior
-    if (distancia > 0) {
-        dataAtual.setMonth(dataAtual.getMonth() - 1);
-    }
+async function mudarMes(direcao) {
+    dataAtual.setMonth(dataAtual.getMonth() + direcao);
 
     await carregarEventosDoMes();
 
@@ -940,7 +931,90 @@ async function interpretarArrasteDoCalendario() {
 
 
 // =====================================================
-// 23. FILTRO ADMIN
+// 23. TROCAR MÊS ARRASTANDO NA BARRA DO MÊS
+// Arrastar para esquerda: mês anterior
+// Arrastar para direita: próximo mês
+//
+// Fica na .barra-controles-agenda para não atrapalhar
+// a rolagem horizontal do calendário no smartphone.
+// =====================================================
+
+let inicioArrasteX = 0;
+let fimArrasteX = 0;
+let mousePressionado = false;
+let swipeConfigurado = false;
+
+function configurarArrasteTrocaMes() {
+    if (swipeConfigurado) {
+        return;
+    }
+
+    const areaSwipe = document.querySelector(".barra-controles-agenda");
+
+    if (!areaSwipe) {
+        return;
+    }
+
+    swipeConfigurado = true;
+
+    // Pointer Events funcionam bem em celular e computador.
+    areaSwipe.addEventListener("pointerdown", function (event) {
+        inicioArrasteX = event.clientX;
+        fimArrasteX = event.clientX;
+        mousePressionado = true;
+    });
+
+    areaSwipe.addEventListener("pointermove", function (event) {
+        if (!mousePressionado) {
+            return;
+        }
+
+        fimArrasteX = event.clientX;
+    });
+
+    areaSwipe.addEventListener("pointerup", async function () {
+        if (!mousePressionado) {
+            return;
+        }
+
+        mousePressionado = false;
+
+        await interpretarArrasteDoCalendario();
+    });
+
+    areaSwipe.addEventListener("pointercancel", function () {
+        mousePressionado = false;
+    });
+
+    areaSwipe.addEventListener("mouseleave", function () {
+        mousePressionado = false;
+    });
+}
+
+async function interpretarArrasteDoCalendario() {
+    const distancia = fimArrasteX - inicioArrasteX;
+
+    // Evita trocar mês com toque pequeno.
+    if (Math.abs(distancia) < 60) {
+        return;
+    }
+
+    // Conforme solicitado:
+    // arrastar para esquerda = mês anterior
+    if (distancia < 0) {
+        await mudarMes(-1);
+        return;
+    }
+
+    // arrastar para direita = próximo mês
+    if (distancia > 0) {
+        await mudarMes(1);
+    }
+}
+
+
+// =====================================================
+// 24. FILTRO ADMIN
 // =====================================================
 
 if (filtroCursoAgenda) {
@@ -953,12 +1027,21 @@ if (filtroCursoAgenda) {
 
 
 // =====================================================
-// 24. FUNÇÕES AUXILIARES
+// 25. FUNÇÕES AUXILIARES
 // =====================================================
 
 function criarDataLocal(dataISO) {
+    if (!dataISO) {
+        return new Date();
+    }
+
     const partes = dataISO.split("-");
-    return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+
+    return new Date(
+        Number(partes[0]),
+        Number(partes[1]) - 1,
+        Number(partes[2])
+    );
 }
 
 function formatarHorarioParaInput(horario) {
@@ -984,15 +1067,28 @@ function formatarDataBR(dataISO) {
 
     const partes = dataISO.split("-");
 
+    if (partes.length !== 3) {
+        return dataISO;
+    }
+
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function primeiraLetraMaiuscula(texto) {
+    if (!texto) {
+        return "";
+    }
+
     return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 function normalizarTipo(tipo) {
+    if (!tipo) {
+        return "outro";
+    }
+
     return tipo
+        .toString()
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -1021,6 +1117,39 @@ function nomeBonitoTipo(tipo) {
         outro: "Outro"
     };
 
-    return nomes[tipo] || tipo;
+    return nomes[normalizarTipo(tipo)] || tipo || "Outro";
 }
 
+function getValorCampo(idCampo) {
+    const campo = document.getElementById(idCampo);
+
+    if (!campo) {
+        return "";
+    }
+
+    return campo.value;
+}
+
+function setValorCampo(idCampo, valor) {
+    const campo = document.getElementById(idCampo);
+
+    if (!campo) {
+        return;
+    }
+
+    campo.value = valor;
+}
+
+function escaparHTML(texto) {
+    if (!texto) {
+        return "";
+    }
+
+    return texto
+        .toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}

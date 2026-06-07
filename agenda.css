@@ -1,551 +1,348 @@
+/* =====================================================
+   AGENDA PEDAGÓGICA - CSS LIMPO E CORRIGIDO
+   Portal de Aulas e Portfólios
+===================================================== */
+
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
+html,
 body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f8fafc;
-  color: #0f172a;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: Inter, Arial, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #f8fafc;
+    color: #0f172a;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+    color: inherit;
+    text-decoration: none;
 }
 
 button,
 select,
 input,
 textarea {
-  font: inherit;
+    font: inherit;
 }
 
 button {
-  cursor: pointer;
+    cursor: pointer;
 }
 
+/* =====================================================
+   TOPO DA AGENDA
+===================================================== */
+
 .topo-agenda {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1.5rem;
-  padding: 2rem 1.5rem;
-  background: #0f172a;
-  color: #ffffff;
+    max-width: 1400px;
+    margin: 18px auto 12px auto;
+    padding: 22px;
+    background-color: #0f172a;
+    color: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
 }
 
 .topo-agenda div {
-  max-width: 760px;
+    max-width: 850px;
 }
 
 .selo-agenda {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.55rem 0.95rem;
-  border-radius: 999px;
-  background: #2563eb;
-  color: #ffffff;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background-color: #2563eb;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
 }
 
 .topo-agenda h1 {
-  margin: 0.75rem 0 0.5rem;
-  font-size: clamp(1.9rem, 5vw, 2.8rem);
-  line-height: 1.05;
+    margin: 10px 0 6px 0;
+    font-size: clamp(1.9rem, 5vw, 2.8rem);
+    line-height: 1.05;
 }
 
 .topo-agenda p {
-  margin: 0;
-  max-width: 42rem;
-  line-height: 1.75;
-  opacity: 0.92;
+    margin: 0;
+    line-height: 1.6;
+    color: #dbeafe;
 }
 
 .btn-voltar-site {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.95rem 1.1rem;
-  border-radius: 0.95rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: #ffffff;
-  color: #0f172a;
-  font-weight: 700;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background-color: #ffffff;
+    color: #0f172a;
+    font-weight: 700;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.16);
 }
+
+/* =====================================================
+   CONTAINER PRINCIPAL
+===================================================== */
 
 .container-agenda {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 1.75rem 1.5rem 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 18px 40px 18px;
 }
 
-.barra-controles-agenda,
-.legenda-agenda {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+/* =====================================================
+   CONTROLES DO MÊS
+===================================================== */
+
+.barra-controles-agenda {
+    width: 100%;
+    margin: 0 0 14px 0;
+    padding: 16px;
+    background-color: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+
+    display: grid;
+    grid-template-columns: 180px 1fr 180px;
+    align-items: center;
+    gap: 12px;
+}
+
+.barra-controles-agenda h2 {
+    margin: 0;
+    text-align: center;
+    color: #0f172a;
+    font-size: 24px;
 }
 
 .barra-controles-agenda button,
 .btn-criar-evento,
 .form-evento button {
-  border: none;
-  border-radius: 0.95rem;
-  padding: 0.95rem 1.25rem;
-  background: #2563eb;
-  color: #ffffff;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 14px;
+    background-color: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+    transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 .barra-controles-agenda button:hover,
 .btn-criar-evento:hover,
 .form-evento button:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
 }
 
-.barra-controles-agenda h2 {
-  margin: 0;
-  font-size: 1.35rem;
-}
+/* =====================================================
+   FILTRO
+===================================================== */
 
 .filtros-agenda {
-  display: grid;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+    margin-bottom: 14px;
+    padding: 16px;
+    background-color: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
 }
 
-.filtros-agenda label,
-.form-evento label {
-  display: block;
-  margin-bottom: 0.45rem;
-  font-weight: 600;
+.filtros-agenda label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
 }
 
-.filtros-agenda select,
-.form-evento select,
-.form-evento input,
-.form-evento textarea {
-  width: 100%;
-  max-width: 420px;
-  padding: 0.95rem 1rem;
-  border: 1px solid #cbd5e1;
-  border-radius: 1rem;
-  background: #ffffff;
-  color: #0f172a;
+.filtros-agenda select {
+    width: 100%;
+    max-width: 420px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    background-color: #ffffff;
 }
 
-.form-evento textarea {
-  min-height: 120px;
-  resize: vertical;
-}
+/* =====================================================
+   LEGENDA DAS CORES
+===================================================== */
 
 .legenda-agenda {
     width: 100%;
+    margin: 0 0 14px 0;
+    padding: 10px 4px;
+
     display: flex;
+    flex-direction: row;
     flex-wrap: nowrap;
+    gap: 10px;
+
     overflow-x: auto;
     overflow-y: hidden;
-    gap: 8px;
-    padding: 8px 4px 10px 4px;
-    margin: 6px 0 8px 0;
-    box-sizing: border-box;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
 }
 
+.legenda-agenda::-webkit-scrollbar {
+    height: 6px;
+}
+
 .tag-legenda {
     flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     white-space: nowrap;
-    font-size: 11px;
-    padding: 6px 12px;
+    padding: 7px 13px;
     border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
+/* Cores claras na legenda */
 .tag-legenda.tipo-aula {
-  background: #dbeafe;
-  color: #1e40af;
+    background-color: #dbeafe;
+    color: #1e40af;
 }
 
-.tag-legenda.tipo-ot {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.tag-legenda.tipo-efape {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.tag-legenda.tipo-multiplica {
-  background: #ede9fe;
-  color: #5b21b6;
+.tag-legenda.tipo-atpcs {
+    background-color: #ccfbf1;
+    color: #0f766e;
 }
 
 .tag-legenda.tipo-atpcg {
-  background: #fed7aa;
-  color: #9a3412;
+    background-color: #fed7aa;
+    color: #9a3412;
+}
+
+.tag-legenda.tipo-apd {
+    background-color: #e9d5ff;
+    color: #6b21a8;
+}
+
+.tag-legenda.tipo-efape {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.tag-legenda.tipo-multiplica {
+    background-color: #ede9fe;
+    color: #5b21b6;
 }
 
 .tag-legenda.tipo-visita_tecnica {
-  background: #cffafe;
-  color: #0c4a6e;
+    background-color: #cffafe;
+    color: #0c4a6e;
 }
 
+.tag-legenda.tipo-apoio_pedagogico {
+    background-color: #fef08a;
+    color: #854d0e;
+}
+
+.tag-legenda.tipo-ot {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.tag-legenda.tipo-outro {
+    background-color: #cbd5e1;
+    color: #334155;
+}
+
+/* =====================================================
+   CALENDÁRIO - DESKTOP
+===================================================== */
+
 .calendario {
-  background: #ffffff;
-  border-radius: 1.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+    width: 100%;
+    min-height: 75vh;
+    padding: 16px;
+    background-color: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+    overflow: hidden;
 }
 
 .dias-semana {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.5rem;
-  text-align: center;
-  font-weight: 700;
-  color: #475569;
-  margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #475569;
+    font-weight: 800;
 }
 
-.grade-calendario {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.85rem;
-}
-
-.grade-calendario > button {
-  min-height: 100px;
-  width: 100%;
-  padding: 1rem;
-  text-align: left;
-  border: 1px solid #e2e8f0;
-  border-radius: 1.25rem;
-  background: #f8fafc;
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.grade-calendario > button:hover {
-  border-color: #93c5fd;
-  transform: translateY(-1px);
-}
-
-.grade-calendario > button.inativo {
-  background: #f1f5f9;
-  color: #94a3b8;
-  cursor: default;
-}
-
-.grade-calendario > button .numero-dia {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.grade-calendario > button .evento-pequeno {
-  display: block;
-  margin-top: 0.4rem;
-  padding: 0.35rem 0.65rem;
-  border-radius: 0.85rem;
-  font-size: 0.82rem;
-  color: #ffffff;
-}
-
-.modal-agenda {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.6);
-  z-index: 50;
-}
-
-.modal-agenda.ativo {
-  display: flex;
-}
-
-.modal-conteudo-agenda {
-  width: min(100%, 560px);
-  background: #ffffff;
-  border-radius: 1.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 36px 110px rgba(15, 23, 42, 0.18);
-}
-
-.modal-topo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.modal-topo h2 {
-  margin: 0;
-  font-size: 1.35rem;
-}
-
-#btnFecharModal {
-  border: none;
-  background: #f8fafc;
-  padding: 0.75rem 1rem;
-  border-radius: 999px;
-}
-
-#listaEventosDia {
-  margin-bottom: 1rem;
-}
-
-.form-evento {
-  display: grid;
-  gap: 1rem;
-}
-
-#mensagemEvento {
-  margin: 0;
-  color: #dc2626;
-  font-size: 0.95rem;
-  min-height: 1.2rem;
-}
-
-@media (max-width: 768px) {
-  .topo-agenda {
-    flex-direction: column;
-  }
-
-  .barra-controles-agenda,
-  .legenda-agenda {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .barra-controles-agenda button,
-  .btn-criar-evento {
-    width: 100%;
-  }
-}
-
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Agenda Pedagógica</title>
-
-    <link rel="stylesheet" href="agenda.css">
-</head>
-<body>
-
-    <header class="topo-agenda">
-        <div>
-            <span class="selo-agenda">Agenda Pedagógica</span>
-
-            <h1>Calendário Interativo</h1>
-
-            <p>
-                Organize aulas, OTs, EFAPE, Multiplica, ATPCG, visitas técnicas e materiais.
-            </p>
-        </div>
-
-        <a href="index.html" class="btn-voltar-site">
-            🏠 Início
-        </a>
-    </header>
-
-    <main class="container-agenda">
-
-        <section class="barra-controles-agenda">
-
-            <button id="btnMesAnterior">
-                ← Mês anterior
-            </button>
-
-            <h2 id="tituloMesAno"></h2>
-
-            <button id="btnProximoMes">
-                Próximo mês →
-            </button>
-
-        </section>
-
-        <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
-
-            <label for="filtroCursoAgenda">
-                Filtrar por curso/disciplina:
-            </label>
-
-            <select id="filtroCursoAgenda">
-                <option value="todos">Ver tudo</option>
-                <option value="informatica">Informática</option>
-                <option value="administracao">Administração</option>
-                <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
-                <option value="administrativo">Administrativo</option>
-            </select>
-
-        </section>
-
-        <section class="legenda-agenda">
-            <span class="tag-legenda tipo-aula">Aula</span>
-            <span class="tag-legenda tipo-ot">OT</span>
-            <span class="tag-legenda tipo-efape">EFAPE</span>
-            <span class="tag-legenda tipo-multiplica">Multiplica</span>
-            <span class="tag-legenda tipo-atpcg">ATPCG</span>
-            <span class="tag-legenda tipo-visita_tecnica">Visita Técnica</span>
-        </section>
-
-        <section class="calendario">
-
-            <div class="dias-semana">
-                <div>Dom</div>
-                <div>Seg</div>
-                <div>Ter</div>
-                <div>Qua</div>
-                <div>Qui</div>
-                <div>Sex</div>
-                <div>Sáb</div>
-            </div>
-
-            <div id="gradeCalendario" class="grade-calendario"></div>
-
-        </section>
-
-    </main>
-
-
-    <!-- MODAL DO DIA -->
-    <div id="modalDia" class="modal-agenda">
-
-        <div class="modal-conteudo-agenda">
-
-            <div class="modal-topo">
-                <h2 id="modalTituloData"></h2>
-
-                <button id="btnFecharModal">
-                    ✕
-                </button>
-            </div>
-
-            <div id="listaEventosDia"></div>
-
-            <button id="btnAbrirFormEvento" class="btn-criar-evento" style="display:none;">
-                + Criar novo evento
-            </button>
-
-            <form id="formEvento" class="form-evento" style="display:none;">
-
-                <h3>Novo Evento</h3>
-
-                <label>Tipo</label>
-                <select id="eventoTipo">
-                    <option value="aula">Aula</option>
-                    <option value="OT">OT</option>
-                    <option value="EFAPE">EFAPE</option>
-                    <option value="Multiplica">Multiplica</option>
-                    <option value="ATPCG">ATPCG</option>
-                    <option value="visita_tecnica">Visita Técnica</option>
-                </select>
-
-                <label>Título</label>
-                <input type="text" id="eventoTitulo" placeholder="Ex: Aula de Front-End">
-
-                <label>Descrição</label>
-                <textarea id="eventoDescricao" placeholder="Plano da aula, recado ou orientação"></textarea>
-
-                <label>Curso alvo</label>
-                <select id="eventoCursoAlvo">
-                    <option value="todos">Todos</option>
-                    <option value="informatica">Informática</option>
-                    <option value="administracao">Administração</option>
-                    <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
-                    <option value="administrativo">Administrativo</option>
-                </select>
-
-                <label>Link do material</label>
-                <input type="url" id="eventoLinkMaterial" placeholder="Link do PDF, vídeo, slide ou atividade">
-
-                <button type="submit">
-                    Salvar Evento
-                </button>
-
-                <p id="mensagemEvento"></p>
-
-            </form>
-
-        </div>
-    align-items: flex-start;
-
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script src="agenda.js"></script>
-
-</body>
-</html>
-
-/* =====================================================
-   CALENDÁRIO GRANDE E INTERATIVO
-===================================================== */
-
-.container-agenda {
-    max-width: 1400px;
-}
-
-.calendario {
-    min-height: 75vh;
+.dias-semana div {
+    padding: 10px 4px;
 }
 
 .grade-calendario {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.dia-vazio {
+    min-height: 150px;
+    border-radius: 14px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
 }
 
 .dia-calendario {
-    min-height: 170px;
-    border: 1px solid #e2e8f0;
+    min-height: 150px;
     padding: 10px;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
     cursor: pointer;
-    background-color: white;
-    transition: 0.2s;
     overflow: hidden;
+    transition: 0.2s;
 }
 
 .dia-calendario:hover {
     background-color: #f0fdfa;
-    transform: scale(1.01);
+    border-color: #0f766e;
+    transform: translateY(-2px);
+}
+
+.dia-hoje {
+    outline: 3px solid #0f766e;
+    outline-offset: -3px;
+    background-color: #f0fdfa;
 }
 
 .cabecalho-dia {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 6px;
     margin-bottom: 8px;
 }
 
 .numero-dia {
-    font-weight: bold;
+    font-weight: 800;
     font-size: 18px;
 }
 
 .quantidade-eventos {
     font-size: 11px;
     color: #64748b;
+    white-space: nowrap;
 }
 
 .eventos-mini-dia {
@@ -558,25 +355,21 @@ button {
     display: block;
     padding: 6px 8px;
     border-radius: 8px;
-    color: white;
+    color: #ffffff;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 700;
+    line-height: 1.25;
     cursor: pointer;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .evento-mini span {
-    opacity: 0.9;
-    margin-right: 5px;
+    margin-right: 4px;
+    opacity: 0.95;
 }
 
-
-/* =====================================================
-   CORES POR TIPO DE EVENTO
-===================================================== */
-
+/* Cores fortes dos eventos dentro do calendário */
 .tipo-aula {
     background-color: #2563eb;
 }
@@ -617,18 +410,17 @@ button {
     background-color: #475569;
 }
 
-
 /* =====================================================
-   MODAIS SOBREPOSTOS
+   MODAIS
 ===================================================== */
 
 .modal-agenda {
     display: none;
     position: fixed;
     inset: 0;
-    background-color: rgba(15, 23, 42, 0.70);
     z-index: 1000;
     padding: 20px;
+    background-color: rgba(15, 23, 42, 0.72);
 }
 
 .modal-agenda.aberto {
@@ -642,9 +434,9 @@ button {
     max-width: 760px;
     max-height: 90vh;
     overflow-y: auto;
-    background-color: white;
-    border-radius: 22px;
     padding: 24px;
+    background-color: #ffffff;
+    border-radius: 22px;
     box-shadow: 0 12px 35px rgba(0,0,0,0.35);
 }
 
@@ -655,14 +447,20 @@ button {
     gap: 15px;
 }
 
-.modal-topo button {
+.modal-topo h2 {
+    margin: 0;
+}
+
+.modal-topo button,
+#btnFecharModal,
+#btnFecharDetalheEvento {
     background-color: #fee2e2;
     color: #991b1b;
     border: none;
-    border-radius: 10px;
-    padding: 9px 13px;
+    border-radius: 12px;
+    padding: 10px 14px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 800;
 }
 
 .card-evento-dia,
@@ -679,11 +477,10 @@ button {
     border-radius: 10px;
     border: none;
     background-color: #1e40af;
-    color: white;
-    font-weight: bold;
+    color: #ffffff;
+    font-weight: 700;
     cursor: pointer;
 }
-
 
 /* =====================================================
    FORMULÁRIO DE EVENTO
@@ -700,297 +497,88 @@ button {
 .form-evento label {
     display: block;
     margin-top: 12px;
-    font-weight: bold;
+    margin-bottom: 6px;
+    font-weight: 700;
 }
 
 .form-evento input,
 .form-evento select,
 .form-evento textarea {
-    width: 95%;
+    width: 100%;
     padding: 12px;
-    margin: 6px 0 12px 0;
     border: 2px solid #0f766e;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 16px;
 }
 
 .form-evento textarea {
     min-height: 100px;
+    resize: vertical;
 }
 
-.btn-criar-evento,
-.form-evento button {
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: none;
-    background-color: #0f766e;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
+.linha-form-evento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
 }
 
+.area-repeticao-evento {
+    margin-top: 18px;
+    padding: 16px;
+    background-color: #ecfeff;
+    border-left: 6px solid #0f766e;
+    border-radius: 16px;
+}
+
+.area-repeticao-evento h4 {
+    margin-top: 0;
+    color: #0f766e;
+}
+
+.observacao-repeticao {
+    color: #475569;
+    font-size: 14px;
+}
 
 /* =====================================================
-   SMARTPHONE
+   BOTÕES EDITAR / EXCLUIR
 ===================================================== */
 
-//* =====================================================
-   RESPONSIVIDADE - SMARTPHONE EM MODO MATRIZ
-   Calendário estilo Google Agenda, usando melhor a tela
-===================================================== */
-
-@media (max-width: 800px) {
-    html,
-    body {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-        overflow-x: hidden;
-        background-color: #f8fafc;
-    }
-
-    /* Usa praticamente toda a largura do celular */
-    .topo-agenda {
-        width: calc(100% - 12px);
-        margin: 6px auto;
-        padding: 10px;
-        border-radius: 14px;
-        box-sizing: border-box;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .topo-agenda h1 {
-        font-size: 20px;
-        margin: 4px 0;
-    }
-
-    .topo-agenda p {
-        font-size: 12px;
-        line-height: 1.3;
-    }
-
-    .selo-agenda {
-        font-size: 11px;
-        padding: 4px 9px;
-    }
-
-    .btn-voltar-site {
-        width: 100%;
-        text-align: center;
-        box-sizing: border-box;
-        padding: 9px;
-        font-size: 13px;
-    }
-
-    .container-agenda {
-        width: calc(100% - 8px);
-        max-width: 100%;
-        margin: 4px auto;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    /* Mês e botões mais compactos */
-    .barra-controles-agenda {
-        width: 100%;
-        box-sizing: border-box;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        padding: 10px;
-        border-radius: 14px;
-    }
-
-    .barra-controles-agenda h2 {
-        grid-column: 1 / -1;
-        order: -1;
-        font-size: 20px;
-        text-align: center;
-        margin: 0;
-    }
-
-    .barra-controles-agenda button {
-        width: 100%;
-        padding: 9px;
-        font-size: 13px;
-        border-radius: 11px;
-    }
-
-    /* Filtro mais compacto */
-    .filtros-agenda {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 10px;
-        margin: 8px 0;
-        border-radius: 14px;
-    }
-
-    .filtros-agenda label {
-        display: block;
-        margin-bottom: 6px;
-        font-size: 13px;
-    }
-
-    .filtros-agenda select {
-        width: 100%;
-        box-sizing: border-box;
-        font-size: 13px;
-        padding: 10px;
-    }
-
-    /* Legenda horizontal rolável */
-    .legenda-agenda {
-        width: 100%;
-        display: flex;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
-        gap: 8px;
-        padding: 8px 4px 10px 4px;
-        margin: 6px 0 8px 0;
-        box-sizing: border-box;
-        scrollbar-width: thin;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .legenda-agenda::-webkit-scrollbar {
-        height: 5px;
-    }
-
-    .tag-legenda {
-        flex: 0 0 auto;
-        white-space: nowrap;
-        font-size: 11px;
-        padding: 6px 12px;
-        min-width: auto;
-        border-radius: 999px;
-    }
-
-    /* =====================================================
-   CALENDÁRIO MOBILE COM ROLAGEM HORIZONTAL
-   Mantém os quadrantes maiores e legíveis
-===================================================== */
-
-.calendario {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 8px;
-    border-radius: 14px;
-    min-height: auto;
-
-    /* Agora a rolagem horizontal fica na área do calendário */
-    overflow-x: auto;
-    overflow-y: hidden;
-
-    /* Rolagem suave no smartphone */
-    -webkit-overflow-scrolling: touch;
-}
-
-/* A linha dos dias da semana fica larga, não espremida */
-.dias-semana {
-    display: grid;
-    grid-template-columns: repeat(7, 110px);
-    min-width: 770px;
-    font-size: 12px;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.dias-semana div {
-    padding: 8px 2px;
-    text-align: center;
-    font-weight: bold;
-}
-
-/* A grade também fica larga e rolável */
-.grade-calendario {
-    display: grid;
-    grid-template-columns: repeat(7, 110px);
-    min-width: 770px;
-    width: max-content;
-    box-sizing: border-box;
-}
-
-/* Dias vazios acompanham o mesmo tamanho dos dias normais */
-.dia-vazio {
-    min-height: 115px;
-    border: 1px solid #e2e8f0;
-    background-color: #f8fafc;
-}
-
-/* Cada quadrante agora fica maior e mais fácil de ler */
-.dia-calendario {
-    min-height: 115px;
-    padding: 6px;
-    border-radius: 0;
-    margin: 0;
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-    background-color: white;
-    box-sizing: border-box;
-}
-
-.dia-calendario:hover {
-    transform: none;
-}
-
-.dia-hoje {
-    outline: 2px solid #0f766e;
-    outline-offset: -2px;
-    background-color: #f0fdfa;
-}
-
-.cabecalho-dia {
-    margin-bottom: 5px;
+.topo-detalhe-evento {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 2px;
+    gap: 15px;
 }
 
-.numero-dia {
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.quantidade-eventos {
-    font-size: 9px;
-    color: #64748b;
-    white-space: nowrap;
-}
-
-.eventos-mini-dia {
+.acoes-evento-admin {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
+    gap: 8px;
 }
 
-/* Eventos mais legíveis dentro do quadrante */
-.evento-mini {
-    font-size: 9px;
-    line-height: 1.15;
-    padding: 4px 5px;
-    border-radius: 6px;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: 34px;
-}
-
-.evento-mini span {
-    display: inline;
+.btn-editar-evento,
+.btn-excluir-evento {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
     font-weight: bold;
-    margin-right: 3px;
 }
 
-/* Mostra até 3 eventos por dia para não estourar o card */
-.eventos-mini-dia .evento-mini:nth-child(n+4) {
-    display: none;
+.btn-editar-evento {
+    background-color: #dbeafe;
+    color: #1e40af;
 }
+
+.btn-excluir-evento {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
 /* =====================================================
-   MODAL PERSONALIZADO DE CONFIRMAÇÃO DE EXCLUSÃO
+   MODAL CONFIRMAÇÃO EXCLUSÃO
 ===================================================== */
 
 .modal-confirmacao-exclusao {
@@ -1009,14 +597,9 @@ button {
     color: #991b1b;
 }
 
-.modal-confirmacao-exclusao p {
-    color: #0f172a;
-    font-size: 17px;
-}
-
 .aviso-exclusao {
-    color: #64748b !important;
-    font-size: 14px !important;
+    color: #64748b;
+    font-size: 14px;
 }
 
 .botoes-confirmacao {
@@ -1041,20 +624,192 @@ button {
     color: #0f172a;
 }
 
-.btn-nao-excluir:hover {
-    background-color: #cbd5e1;
-}
-
 .btn-sim-excluir {
     background-color: #dc2626;
     color: white;
 }
 
-.btn-sim-excluir:hover {
-    background-color: #991b1b;
-}
+/* =====================================================
+   SMARTPHONE - MATRIZ SEM FICAR ESTREITA
+   Aqui o calendário fica igual desktop, porém mais largo
+   que a tela, com rolagem horizontal.
+===================================================== */
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .topo-agenda {
+        width: 99vw;
+        margin: 4px auto 8px auto;
+        padding: 10px;
+        border-radius: 14px;
+        flex-direction: column;
+    }
+
+    .topo-agenda h1 {
+        font-size: 20px;
+    }
+
+    .topo-agenda p {
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .btn-voltar-site {
+        width: 100%;
+    }
+
+    .container-agenda {
+        width: 99vw;
+        max-width: 99vw;
+        margin: 0 auto;
+        padding: 0 0 24px 0;
+    }
+
+    .barra-controles-agenda {
+        width: 99vw;
+        margin: 0 auto 8px auto;
+        padding: 10px;
+        grid-template-columns: 1fr 1fr;
+        border-radius: 14px;
+    }
+
+    .barra-controles-agenda h2 {
+        grid-column: 1 / -1;
+        order: -1;
+        font-size: 20px;
+    }
+
+    .barra-controles-agenda button {
+        width: 100%;
+        padding: 9px;
+        font-size: 13px;
+    }
+
+    .filtros-agenda {
+        width: 99vw;
+        margin: 6px auto;
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .filtros-agenda select {
+        max-width: none;
+    }
+
+    /* Legenda horizontal no smartphone */
+    .legenda-agenda {
+        width: 99vw;
+        margin: 6px auto 8px auto;
+        padding: 6px 4px 8px 4px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tag-legenda {
+        flex: 0 0 auto;
+        width: auto;
+        min-width: max-content;
+        white-space: nowrap;
+        font-size: 10px;
+        padding: 5px 10px;
+    }
+
+    /* O calendário usa 99% da tela e permite arrastar horizontal */
+    .calendario {
+        width: 99vw;
+        max-width: 99vw;
+        margin: 0 auto;
+        padding: 6px;
+        border-radius: 14px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x pan-y;
+    }
+
+    /* Largura parecida com desktop: cada dia tem 130px */
+    .dias-semana {
+        display: grid;
+        grid-template-columns: repeat(7, 130px);
+        width: 910px;
+        min-width: 910px;
+        gap: 6px;
+        font-size: 12px;
+    }
+
+    .grade-calendario {
+        display: grid;
+        grid-template-columns: repeat(7, 130px);
+        width: 910px;
+        min-width: 910px;
+        gap: 6px;
+    }
+
+    .dia-vazio {
+        min-height: 130px;
+        border-radius: 12px;
+    }
+
+    .dia-calendario {
+        min-height: 130px;
+        height: 130px;
+        padding: 7px;
+        border-radius: 12px;
+    }
+
+    .numero-dia {
+        font-size: 14px;
+    }
+
+    .quantidade-eventos {
+        font-size: 8px;
+    }
+
+    .evento-mini {
+        font-size: 9px;
+        line-height: 1.15;
+        padding: 4px 5px;
+        border-radius: 6px;
+        white-space: normal;
+        max-height: 34px;
+    }
+
+    .evento-mini span {
+        display: inline;
+        font-weight: 800;
+    }
+
+    .eventos-mini-dia .evento-mini:nth-child(n+4) {
+        display: none;
+    }
+
+    .modal-agenda {
+        padding: 8px;
+    }
+
+    .modal-conteudo-agenda {
+        width: 96vw;
+        max-width: 96vw;
+        max-height: 92vh;
+        padding: 14px;
+        border-radius: 16px;
+    }
+
+    .linha-form-evento {
+        grid-template-columns: 1fr;
+    }
+
     .botoes-confirmacao {
         flex-direction: column;
     }
@@ -1062,323 +817,5 @@ button {
     .btn-nao-excluir,
     .btn-sim-excluir {
         width: 100%;
-    }
-}
-
-/* =====================================================
-   CORREÇÃO FINAL - AGENDA MOBILE 99% DA TELA
-   Objetivo:
-   - Legenda horizontal rolável
-   - Calendário ocupando quase toda a largura do smartphone
-   - Quadrantes maiores e mais legíveis
-   - Rolagem horizontal somente dentro do calendário
-===================================================== */
-
-@media (max-width: 800px) {
-
-    html,
-    body {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow-x: hidden !important;
-        background-color: #f8fafc !important;
-    }
-
-    /* Remove margens grandes gerais */
-    .topo-agenda {
-        width: 99vw !important;
-        max-width: 99vw !important;
-        margin: 4px auto 8px auto !important;
-        padding: 10px !important;
-        box-sizing: border-box !important;
-        border-radius: 14px !important;
-    }
-
-    .topo-agenda h1 {
-        font-size: 20px !important;
-        margin: 4px 0 !important;
-    }
-
-    .topo-agenda p {
-        font-size: 12px !important;
-        line-height: 1.3 !important;
-    }
-
-    .container-agenda {
-        width: 99vw !important;
-        max-width: 99vw !important;
-        margin: 0 auto !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Área do mês */
-    .barra-controles-agenda {
-        width: 99vw !important;
-        max-width: 99vw !important;
-        margin: 0 auto 8px auto !important;
-        padding: 10px !important;
-        box-sizing: border-box !important;
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 8px !important;
-        border-radius: 14px !important;
-    }
-
-    .barra-controles-agenda h2 {
-        grid-column: 1 / -1 !important;
-        order: -1 !important;
-        text-align: center !important;
-        font-size: 20px !important;
-        margin: 0 0 4px 0 !important;
-    }
-
-    .barra-controles-agenda button {
-        width: 100% !important;
-        padding: 9px !important;
-        font-size: 13px !important;
-        border-radius: 11px !important;
-    }
-
-    /* Filtro */
-    .filtros-agenda {
-        width: 99vw !important;
-        max-width: 99vw !important;
-        margin: 6px auto !important;
-        padding: 10px !important;
-        box-sizing: border-box !important;
-        border-radius: 14px !important;
-    }
-
-    .filtros-agenda label {
-        display: block !important;
-        margin-bottom: 6px !important;
-        font-size: 13px !important;
-    }
-
-    .filtros-agenda select {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        font-size: 13px !important;
-        padding: 10px !important;
-    }
-
-    /* =====================================================
-       LEGENDA HORIZONTAL
-       Esta parte corrige o problema da legenda vertical
-    ===================================================== */
-
-    .legenda-agenda {
-        width: 99vw !important;
-        max-width: 99vw !important;
-        margin: 6px auto 8px auto !important;
-        padding: 6px 4px 8px 4px !important;
-        box-sizing: border-box !important;
-
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-
-        gap: 8px !important;
-        scrollbar-width: thin !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    .legenda-agenda::-webkit-scrollbar {
-        height: 5px !important;
-    }
-
-    .tag-legenda {
-        flex: 0 0 auto !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-
-        width: auto !important;
-        min-width: max-content !important;
-        max-width: none !important;
-
-        white-space: nowrap !important;
-        font-size: 10px !important;
-        padding: 5px 10px !important;
-        border-radius: 999px !important;
-    }
-
-    /* =====================================================
-       CALENDÁRIO COM 99% DA LARGURA
-       O calendário ocupa a tela toda, mas a grade interna
-       pode rolar horizontalmente para não espremer os dias.
-    ===================================================== */
-
-    .calendario {
-        width: 99vw !important;
-        max-width: 99vw !important;
-        margin: 0 auto !important;
-        padding: 6px !important;
-        box-sizing: border-box !important;
-        border-radius: 14px !important;
-
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-
-        -webkit-overflow-scrolling: touch !important;
-        touch-action: pan-x pan-y !important;
-    }
-
-    .calendario::-webkit-scrollbar {
-        height: 6px !important;
-    }
-
-    /* Cabeçalho dos dias da semana fica largo e rolável junto */
-    .dias-semana {
-        display: grid !important;
-        grid-template-columns: repeat(7, 96px) !important;
-        min-width: 672px !important;
-        width: 672px !important;
-
-        font-size: 11px !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-    }
-
-    .dias-semana div {
-        padding: 7px 2px !important;
-        text-align: center !important;
-        font-weight: bold !important;
-    }
-
-    /* Grade mensal em matriz, sem virar lista */
-    .grade-calendario {
-        display: grid !important;
-        grid-template-columns: repeat(7, 96px) !important;
-        min-width: 672px !important;
-        width: 672px !important;
-        box-sizing: border-box !important;
-    }
-
-    .dia-vazio {
-        min-height: 105px !important;
-        border: 1px solid #e2e8f0 !important;
-        background-color: #f8fafc !important;
-        box-sizing: border-box !important;
-    }
-
-    .dia-calendario {
-        min-height: 105px !important;
-        height: 105px !important;
-
-        padding: 5px !important;
-        margin: 0 !important;
-
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 0 !important;
-
-        background-color: white !important;
-        box-sizing: border-box !important;
-
-        overflow: hidden !important;
-    }
-
-    .dia-calendario:hover {
-        transform: none !important;
-    }
-
-    .dia-hoje {
-        outline: 2px solid #0f766e !important;
-        outline-offset: -2px !important;
-        background-color: #f0fdfa !important;
-    }
-
-    .cabecalho-dia {
-        margin-bottom: 4px !important;
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        gap: 2px !important;
-    }
-
-    .numero-dia {
-        font-size: 13px !important;
-        font-weight: bold !important;
-    }
-
-    .quantidade-eventos {
-        font-size: 8px !important;
-        color: #64748b !important;
-        white-space: nowrap !important;
-    }
-
-    .eventos-mini-dia {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 3px !important;
-    }
-
-    .evento-mini {
-        font-size: 8px !important;
-        line-height: 1.15 !important;
-        padding: 3px 4px !important;
-        border-radius: 5px !important;
-
-        white-space: normal !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-
-        max-height: 30px !important;
-    }
-
-    .evento-mini span {
-        display: inline !important;
-        font-weight: bold !important;
-        margin-right: 2px !important;
-    }
-
-    /* Mostra no máximo 3 eventos por quadrante para não bagunçar */
-    .eventos-mini-dia .evento-mini:nth-child(n+4) {
-        display: none !important;
-    }
-
-    /* Modais no celular */
-    .modal-agenda {
-        padding: 8px !important;
-    }
-
-    .modal-conteudo-agenda {
-        width: 96vw !important;
-        max-width: 96vw !important;
-        max-height: 92vh !important;
-        padding: 14px !important;
-        border-radius: 16px !important;
-        box-sizing: border-box !important;
-    }
-
-    .modal-topo h2 {
-        font-size: 18px !important;
-    }
-
-    .card-evento-dia,
-    .detalhe-card-evento {
-        padding: 13px !important;
-        border-radius: 13px !important;
-    }
-
-    .form-evento input,
-    .form-evento select,
-    .form-evento textarea {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        font-size: 14px !important;
-    }
-
-    .linha-form-evento {
-        grid-template-columns: 1fr !important;
-    }
-
-    .btn-criar-evento {
-        width: 100% !important;
     }
 }
