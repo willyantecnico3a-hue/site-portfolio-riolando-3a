@@ -32,12 +32,15 @@ const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // 2. VARIÁVEIS GLOBAIS
 // =====================================================
 
+
+
 let dataAtual = new Date();
 let eventosCarregados = [];
 let perfilUsuario = null;
 let dataSelecionadaNoModal = null;
 let eventoEmEdicaoId = null;
 let eventoParaExcluirId = null;
+let eventoParaExcluirObjeto = null;
 
 // Controla quando o usuário fez swipe no calendário.
 // Serve para evitar abrir o modal do dia sem querer.
@@ -621,8 +624,9 @@ function prepararEdicaoEvento(idEvento) {
 }
 
 
+
 // =====================================================
-// 13. EXCLUIR EVENTO - ABRE CONFIRMAÇÃO
+// 13. EXCLUIR EVENTO - ABRE MODAL COM OPÇÕES
 // =====================================================
 
 function excluirEvento(idEvento) {
@@ -631,13 +635,22 @@ function excluirEvento(idEvento) {
         return;
     }
 
+    const evento = eventosCarregados.find(function (item) {
+        return String(item.id) === String(idEvento);
+    });
+
+    if (!evento) {
+        alert("Evento não encontrado para exclusão.");
+        return;
+    }
+
     eventoParaExcluirId = idEvento;
+    eventoParaExcluirObjeto = evento;
 
     if (modalConfirmarExclusao) {
         modalConfirmarExclusao.classList.add("aberto");
     }
 }
-
 
 // =====================================================
 // 14. FECHAR MODAIS
@@ -808,13 +821,25 @@ if (formEvento) {
 // =====================================================
 // 17. GERAR EVENTOS COM REPETIÇÃO
 // =====================================================
+//
+// Agora todos os eventos repetidos recebem o mesmo serie_id.
+// Isso permite excluir:
+// - somente este;
+// - este e os próximos;
+// - toda a série.
+//
+// =====================================================
 
 function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
+    const serieId = gerarSerieIdEvento();
+
     if (repeticao === "nao_repete" || !repetirAte) {
         return [
             {
                 ...eventoBase,
-                data: eventoBase.data
+                data: eventoBase.data,
+                repeticao: "nao_repete",
+                serie_id: serieId
             }
         ];
     }
@@ -832,7 +857,9 @@ function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
         if (dataEhDiaLetivo(dataCursor)) {
             eventos.push({
                 ...eventoBase,
-                data: formatarDataISO(dataCursor)
+                data: formatarDataISO(dataCursor),
+                repeticao: repeticao,
+                serie_id: serieId
             });
         }
 
@@ -850,6 +877,15 @@ function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
     }
 
     return eventos;
+}
+
+
+// =====================================================
+// GERAR ID DA SÉRIE DO EVENTO
+// =====================================================
+
+function gerarSerieIdEvento() {
+    return "serie_" + Date.now() + "_" + Math.random().toString(36).substring(2, 10);
 }
 
 
@@ -921,51 +957,159 @@ function limparFormularioEvento() {
 
 
 // =====================================================
-// 20. CONFIRMAR EXCLUSÃO
+// 20. CONFIRMAR EXCLUSÃO COM OPÇÕES TIPO GOOGLE AGENDA
 // =====================================================
 
-if (btnConfirmarExclusao) {
-    btnConfirmarExclusao.addEventListener("click", async function () {
-        if (!eventoParaExcluirId) {
-            return;
-        }
+const btnExcluirSomenteEste = document.getElementById("btnExcluirSomenteEste");
+const btnExcluirEsteEProximos = document.getElementById("btnExcluirEsteEProximos");
+const btnExcluirTodaSerie = document.getElementById("btnExcluirTodaSerie");
 
-        if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-            alert("Apenas o administrador pode excluir eventos.");
-            return;
-        }
-
-        const { error } = await banco
-            .from("eventos")
-            .delete()
-            .eq("id", eventoParaExcluirId);
-
-        if (error) {
-            alert("Erro ao excluir evento: " + error.message);
-            console.log("Erro ao excluir evento:", error);
-            return;
-        }
-
-        if (modalConfirmarExclusao) {
-            modalConfirmarExclusao.classList.remove("aberto");
-        }
-
-        if (modalDetalheEvento) {
-            modalDetalheEvento.classList.remove("aberto");
-        }
-
-        if (modalDia) {
-            modalDia.classList.remove("aberto");
-        }
-
-        eventoParaExcluirId = null;
-
-        alert("Evento excluído com sucesso!");
-
-        await carregarEventosDoMes();
-
-        renderizarCalendario();
+if (btnExcluirSomenteEste) {
+    btnExcluirSomenteEste.addEventListener("click", async function () {
+        await excluirSomenteEsteEvento();
     });
+}
+
+if (btnExcluirEsteEProximos) {
+    btnExcluirEsteEProximos.addEventListener("click", async function () {
+        await excluirEsteEProximosEventos();
+    });
+}
+
+if (btnExcluirTodaSerie) {
+    btnExcluirTodaSerie.addEventListener("click", async function () {
+        await excluirTodaSerieEventos();
+    });
+}
+
+
+// =====================================================
+// EXCLUIR SOMENTE ESTE EVENTO
+// =====================================================
+
+async function excluirSomenteEsteEvento() {
+    if (!eventoParaExcluirId) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("eventos")
+        .delete()
+        .eq("id", eventoParaExcluirId);
+
+    if (error) {
+        alert("Erro ao excluir evento: " + error.message);
+        console.log("Erro ao excluir evento:", error);
+        return;
+    }
+
+    finalizarExclusaoEvento("Evento excluído com sucesso!");
+}
+
+
+// =====================================================
+// EXCLUIR ESTE E OS PRÓXIMOS EVENTOS DA SÉRIE
+// =====================================================
+
+async function excluirEsteEProximosEventos() {
+    if (!eventoParaExcluirObjeto) {
+        return;
+    }
+
+    const serieId = eventoParaExcluirObjeto.serie_id;
+    const dataEvento = eventoParaExcluirObjeto.data;
+
+    if (!serieId) {
+        const confirmar = confirm(
+            "Este evento não possui série de repetição. Deseja excluir somente este evento?"
+        );
+
+        if (confirmar) {
+            await excluirSomenteEsteEvento();
+        }
+
+        return;
+    }
+
+    const { error } = await banco
+        .from("eventos")
+        .delete()
+        .eq("serie_id", serieId)
+        .gte("data", dataEvento);
+
+    if (error) {
+        alert("Erro ao excluir este e os próximos eventos: " + error.message);
+        console.log("Erro ao excluir próximos:", error);
+        return;
+    }
+
+    finalizarExclusaoEvento("Este evento e os próximos foram excluídos com sucesso!");
+}
+
+
+// =====================================================
+// EXCLUIR TODOS OS EVENTOS DA SÉRIE
+// =====================================================
+
+async function excluirTodaSerieEventos() {
+    if (!eventoParaExcluirObjeto) {
+        return;
+    }
+
+    const serieId = eventoParaExcluirObjeto.serie_id;
+
+    if (!serieId) {
+        const confirmar = confirm(
+            "Este evento não possui série de repetição. Deseja excluir somente este evento?"
+        );
+
+        if (confirmar) {
+            await excluirSomenteEsteEvento();
+        }
+
+        return;
+    }
+
+    const { error } = await banco
+        .from("eventos")
+        .delete()
+        .eq("serie_id", serieId);
+
+    if (error) {
+        alert("Erro ao excluir todos os eventos da série: " + error.message);
+        console.log("Erro ao excluir série:", error);
+        return;
+    }
+
+    finalizarExclusaoEvento("Todos os eventos da série foram excluídos com sucesso!");
+}
+
+
+// =====================================================
+// FINALIZAR EXCLUSÃO
+// =====================================================
+
+async function finalizarExclusaoEvento(mensagem) {
+    if (modalConfirmarExclusao) {
+        modalConfirmarExclusao.classList.remove("aberto");
+    }
+
+    if (modalDetalheEvento) {
+        modalDetalheEvento.classList.remove("aberto");
+    }
+
+    if (modalDia) {
+        modalDia.classList.remove("aberto");
+    }
+
+    eventoParaExcluirId = null;
+    eventoParaExcluirObjeto = null;
+
+    alert(mensagem);
+
+    await carregarEventosDoMes();
+
+    renderizarCalendario();
 }
 
 
@@ -976,6 +1120,7 @@ if (btnConfirmarExclusao) {
 if (btnCancelarExclusao) {
     btnCancelarExclusao.addEventListener("click", function () {
         eventoParaExcluirId = null;
+        eventoParaExcluirObjeto = null;
 
         if (modalConfirmarExclusao) {
             modalConfirmarExclusao.classList.remove("aberto");

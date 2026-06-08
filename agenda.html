@@ -236,38 +236,40 @@
     </div>
 
 
-    <!-- =====================================================
-         MODAL DE CONFIRMAÇÃO DE EXCLUSÃO
-    ====================================================== -->
-    <div id="modalConfirmarExclusao" class="modal-agenda">
+   <!-- MODAL CONFIRMAR EXCLUSÃO -->
+<div id="modalConfirmarExclusao" class="modal-agenda">
 
-        <div class="modal-confirmacao-exclusao">
+    <div class="modal-conteudo-agenda modal-exclusao-evento">
 
-            <h2>Confirmar exclusão</h2>
+        <h2>Excluir evento</h2>
 
-            <p>
-                Tem certeza que deseja excluir este evento?
-            </p>
+        <p>
+            Como deseja excluir este evento?
+        </p>
 
-            <p class="aviso-exclusao">
-                Essa ação não poderá ser desfeita.
-            </p>
+        <div class="opcoes-exclusao-evento">
 
-            <div class="botoes-confirmacao">
+            <button type="button" id="btnExcluirSomenteEste">
+                🗓️ Excluir somente este evento
+            </button>
 
-                <button id="btnCancelarExclusao" class="btn-nao-excluir">
-                    Não, cancelar
-                </button>
+            <button type="button" id="btnExcluirEsteEProximos">
+                ➡️ Excluir este e os próximos eventos
+            </button>
 
-                <button id="btnConfirmarExclusao" class="btn-sim-excluir">
-                    Sim, excluir
-                </button>
+            <button type="button" id="btnExcluirTodaSerie">
+                🔁 Excluir todos os eventos da série
+            </button>
 
-            </div>
+            <button type="button" id="btnCancelarExclusao">
+                ❌ Cancelar
+            </button>
 
         </div>
 
     </div>
+
+</div>
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
