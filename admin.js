@@ -47,13 +47,24 @@ const mensagemLogin = document.getElementById("mensagemLogin");
 // =====================================================
 // 3. PERFIL ADMINISTRATIVO PADRÃO
 // =====================================================
+//
+// Agora o perfil administrativo será salvo no Supabase,
+// e não mais apenas no localStorage do navegador.
+//
+// Tabela usada:
+// public.admin_profiles
+//
+// Bucket usado para foto:
+// admin-perfil
+//
+// =====================================================
 
 const perfilPadraoAdmin = {
-    nome: "Professor e PAEET Willyan Vieira",
+    nome_funcao: "Professor e PAEET Willyan Vieira",
     email: "willyancruz@prof.educacao.sp.gov.br",
     escola: "PEI Prof. Riolando Canno",
     frase: "“Educar é transformar oportunidades em caminhos possíveis.”",
-    foto: "https://ui-avatars.com/api/?name=Willyan+Vieira&background=0f766e&color=ffffff"
+    foto_url: "https://ui-avatars.com/api/?name=Willyan+Vieira&background=0f766e&color=ffffff"
 };
 
 
@@ -90,196 +101,68 @@ function mostrarTelaLoginAdmin() {
 
 
 // =====================================================
-// 6. LOGIN ADMINISTRATIVO COM SUPABASE AUTH
+// 11. CARREGAR PERFIL ADMINISTRATIVO DO SUPABASE
 // =====================================================
 
-if (btnLoginAdmin) {
-    btnLoginAdmin.addEventListener("click", async function () {
-        const email = document.getElementById("emailAdmin").value.trim();
-        const senha = document.getElementById("senhaAdmin").value.trim();
+async function carregarPerfilAdminEditavel() {
+    const { data: userData, error: userError } = await banco.auth.getUser();
 
-        if (!email || !senha) {
-            mensagemLogin.textContent = "Digite o e-mail e a senha.";
-            return;
-        }
+    if (userError || !userData.user) {
+        console.log("Usuário não logado para carregar perfil admin.");
+        aplicarPerfilAdminNaTela(perfilPadraoAdmin);
+        return;
+    }
 
-        mensagemLogin.textContent = "Verificando login...";
+    const usuario = userData.user;
 
-        const { data, error } = await banco.auth.signInWithPassword({
-            email: email,
-            password: senha
-        });
-
-        if (error) {
-            mensagemLogin.textContent = "Erro no login: e-mail ou senha incorretos.";
-            console.log("Erro no login:", error);
-            return;
-        }
-
-        const usuario = data.user;
-
-        if (!usuario) {
-            mensagemLogin.textContent = "Não foi possível identificar o usuário.";
-            return;
-        }
-
-        const adminAutorizado = await verificarSeUsuarioEAdmin(usuario.email);
-
-        if (!adminAutorizado) {
-            mensagemLogin.textContent = "Este usuário não tem permissão de administrador.";
-            await banco.auth.signOut();
-            mostrarTelaLoginAdmin();
-            return;
-        }
-
-        mensagemLogin.textContent = "Login administrativo realizado com sucesso!";
-
-        mostrarPainelAdminLogado();
-
-        carregarDadosIniciaisAdmin();
-    });
-}
-
-
-// =====================================================
-// 7. VERIFICAR SE O USUÁRIO LOGADO É ADMIN
-// =====================================================
-
-async function verificarSeUsuarioEAdmin(emailUsuario) {
     const { data, error } = await banco
-        .from("admins")
-        .select("email")
-        .eq("email", emailUsuario)
+        .from("admin_profiles")
+        .select("user_id, nome_funcao, email, escola, frase, foto_url")
+        .eq("user_id", usuario.id)
         .maybeSingle();
 
     if (error) {
-        console.log("Erro ao verificar admin:", error);
-        return false;
-    }
+        console.log("Erro ao carregar perfil admin:", error);
 
-    return !!data;
-}
+        aplicarPerfilAdminNaTela({
+            ...perfilPadraoAdmin,
+            email: usuario.email || perfilPadraoAdmin.email
+        });
 
-
-// =====================================================
-// 8. MANTER SESSÃO ADMINISTRATIVA ATIVA
-// =====================================================
-
-async function verificarSessaoAtual() {
-    const { data, error } = await banco.auth.getUser();
-
-    if (error || !data.user) {
-        mostrarTelaLoginAdmin();
         return;
     }
 
-    const adminAutorizado = await verificarSeUsuarioEAdmin(data.user.email);
+    // Se ainda não existir perfil salvo para esse usuário,
+    // cria automaticamente um perfil inicial no banco.
+    if (!data) {
+        const perfilInicial = {
+            user_id: usuario.id,
+            nome_funcao: perfilPadraoAdmin.nome_funcao,
+            email: usuario.email || perfilPadraoAdmin.email,
+            escola: perfilPadraoAdmin.escola,
+            frase: perfilPadraoAdmin.frase,
+            foto_url: perfilPadraoAdmin.foto_url,
+            atualizado_em: new Date().toISOString()
+        };
 
-    if (adminAutorizado) {
-        if (mensagemLogin) {
-            mensagemLogin.textContent = "Sessão administrativa ativa.";
+        const { error: erroInsert } = await banco
+            .from("admin_profiles")
+            .insert([perfilInicial]);
+
+        if (erroInsert) {
+            console.log("Erro ao criar perfil inicial:", erroInsert);
         }
 
-        mostrarPainelAdminLogado();
-
-        carregarDadosIniciaisAdmin();
-    } else {
-        await banco.auth.signOut();
-        mostrarTelaLoginAdmin();
-    }
-}
-
-
-// =====================================================
-// 9. CARREGAR DADOS INICIAIS DO ADMIN
-// =====================================================
-
-function carregarDadosIniciaisAdmin() {
-    if (typeof carregarTurmasAdmin === "function") {
-        carregarTurmasAdmin();
-    }
-
-    if (typeof carregarDisciplinasAdmin === "function") {
-        carregarDisciplinasAdmin();
-    }
-
-    if (typeof carregarAulasAdmin === "function") {
-        carregarAulasAdmin();
-    }
-
-    if (typeof carregarPortfoliosAdmin === "function") {
-        carregarPortfoliosAdmin();
-    }
-}
-
-
-// =====================================================
-// 10. BOTÃO SAIR DO PAINEL ADMIN
-// =====================================================
-
-function configurarBotaoSairAdmin() {
-    const btnSairAdmin = document.getElementById("btnSairAdmin");
-
-    if (!btnSairAdmin) {
+        aplicarPerfilAdminNaTela(perfilInicial);
         return;
     }
 
-    btnSairAdmin.addEventListener("click", async function () {
-        await banco.auth.signOut();
-
-        mostrarTelaLoginAdmin();
-
-        if (mensagemLogin) {
-            mensagemLogin.textContent = "Você saiu do painel administrativo.";
-        }
-
-        const email = document.getElementById("emailAdmin");
-        const senha = document.getElementById("senhaAdmin");
-        const listaAdminPortfolios = document.getElementById("listaAdminPortfolios");
-
-        if (email) {
-            email.value = "";
-        }
-
-        if (senha) {
-            senha.value = "";
-        }
-
-        if (listaAdminPortfolios) {
-            listaAdminPortfolios.innerHTML = "";
-        }
-
-        fecharTodasAsTelasAdmin();
-    });
+    aplicarPerfilAdminNaTela(data);
 }
 
 
 // =====================================================
-// 11. PERFIL ADMINISTRATIVO EDITÁVEL
-// Salva no navegador usando localStorage.
-// Depois podemos migrar para Supabase para sincronizar em todos os dispositivos.
-// =====================================================
-
-function carregarPerfilAdminEditavel() {
-    const perfilSalvo = localStorage.getItem("perfilAdminRiolando");
-
-    let perfil = perfilPadraoAdmin;
-
-    if (perfilSalvo) {
-        try {
-            perfil = JSON.parse(perfilSalvo);
-        } catch (erro) {
-            console.log("Erro ao ler perfil salvo:", erro);
-            perfil = perfilPadraoAdmin;
-        }
-    }
-
-    aplicarPerfilAdminNaTela(perfil);
-}
-
-
-// =====================================================
-// 12. APLICAR PERFIL NA TELA
+// 12. APLICAR PERFIL NA TELA DO PAINEL ADMIN
 // =====================================================
 
 function aplicarPerfilAdminNaTela(perfil) {
@@ -290,11 +173,11 @@ function aplicarPerfilAdminNaTela(perfil) {
     const frasePerfilAdmin = document.getElementById("frasePerfilAdmin");
 
     if (fotoPerfilAdmin) {
-        fotoPerfilAdmin.src = perfil.foto || perfilPadraoAdmin.foto;
+        fotoPerfilAdmin.src = perfil.foto_url || perfilPadraoAdmin.foto_url;
     }
 
     if (nomePerfilAdmin) {
-        nomePerfilAdmin.textContent = perfil.nome || perfilPadraoAdmin.nome;
+        nomePerfilAdmin.textContent = perfil.nome_funcao || perfilPadraoAdmin.nome_funcao;
     }
 
     if (emailPerfilAdmin) {
@@ -324,7 +207,7 @@ function preencherFormularioPerfilAdmin(perfil) {
     const inputFrase = document.getElementById("inputFrasePerfilAdmin");
 
     if (inputNome) {
-        inputNome.value = perfil.nome || perfilPadraoAdmin.nome;
+        inputNome.value = perfil.nome_funcao || perfilPadraoAdmin.nome_funcao;
     }
 
     if (inputEmail) {
@@ -359,31 +242,133 @@ function abrirTelaEditarPerfilAdmin() {
 
 
 // =====================================================
-// 15. SALVAR PERFIL ADMIN
+// 15. ENVIAR FOTO DO PERFIL PARA O SUPABASE STORAGE
 // =====================================================
 
-function salvarPerfilAdminEditavel() {
+async function enviarFotoPerfilAdminParaStorage(arquivo, userId) {
+    if (!arquivo || !userId) {
+        return null;
+    }
+
+    const extensao = arquivo.name.split(".").pop().toLowerCase();
+
+    const nomeArquivo = `perfil-${userId}-${Date.now()}.${extensao}`;
+
+    const caminhoArquivo = `${userId}/${nomeArquivo}`;
+
+    const { error } = await banco.storage
+        .from("admin-perfil")
+        .upload(caminhoArquivo, arquivo, {
+            cacheControl: "3600",
+            upsert: true,
+            contentType: arquivo.type
+        });
+
+    if (error) {
+        console.log("Erro ao enviar foto de perfil:", error);
+        throw new Error("Erro ao enviar foto de perfil: " + error.message);
+    }
+
+    const { data } = banco.storage
+        .from("admin-perfil")
+        .getPublicUrl(caminhoArquivo);
+
+    return data.publicUrl;
+}
+
+
+// =====================================================
+// 16. SALVAR PERFIL ADMINISTRATIVO NO SUPABASE
+// =====================================================
+
+async function salvarPerfilAdminEditavel() {
+    const confirmar = confirm(
+        "Deseja realmente salvar as alterações do perfil administrativo?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
     const inputNome = document.getElementById("inputNomePerfilAdmin");
     const inputEmail = document.getElementById("inputEmailPerfilAdmin");
     const inputEscola = document.getElementById("inputEscolaPerfilAdmin");
     const inputFrase = document.getElementById("inputFrasePerfilAdmin");
+    const inputFoto = document.getElementById("inputFotoPerfilAdmin");
     const fotoPerfilAdmin = document.getElementById("fotoPerfilAdmin");
     const mensagem = document.getElementById("mensagemPerfilAdmin");
 
-    const perfilAtual = {
-        nome: inputNome ? inputNome.value.trim() : perfilPadraoAdmin.nome,
-        email: inputEmail ? inputEmail.value.trim() : perfilPadraoAdmin.email,
-        escola: inputEscola ? inputEscola.value.trim() : perfilPadraoAdmin.escola,
-        frase: inputFrase ? inputFrase.value.trim() : perfilPadraoAdmin.frase,
-        foto: fotoPerfilAdmin ? fotoPerfilAdmin.src : perfilPadraoAdmin.foto
-    };
-
-    localStorage.setItem("perfilAdminRiolando", JSON.stringify(perfilAtual));
-
-    aplicarPerfilAdminNaTela(perfilAtual);
-
     if (mensagem) {
-        mensagem.textContent = "Perfil administrativo salvo com sucesso!";
+        mensagem.textContent = "Salvando perfil administrativo no Supabase...";
+    }
+
+    const { data: userData, error: userError } = await banco.auth.getUser();
+
+    if (userError || !userData.user) {
+        if (mensagem) {
+            mensagem.textContent = "Erro: usuário administrativo não está logado.";
+        }
+
+        return;
+    }
+
+    const usuario = userData.user;
+
+    let fotoUrlAtual = fotoPerfilAdmin ? fotoPerfilAdmin.src : perfilPadraoAdmin.foto_url;
+
+    try {
+        // Se uma nova foto foi selecionada, envia para o Supabase Storage.
+        if (inputFoto && inputFoto.files && inputFoto.files.length > 0) {
+            fotoUrlAtual = await enviarFotoPerfilAdminParaStorage(
+                inputFoto.files[0],
+                usuario.id
+            );
+        }
+
+        const perfilAtualizado = {
+            user_id: usuario.id,
+            nome_funcao: inputNome ? inputNome.value.trim() : perfilPadraoAdmin.nome_funcao,
+            email: inputEmail ? inputEmail.value.trim() : usuario.email,
+            escola: inputEscola ? inputEscola.value.trim() : perfilPadraoAdmin.escola,
+            frase: inputFrase ? inputFrase.value.trim() : perfilPadraoAdmin.frase,
+            foto_url: fotoUrlAtual,
+            atualizado_em: new Date().toISOString()
+        };
+
+        const { error } = await banco
+            .from("admin_profiles")
+            .upsert([perfilAtualizado], {
+                onConflict: "user_id"
+            });
+
+        if (error) {
+            console.log("Erro ao salvar perfil admin:", error);
+
+            if (mensagem) {
+                mensagem.textContent = "Erro ao salvar perfil: " + error.message;
+            }
+
+            return;
+        }
+
+        aplicarPerfilAdminNaTela(perfilAtualizado);
+
+        if (inputFoto) {
+            inputFoto.value = "";
+        }
+
+        if (mensagem) {
+            mensagem.textContent = "Perfil administrativo salvo no Supabase com sucesso!";
+        }
+
+        alert("Perfil administrativo salvo com sucesso no banco de dados!");
+
+    } catch (erro) {
+        console.log("Erro no salvamento do perfil:", erro);
+
+        if (mensagem) {
+            mensagem.textContent = erro.message;
+        }
     }
 }
 
@@ -428,8 +413,6 @@ function configurarPerfilAdminEditavel() {
         });
     }
 }
-
-
 // =====================================================
 // 17. MENU LATERAL SOBREPOSTO DO ADMIN
 // =====================================================
