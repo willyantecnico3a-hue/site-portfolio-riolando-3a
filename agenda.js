@@ -701,6 +701,7 @@ function prepararEdicaoEvento(idEvento) {
     setValorCampo("eventoDescricao", evento.descricao || "");
     setValorCampo("eventoCursoAlvo", evento.curso_alvo || "todos");
     setValorCampo("eventoLinkMaterial", evento.link_material || "");
+    setValorCampo("eventoLembreteMinutos", evento.lembrete_minutos || 10);
     setValorCampo("eventoRepeticao", "nao_repete");
     setValorCampo("eventoRepetirAte", "");
 
@@ -818,6 +819,7 @@ if (formEvento) {
         const linkMaterial = getValorCampo("eventoLinkMaterial").trim();
         const repeticao = getValorCampo("eventoRepeticao") || "nao_repete";
         const repetirAte = getValorCampo("eventoRepetirAte");
+        const lembreteMinutos = Number(getValorCampo("eventoLembreteMinutos") || 10);
         const mensagemEvento = document.getElementById("mensagemEvento");
 
         if (!titulo) {
@@ -835,14 +837,15 @@ if (formEvento) {
         }
 
         const dadosBase = {
-            tipo: tipo,
-            titulo: titulo,
-            horario_inicio: horarioInicio,
-            horario_fim: horarioFim || null,
-            descricao: descricao,
-            curso_alvo: cursoAlvo,
-            link_material: linkMaterial
-        };
+    tipo: tipo,
+    titulo: titulo,
+    horario_inicio: horarioInicio,
+    horario_fim: horarioFim || null,
+    descricao: descricao,
+    curso_alvo: cursoAlvo,
+    link_material: linkMaterial,
+    lembrete_minutos: lembreteMinutos
+};
 
         let resultado;
 
@@ -1029,6 +1032,7 @@ function limparFormularioEvento() {
     setValorCampo("eventoLinkMaterial", "");
     setValorCampo("eventoRepeticao", "nao_repete");
     setValorCampo("eventoRepetirAte", "");
+    setValorCampo("eventoLembreteMinutos", "10");
 
     eventoEmEdicaoId = null;
 
@@ -1584,6 +1588,243 @@ function escaparHTML(texto) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+
+// =====================================================
+// 27. LEMBRETES SONOROS E NOTIFICAÇÕES DA AGENDA
+// =====================================================
+//
+// Funciona quando a agenda estiver aberta no navegador.
+// Se o navegador estiver minimizado, a notificação do sistema
+// pode aparecer normalmente, desde que o usuário tenha permitido.
+//
+// Para tocar som, o professor precisa clicar antes no botão:
+// "🔔 Ativar lembretes sonoros".
+//
+// =====================================================
+
+let lembretesAtivos = false;
+let audioLembreteLiberado = false;
+let lembretesJaDisparados = new Set();
+let intervaloLembretesAgenda = null;
+
+const btnAtivarLembretesAgenda = document.getElementById("btnAtivarLembretesAgenda");
+const mensagemLembretesAgenda = document.getElementById("mensagemLembretesAgenda");
+
+// Som simples criado pelo próprio navegador.
+// Não precisa de arquivo MP3.
+let audioContextoAgenda = null;
+
+if (btnAtivarLembretesAgenda) {
+    btnAtivarLembretesAgenda.addEventListener("click", async function () {
+        await ativarLembretesDaAgenda();
+    });
+}
+
+async function ativarLembretesDaAgenda() {
+    // Apenas admin recebe alerta nessa primeira versão.
+    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+        alert("Os lembretes sonoros estão disponíveis apenas para o administrador logado.");
+        return;
+    }
+
+    // Pede permissão para notificação do navegador.
+    if ("Notification" in window) {
+        if (Notification.permission === "default") {
+            await Notification.requestPermission();
+        }
+    }
+
+    // Libera áudio após clique do usuário.
+    try {
+        audioContextoAgenda = new (window.AudioContext || window.webkitAudioContext)();
+
+        if (audioContextoAgenda.state === "suspended") {
+            await audioContextoAgenda.resume();
+        }
+
+        tocarSomLembreteAgenda();
+        audioLembreteLiberado = true;
+    } catch (erro) {
+        console.log("Não foi possível liberar áudio:", erro);
+        audioLembreteLiberado = false;
+    }
+
+    lembretesAtivos = true;
+
+    if (mensagemLembretesAgenda) {
+        mensagemLembretesAgenda.textContent =
+            "Lembretes ativados. Você será avisado antes dos eventos cadastrados.";
+    }
+
+    if (btnAtivarLembretesAgenda) {
+        btnAtivarLembretesAgenda.textContent = "🔔 Lembretes ativados";
+        btnAtivarLembretesAgenda.disabled = true;
+    }
+
+    verificarLembretesDaAgenda();
+
+    if (!intervaloLembretesAgenda) {
+        intervaloLembretesAgenda = setInterval(function () {
+            verificarLembretesDaAgenda();
+        }, 60000);
+    }
+}
+
+function verificarLembretesDaAgenda() {
+    if (!lembretesAtivos) {
+        return;
+    }
+
+    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+        return;
+    }
+
+    const agora = new Date();
+
+    eventosCarregados.forEach(function (evento) {
+        if (!evento.data || !evento.horario_inicio) {
+            return;
+        }
+
+        const minutosAntes = Number(evento.lembrete_minutos || 0);
+
+        if (minutosAntes <= 0) {
+            return;
+        }
+
+        const dataHoraEvento = criarDataHoraEvento(evento.data, evento.horario_inicio);
+
+        if (!dataHoraEvento) {
+            return;
+        }
+
+        const diferencaMs = dataHoraEvento.getTime() - agora.getTime();
+        const diferencaMinutos = Math.round(diferencaMs / 60000);
+
+        const chaveLembrete = `${evento.id}_${evento.data}_${evento.horario_inicio}_${minutosAntes}`;
+
+        if (
+            diferencaMinutos <= minutosAntes &&
+            diferencaMinutos >= 0 &&
+            !lembretesJaDisparados.has(chaveLembrete)
+        ) {
+            lembretesJaDisparados.add(chaveLembrete);
+
+            dispararLembreteEvento(evento, diferencaMinutos);
+        }
+    });
+}
+
+function criarDataHoraEvento(dataISO, horario) {
+    try {
+        const horarioLimpo = horario.substring(0, 5);
+        const dataHora = new Date(`${dataISO}T${horarioLimpo}:00`);
+
+        if (isNaN(dataHora.getTime())) {
+            return null;
+        }
+
+        return dataHora;
+    } catch (erro) {
+        console.log("Erro ao criar data/hora do evento:", erro);
+        return null;
+    }
+}
+
+function dispararLembreteEvento(evento, diferencaMinutos) {
+    const tituloEvento = evento.titulo || "Compromisso da agenda";
+    const horarioEvento = formatarHorarioCurto(evento.horario_inicio);
+
+    const mensagem = `${tituloEvento} começa em ${diferencaMinutos} minuto(s). Horário: ${horarioEvento}.`;
+
+    tocarSomLembreteAgenda();
+
+    mostrarNotificacaoNavegadorAgenda(tituloEvento, mensagem);
+
+    mostrarAlertaVisualAgenda(tituloEvento, mensagem);
+}
+
+function mostrarNotificacaoNavegadorAgenda(tituloEvento, mensagem) {
+    if (!("Notification" in window)) {
+        console.log("Navegador não suporta notificações.");
+        return;
+    }
+
+    if (Notification.permission !== "granted") {
+        console.log("Permissão de notificação não concedida.");
+        return;
+    }
+
+    new Notification("🔔 Lembrete da Agenda Pedagógica", {
+        body: mensagem,
+        icon: "favicon.ico",
+        tag: "lembrete-agenda-" + tituloEvento
+    });
+}
+
+function mostrarAlertaVisualAgenda(tituloEvento, mensagem) {
+    const alertaExistente = document.getElementById("alertaVisualAgenda");
+
+    if (alertaExistente) {
+        alertaExistente.remove();
+    }
+
+    const alerta = document.createElement("div");
+    alerta.id = "alertaVisualAgenda";
+    alerta.className = "alerta-visual-agenda";
+
+    alerta.innerHTML = `
+        <div class="alerta-visual-agenda-card">
+            <strong>🔔 Lembrete da Agenda</strong>
+            <p>${escaparHTML(mensagem)}</p>
+            <button type="button" onclick="fecharAlertaVisualAgenda()">
+                OK
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(alerta);
+
+    // Também mostra alert tradicional como reforço.
+    // Se preferir algo menos invasivo, pode remover essa linha.
+    alert("🔔 Lembrete da Agenda\n\n" + mensagem);
+}
+
+function fecharAlertaVisualAgenda() {
+    const alerta = document.getElementById("alertaVisualAgenda");
+
+    if (alerta) {
+        alerta.remove();
+    }
+}
+
+function tocarSomLembreteAgenda() {
+    if (!audioContextoAgenda) {
+        return;
+    }
+
+    try {
+        const oscilador = audioContextoAgenda.createOscillator();
+        const ganho = audioContextoAgenda.createGain();
+
+        oscilador.type = "sine";
+        oscilador.frequency.setValueAtTime(880, audioContextoAgenda.currentTime);
+
+        ganho.gain.setValueAtTime(0.001, audioContextoAgenda.currentTime);
+        ganho.gain.exponentialRampToValueAtTime(0.3, audioContextoAgenda.currentTime + 0.02);
+        ganho.gain.exponentialRampToValueAtTime(0.001, audioContextoAgenda.currentTime + 0.6);
+
+        oscilador.connect(ganho);
+        ganho.connect(audioContextoAgenda.destination);
+
+        oscilador.start();
+        oscilador.stop(audioContextoAgenda.currentTime + 0.65);
+    } catch (erro) {
+        console.log("Erro ao tocar som do lembrete:", erro);
+    }
+}
+
+window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
 
 
 // =====================================================

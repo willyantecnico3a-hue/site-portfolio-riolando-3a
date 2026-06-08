@@ -43,20 +43,34 @@
         <!-- CONTROLES DO MÊS -->
         <section class="barra-controles-agenda">
 
-            <button id="btnMesAnterior">
+            <button id="btnMesAnterior" type="button">
                 ← Mês anterior
             </button>
 
             <h2 id="tituloMesAno"></h2>
 
-            <button id="btnProximoMes">
+            <button id="btnProximoMes" type="button">
                 Próximo mês →
             </button>
 
         </section>
 
 
-        <!-- FILTRO APENAS PARA ADMIN -->
+        <!-- BOTÃO DE LEMBRETES SONOROS -->
+        <section class="area-lembretes-agenda">
+
+            <button type="button" id="btnAtivarLembretesAgenda" class="btn-lembretes-agenda">
+                🔔 Ativar lembretes sonoros
+            </button>
+
+            <p id="mensagemLembretesAgenda" class="mensagem-lembretes-agenda">
+                O alerta sonoro funciona para o administrador logado quando a agenda estiver aberta.
+            </p>
+
+        </section>
+
+
+        <!-- FILTRO VISÍVEL PARA TODOS -->
         <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
 
             <label for="filtroCursoAgenda">
@@ -118,14 +132,14 @@
             <div class="modal-topo">
                 <h2 id="modalTituloData"></h2>
 
-                <button id="btnFecharModal">
+                <button id="btnFecharModal" type="button">
                     ✕
                 </button>
             </div>
 
             <div id="listaEventosDia"></div>
 
-            <button id="btnAbrirFormEvento" class="btn-criar-evento" style="display:none;">
+            <button id="btnAbrirFormEvento" class="btn-criar-evento" type="button" style="display:none;">
                 + Criar evento neste dia
             </button>
 
@@ -178,6 +192,32 @@
                 <label for="eventoLinkMaterial">Link do material</label>
                 <input type="url" id="eventoLinkMaterial" placeholder="Link do PDF, vídeo, slide ou atividade">
 
+
+                <!-- LEMBRETE DO EVENTO -->
+                <div class="area-lembrete-evento">
+
+                    <h4>🔔 Lembrete do evento</h4>
+
+                    <label for="eventoLembreteMinutos">
+                        Avisar antes do compromisso
+                    </label>
+
+                    <select id="eventoLembreteMinutos">
+                        <option value="0">Sem lembrete</option>
+                        <option value="5">5 minutos antes</option>
+                        <option value="10" selected>10 minutos antes</option>
+                        <option value="15">15 minutos antes</option>
+                        <option value="30">30 minutos antes</option>
+                        <option value="60">1 hora antes</option>
+                    </select>
+
+                    <p class="observacao-repeticao">
+                        O lembrete funciona quando o administrador estiver logado e com a agenda aberta no navegador.
+                    </p>
+
+                </div>
+
+
                 <!-- REPETIÇÃO ESTILO GOOGLE AGENDA -->
                 <div class="area-repeticao-evento">
 
@@ -224,7 +264,7 @@
             <div class="modal-topo">
                 <h2>Detalhes do Evento</h2>
 
-                <button id="btnFecharDetalheEvento">
+                <button id="btnFecharDetalheEvento" type="button">
                     ✕
                 </button>
             </div>
@@ -236,42 +276,45 @@
     </div>
 
 
-   <!-- MODAL CONFIRMAR EXCLUSÃO -->
-<div id="modalConfirmarExclusao" class="modal-agenda">
+    <!-- =====================================================
+         MODAL CONFIRMAR EXCLUSÃO
+    ====================================================== -->
+    <div id="modalConfirmarExclusao" class="modal-agenda">
 
-    <div class="modal-conteudo-agenda modal-exclusao-evento">
+        <div class="modal-conteudo-agenda modal-exclusao-evento">
 
-        <h2>Excluir evento</h2>
+            <h2>Excluir evento</h2>
 
-        <p>
-            Como deseja excluir este evento?
-        </p>
+            <p>
+                Como deseja excluir este evento?
+            </p>
 
-        <div class="opcoes-exclusao-evento">
+            <div class="opcoes-exclusao-evento">
 
-            <button type="button" id="btnExcluirSomenteEste">
-                🗓️ Excluir somente este evento
-            </button>
+                <button type="button" id="btnExcluirSomenteEste">
+                    🗓️ Excluir somente este evento
+                </button>
 
-            <button type="button" id="btnExcluirEsteEProximos">
-                ➡️ Excluir este e os próximos eventos
-            </button>
+                <button type="button" id="btnExcluirEsteEProximos">
+                    ➡️ Excluir este e os próximos eventos
+                </button>
 
-            <button type="button" id="btnExcluirTodaSerie">
-                🔁 Excluir todos os eventos da série
-            </button>
+                <button type="button" id="btnExcluirTodaSerie">
+                    🔁 Excluir todos os eventos da série
+                </button>
 
-            <button type="button" id="btnCancelarExclusao">
-                ❌ Cancelar
-            </button>
+                <button type="button" id="btnCancelarExclusao">
+                    ❌ Cancelar
+                </button>
+
+            </div>
 
         </div>
 
     </div>
 
-</div>
 
-
+    <!-- Supabase precisa carregar antes do agenda.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script src="agenda.js"></script>
