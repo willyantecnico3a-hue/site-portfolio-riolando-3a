@@ -1251,3 +1251,9 @@ function escaparHTML(texto) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+
+document.addEventListener("DOMContentLoaded", async function () {
+    await verificarAdminAgenda();
+    await carregarEventosAgenda();
+    renderizarCalendario();
+});

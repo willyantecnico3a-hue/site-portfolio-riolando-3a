@@ -770,3 +770,43 @@
         font-size: 16px;
     }
 }
+
+/* =====================================================
+   BOTÃO VOLTAR AO INÍCIO NA TELA DE LOGIN ADMIN
+===================================================== */
+
+.barra-login-admin {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+}
+
+.botao-voltar-inicio-login {
+    display: inline-block;
+    padding: 12px 16px;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    text-decoration: none;
+    font-weight: bold;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    transition: 0.2s;
+}
+
+.botao-voltar-inicio-login:hover {
+    background-color: #e0f2fe;
+    border-color: #0f766e;
+    color: #0f766e;
+}
+
+@media (max-width: 700px) {
+    .barra-login-admin {
+        justify-content: stretch;
+    }
+
+    .botao-voltar-inicio-login {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+}
