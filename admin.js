@@ -746,6 +746,10 @@ async function carregarTurmasAdmin() {
         return;
     }
 
+    <button onclick="editarAulaAdmin('${aula.id}')" class="btn-editar-aula">
+    ✏️ Editar Aula
+</button>
+
     selectTurma.innerHTML = `<option value="">Selecione uma turma</option>`;
 
     data.forEach(function (turma) {
