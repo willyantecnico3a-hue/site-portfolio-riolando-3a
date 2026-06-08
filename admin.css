@@ -1,0 +1,102 @@
+/* =====================================================
+   ÁREA DE EDIÇÃO DE TURMAS
+===================================================== */
+
+.area-editar-turmas-admin {
+    margin-top: 32px;
+    padding: 22px;
+    border-radius: 18px;
+    background-color: #f8fafc;
+    border-left: 6px solid #0f766e;
+}
+
+.lista-turmas-admin {
+    margin-top: 18px;
+    display: grid;
+    gap: 16px;
+}
+
+.card-turma-admin {
+    background-color: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.card-turma-admin h4 {
+    margin-top: 0;
+    color: #0f766e;
+    font-size: 22px;
+}
+
+.info-turma-admin p {
+    margin: 8px 0;
+}
+
+.preview-turma-card {
+    margin-top: 14px;
+}
+
+.preview-turma-card img {
+    max-width: 180px;
+    max-height: 120px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid #cbd5e1;
+}
+
+.icone-preview-turma {
+    display: inline-block;
+    padding: 10px 14px;
+    background-color: #e0f2fe;
+    color: #075985;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.acoes-turma-admin {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.acoes-turma-admin button {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-editar-turma {
+    background-color: #0f766e;
+}
+
+.btn-desativar-turma {
+    background-color: #b45309;
+}
+
+.btn-reativar-turma {
+    background-color: #15803d;
+}
+
+.btn-excluir-turma {
+    background-color: #991b1b;
+}
+
+.btn-admin-secundario {
+    background-color: #1e40af;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-admin-secundario:hover {
+    background-color: #2563eb;
+}

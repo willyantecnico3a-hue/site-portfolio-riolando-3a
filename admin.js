@@ -26,6 +26,7 @@ const secaoLoginAdmin = document.getElementById("secaoLoginAdmin");
 const mensagemLogin = document.getElementById("mensagemLogin");
 
 let aulaEmEdicaoId = null;
+let turmaEmEdicaoId = null;
 
 
 // =====================================================
@@ -170,6 +171,7 @@ function carregarDadosIniciaisAdmin() {
     carregarDisciplinasAdmin();
     carregarAulasAdmin();
     carregarPortfoliosAdmin();
+    carregarTurmasCadastradasAdmin();
 }
 
 function configurarBotaoSairAdmin() {
@@ -539,6 +541,14 @@ function configurarMenuSobrepostoAdmin() {
             if (telaEscolhida === "telaEditarPerfilAdmin") {
                 carregarPerfilAdminEditavel();
             }
+
+            if (
+                telaEscolhida === "telaGerenciarSite" ||
+                telaEscolhida === "telaSite" ||
+                telaEscolhida === "telaConfiguracoes"
+            ) {
+                carregarTurmasCadastradasAdmin();
+            }
         });
     });
 
@@ -613,118 +623,405 @@ async function carregarDisciplinasAdmin() {
     });
 }
 
+
+// =====================================================
+// CADASTRAR OU EDITAR TURMA
+// =====================================================
+
 const btnCadastrarTurma = document.getElementById("btnCadastrarTurma");
 
 if (btnCadastrarTurma) {
-    btnCadastrarTurma.addEventListener("click", async function () {
-        const mensagem = document.getElementById("mensagemTurmaAdmin");
+    btnCadastrarTurma.addEventListener("click", salvarOuAtualizarTurma);
+}
 
-        const nome = pegarValorCampo("novaTurmaNome");
-        const curso = pegarValorCampo("novaTurmaCurso");
-        const descricao = pegarValorCampo("novaTurmaDescricao");
-        let foto = pegarValorCampo("novaTurmaFoto");
+async function salvarOuAtualizarTurma() {
+    const mensagem = document.getElementById("mensagemTurmaAdmin");
 
-        const arquivoFoto = document.getElementById("arquivoTurmaFoto");
+    const nome = pegarValorCampo("novaTurmaNome");
+    const curso = pegarValorCampo("novaTurmaCurso");
+    const descricao = pegarValorCampo("novaTurmaDescricao");
 
-        if (!nome || !curso) {
+    let foto = pegarValorCampo("novaTurmaFoto");
+    const arquivoFoto = document.getElementById("arquivoTurmaFoto");
+
+    if (!nome || !curso) {
+        if (mensagem) {
             mensagem.textContent = "Preencha o nome da turma e o curso.";
-            return;
+        }
+        return;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = turmaEmEdicaoId
+            ? "Atualizando turma..."
+            : "Cadastrando turma...";
+    }
+
+    if (arquivoFoto && arquivoFoto.files && arquivoFoto.files.length > 0) {
+        if (mensagem) {
+            mensagem.textContent = "Enviando foto ou mídia da turma...";
         }
 
-        mensagem.textContent = "Cadastrando turma...";
+        const urlUpload = await enviarArquivoParaStorage(arquivoFoto, "turmas");
 
-        if (arquivoFoto && arquivoFoto.files.length > 0) {
-            mensagem.textContent = "Enviando arquivo da turma...";
-
-            const urlUpload = await enviarArquivoParaStorage(arquivoFoto, "turmas");
-
-            if (urlUpload) {
-                foto = urlUpload;
-            } else {
+        if (urlUpload) {
+            foto = urlUpload;
+        } else {
+            if (mensagem) {
                 mensagem.textContent = "Não foi possível enviar o arquivo.";
-                return;
             }
-        }
-
-        const { error } = await banco
-            .from("turmas")
-            .insert([
-                {
-                    nome_turma: nome,
-                    curso: curso,
-                    descricao: descricao,
-                    foto_url: foto,
-                    ativo: true
-                }
-            ]);
-
-        if (error) {
-            mensagem.textContent = "Erro ao cadastrar turma: " + error.message;
             return;
         }
+    }
 
-        mensagem.textContent = "Turma cadastrada com sucesso!";
+    const dadosTurma = {
+        nome_turma: nome,
+        curso: curso,
+        descricao: descricao,
+        foto_url: foto,
+        ativo: true
+    };
 
-        limparCampoSeExistir("novaTurmaNome");
-        limparCampoSeExistir("novaTurmaCurso");
-        limparCampoSeExistir("novaTurmaDescricao");
-        limparCampoSeExistir("novaTurmaFoto");
+    let resultado;
 
-        if (arquivoFoto) {
-            arquivoFoto.value = "";
+    if (turmaEmEdicaoId) {
+        resultado = await banco
+            .from("turmas")
+            .update(dadosTurma)
+            .eq("id", turmaEmEdicaoId);
+    } else {
+        resultado = await banco
+            .from("turmas")
+            .insert([dadosTurma]);
+    }
+
+    if (resultado.error) {
+        if (mensagem) {
+            mensagem.textContent = "Erro ao salvar turma: " + resultado.error.message;
         }
 
-        const preview = document.getElementById("previewTurmaMidia");
+        console.log("Erro turma:", resultado.error);
+        return;
+    }
 
-        if (preview) {
-            preview.innerHTML = "";
-        }
+    if (mensagem) {
+        mensagem.textContent = turmaEmEdicaoId
+            ? "Turma atualizada com sucesso!"
+            : "Turma cadastrada com sucesso!";
+    }
 
-        carregarTurmasAdmin();
+    turmaEmEdicaoId = null;
+
+    if (btnCadastrarTurma) {
+        btnCadastrarTurma.textContent = "Cadastrar Turma";
+    }
+
+    limparFormularioTurma();
+
+    await carregarTurmasAdmin();
+    await carregarTurmasCadastradasAdmin();
+}
+
+function limparFormularioTurma() {
+    limparCampoSeExistir("novaTurmaNome");
+    limparCampoSeExistir("novaTurmaCurso");
+    limparCampoSeExistir("novaTurmaDescricao");
+    limparCampoSeExistir("novaTurmaFoto");
+
+    const arquivoFoto = document.getElementById("arquivoTurmaFoto");
+
+    if (arquivoFoto) {
+        arquivoFoto.value = "";
+    }
+
+    const preview = document.getElementById("previewTurmaMidia");
+
+    if (preview) {
+        preview.innerHTML = "";
+    }
+}
+
+
+// =====================================================
+// LISTAR TURMAS CADASTRADAS PARA EDIÇÃO
+// =====================================================
+
+const btnCarregarTurmasCadastradas = document.getElementById("btnCarregarTurmasCadastradas");
+
+if (btnCarregarTurmasCadastradas) {
+    btnCarregarTurmasCadastradas.addEventListener("click", carregarTurmasCadastradasAdmin);
+}
+
+async function carregarTurmasCadastradasAdmin() {
+    const lista = document.getElementById("listaTurmasCadastradasAdmin");
+
+    if (!lista) {
+        return;
+    }
+
+    lista.innerHTML = "<p>Carregando turmas cadastradas...</p>";
+
+    const { data, error } = await banco
+        .from("turmas")
+        .select("id, nome_turma, curso, descricao, foto_url, ativo")
+        .order("nome_turma", { ascending: true });
+
+    if (error) {
+        lista.innerHTML = `<p>Erro ao carregar turmas: ${error.message}</p>`;
+        console.log("Erro ao carregar turmas cadastradas:", error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        lista.innerHTML = "<p>Nenhuma turma cadastrada ainda.</p>";
+        return;
+    }
+
+    lista.innerHTML = "";
+
+    data.forEach(function (turma) {
+        lista.innerHTML += `
+            <div class="card-turma-admin">
+
+                <div class="info-turma-admin">
+                    <h4>${escaparHTML(turma.nome_turma || "Turma sem nome")}</h4>
+
+                    <p><strong>Curso:</strong> ${escaparHTML(turma.curso || "Não informado")}</p>
+
+                    <p><strong>Descrição:</strong> ${escaparHTML(turma.descricao || "Sem descrição")}</p>
+
+                    <p><strong>Status:</strong> ${turma.ativo ? "Ativa" : "Inativa"}</p>
+
+                    ${
+                        turma.foto_url
+                        ? `
+                            <p>
+                                <strong>Mídia:</strong>
+                                <a href="${escaparAtributo(turma.foto_url)}" target="_blank" rel="noopener noreferrer">
+                                    Abrir foto/mídia
+                                </a>
+                            </p>
+                        `
+                        : ""
+                    }
+                </div>
+
+                ${
+                    turma.foto_url
+                    ? `
+                        <div class="preview-turma-card">
+                            ${montarPreviewTurmaCard(turma.foto_url)}
+                        </div>
+                    `
+                    : ""
+                }
+
+                <div class="acoes-turma-admin">
+
+                    <button type="button" onclick="editarTurmaAdmin('${turma.id}')" class="btn-editar-turma">
+                        ✏️ Editar
+                    </button>
+
+                    ${
+                        turma.ativo
+                        ? `
+                            <button type="button" onclick="desativarTurmaAdmin('${turma.id}')" class="btn-desativar-turma">
+                                🚫 Desativar
+                            </button>
+                        `
+                        : `
+                            <button type="button" onclick="reativarTurmaAdmin('${turma.id}')" class="btn-reativar-turma">
+                                ✅ Reativar
+                            </button>
+                        `
+                    }
+
+                    <button type="button" onclick="excluirTurmaAdmin('${turma.id}')" class="btn-excluir-turma">
+                        🗑️ Excluir
+                    </button>
+
+                </div>
+
+            </div>
+        `;
     });
 }
 
-const btnCadastrarDisciplina = document.getElementById("btnCadastrarDisciplina");
+function montarPreviewTurmaCard(url) {
+    if (!url) {
+        return "";
+    }
 
-if (btnCadastrarDisciplina) {
-    btnCadastrarDisciplina.addEventListener("click", async function () {
-        const mensagem = document.getElementById("mensagemDisciplinaAdmin");
+    const tipo = identificarTipoMidia(url);
 
-        const nome = pegarValorCampo("novaDisciplinaNome");
-        const curso = pegarValorCampo("novaDisciplinaCurso");
-        const descricao = pegarValorCampo("novaDisciplinaDescricao");
+    if (tipo === "imagem") {
+        return `
+            <img src="${escaparAtributo(url)}" alt="Imagem da turma">
+        `;
+    }
 
-        if (!nome) {
-            mensagem.textContent = "Preencha o nome da disciplina.";
-            return;
-        }
+    if (tipo === "pdf") {
+        return `
+            <span class="icone-preview-turma">📄 PDF</span>
+        `;
+    }
 
-        mensagem.textContent = "Cadastrando disciplina...";
+    if (tipo === "video" || tipo === "youtube") {
+        return `
+            <span class="icone-preview-turma">🎥 Vídeo</span>
+        `;
+    }
 
-        const { error } = await banco
-            .from("disciplinas")
-            .insert([
-                {
-                    nome_disciplina: nome,
-                    curso: curso,
-                    descricao: descricao,
-                    ativo: true
-                }
-            ]);
+    return `
+        <span class="icone-preview-turma">🔗 Link</span>
+    `;
+}
 
-        if (error) {
-            mensagem.textContent = "Erro ao cadastrar disciplina: " + error.message;
-            return;
-        }
 
-        mensagem.textContent = "Disciplina cadastrada com sucesso!";
+// =====================================================
+// EDITAR TURMA
+// =====================================================
 
-        limparCampoSeExistir("novaDisciplinaNome");
-        limparCampoSeExistir("novaDisciplinaCurso");
-        limparCampoSeExistir("novaDisciplinaDescricao");
+async function editarTurmaAdmin(idTurma) {
+    const { data, error } = await banco
+        .from("turmas")
+        .select("id, nome_turma, curso, descricao, foto_url, ativo")
+        .eq("id", idTurma)
+        .maybeSingle();
 
-        carregarDisciplinasAdmin();
-    });
+    if (error || !data) {
+        alert("Erro ao carregar turma para edição.");
+        console.log("Erro editar turma:", error);
+        return;
+    }
+
+    turmaEmEdicaoId = data.id;
+
+    preencherCampoSeExistir("novaTurmaNome", data.nome_turma || "");
+    preencherCampoSeExistir("novaTurmaCurso", data.curso || "");
+    preencherCampoSeExistir("novaTurmaDescricao", data.descricao || "");
+    preencherCampoSeExistir("novaTurmaFoto", data.foto_url || "");
+
+    if (btnCadastrarTurma) {
+        btnCadastrarTurma.textContent = "💾 Atualizar Turma";
+    }
+
+    const mensagem = document.getElementById("mensagemTurmaAdmin");
+
+    if (mensagem) {
+        mensagem.textContent = "Editando turma. Altere as informações e clique em Atualizar Turma.";
+    }
+
+    const preview = document.getElementById("previewTurmaMidia");
+
+    if (preview && data.foto_url) {
+        mostrarPreviewMidia(data.foto_url, "previewTurmaMidia");
+    }
+
+    const campoNome = document.getElementById("novaTurmaNome");
+
+    if (campoNome) {
+        campoNome.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+    alert("Turma carregada para edição.");
+}
+
+
+// =====================================================
+// DESATIVAR TURMA
+// =====================================================
+
+async function desativarTurmaAdmin(idTurma) {
+    const confirmar = confirm("Deseja desativar esta turma? Ela deixará de aparecer para os alunos.");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("turmas")
+        .update({ ativo: false })
+        .eq("id", idTurma);
+
+    if (error) {
+        alert("Erro ao desativar turma: " + error.message);
+        console.log("Erro desativar turma:", error);
+        return;
+    }
+
+    alert("Turma desativada com sucesso!");
+
+    await carregarTurmasAdmin();
+    await carregarTurmasCadastradasAdmin();
+}
+
+
+// =====================================================
+// REATIVAR TURMA
+// =====================================================
+
+async function reativarTurmaAdmin(idTurma) {
+    const confirmar = confirm("Deseja reativar esta turma?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("turmas")
+        .update({ ativo: true })
+        .eq("id", idTurma);
+
+    if (error) {
+        alert("Erro ao reativar turma: " + error.message);
+        console.log("Erro reativar turma:", error);
+        return;
+    }
+
+    alert("Turma reativada com sucesso!");
+
+    await carregarTurmasAdmin();
+    await carregarTurmasCadastradasAdmin();
+}
+
+
+// =====================================================
+// EXCLUIR TURMA
+// =====================================================
+
+async function excluirTurmaAdmin(idTurma) {
+    const confirmar = confirm(
+        "Tem certeza que deseja excluir esta turma? Se houver aulas vinculadas a ela, o Supabase pode bloquear a exclusão."
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("turmas")
+        .delete()
+        .eq("id", idTurma);
+
+    if (error) {
+        alert(
+            "Erro ao excluir turma: " +
+            error.message +
+            "\n\nSe essa turma possui aulas cadastradas, prefira usar Desativar em vez de Excluir."
+        );
+
+        console.log("Erro excluir turma:", error);
+        return;
+    }
+
+    alert("Turma excluída com sucesso!");
+
+    await carregarTurmasAdmin();
+    await carregarTurmasCadastradasAdmin();
 }
 
 
@@ -1865,6 +2162,11 @@ window.ativarAulaDoDia = ativarAulaDoDia;
 window.desativarAula = desativarAula;
 window.excluirAula = excluirAula;
 window.editarAulaAdmin = editarAulaAdmin;
+
+window.editarTurmaAdmin = editarTurmaAdmin;
+window.desativarTurmaAdmin = desativarTurmaAdmin;
+window.reativarTurmaAdmin = reativarTurmaAdmin;
+window.excluirTurmaAdmin = excluirTurmaAdmin;
 
 window.inserirMarcacaoTexto = inserirMarcacaoTexto;
 window.aumentarFonteCampo = aumentarFonteCampo;
