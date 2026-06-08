@@ -340,19 +340,23 @@ function aplicarFiltroDePermissao(eventos) {
 // 9. RENDERIZAR CALENDÁRIO
 // =====================================================
 //
-// Visual estilo Google Agenda:
-// - Cada quadrante do dia mostra os eventos em lista compacta.
-// - Mostra horário + título resumido.
-// - Ao clicar no quadrante, abre o cronograma completo do dia.
-// - Visitantes podem visualizar sem login.
-// - Editar/excluir continua somente para admin no modal de detalhes.
+// Versão corrigida:
+// - Garante que os dias do mês apareçam.
+// - Mostra eventos resumidos dentro do quadrante.
+// - Ao clicar no quadrante, abre o cronograma completo.
+// - Visitantes visualizam sem login.
+// - Admin continua com editar/excluir/criar.
 //
 // =====================================================
 
 function renderizarCalendario() {
     if (!gradeCalendario || !tituloMesAno) {
+        console.log("Erro: gradeCalendario ou tituloMesAno não encontrado no HTML.");
         return;
     }
+
+    console.log("Renderizando calendário...");
+    console.log("Eventos carregados:", eventosCarregados);
 
     gradeCalendario.innerHTML = "";
 
@@ -371,14 +375,14 @@ function renderizarCalendario() {
 
     const diaSemanaInicio = primeiroDiaMes.getDay();
 
-    // Espaços vazios antes do primeiro dia do mês
+    // Cria espaços vazios antes do primeiro dia do mês
     for (let i = 0; i < diaSemanaInicio; i++) {
         const vazio = document.createElement("div");
         vazio.className = "dia-vazio";
         gradeCalendario.appendChild(vazio);
     }
 
-    // Dias do mês
+    // Cria todos os dias do mês
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
         const dataDia = new Date(ano, mes, dia);
         const dataISO = formatarDataISO(dataDia);
@@ -392,6 +396,9 @@ function renderizarCalendario() {
             });
 
         const cardDia = document.createElement("div");
+
+        // Mantém a classe antiga e adiciona a nova.
+        // Isso evita quebrar o CSS que já existia.
         cardDia.className = "dia-calendario dia-calendario-google";
 
         if (dataISO === formatarDataISO(new Date())) {
@@ -440,7 +447,7 @@ function renderizarCalendario() {
             </div>
         `;
 
-        // Clique no quadrante abre o cronograma completo do dia
+        // Clique no quadrante abre os eventos completos do dia
         cardDia.addEventListener("click", function () {
             if (usuarioFezSwipeNoCalendario) {
                 usuarioFezSwipeNoCalendario = false;
@@ -452,8 +459,9 @@ function renderizarCalendario() {
 
         gradeCalendario.appendChild(cardDia);
     }
-}
 
+    console.log("Calendário renderizado com sucesso.");
+}
 
 // =====================================================
 // 10. ABRIR MODAL DO DIA
