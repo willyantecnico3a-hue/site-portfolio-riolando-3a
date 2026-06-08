@@ -7,9 +7,10 @@
 //
 // 1. Visitantes sem login podem visualizar a agenda.
 // 2. Alunos, gestão e visitantes conseguem ver eventos.
-// 3. Apenas admin logado pode criar, editar e excluir eventos.
-// 4. O calendário não redireciona mais para login.
-// 5. O botão "+ Criar novo evento" aparece somente para admin.
+// 3. O filtro por curso fica visível para todos.
+// 4. Apenas admin logado pode criar, editar e excluir eventos.
+// 5. O calendário não redireciona mais para login.
+// 6. O botão "+ Criar novo evento" aparece somente para admin.
 //
 // =====================================================
 
@@ -183,29 +184,39 @@ async function carregarPerfilUsuario() {
 // =====================================================
 // 6. CONFIGURAR PERMISSÕES DA TELA
 // =====================================================
+//
+// MUDANÇA IMPORTANTE:
+// O filtro por curso fica visível para todos:
+// - visitante sem login;
+// - aluno;
+// - gestão;
+// - admin.
+//
+// Somente o botão de criar evento fica restrito ao admin.
+//
+// =====================================================
 
 function configurarPermissoesDaTela() {
     const usuarioEhAdmin =
         perfilUsuario &&
         perfilUsuario.funcao === "admin";
 
-    if (usuarioEhAdmin) {
-        if (areaFiltroAdmin) {
-            areaFiltroAdmin.style.display = "block";
-        }
+    // Filtro por curso fica sempre visível.
+    if (areaFiltroAdmin) {
+        areaFiltroAdmin.style.display = "block";
+    }
 
+    // Admin pode criar evento.
+    if (usuarioEhAdmin) {
         if (btnAbrirFormEvento) {
             btnAbrirFormEvento.style.display = "block";
         }
 
-        console.log("Recursos administrativos da agenda liberados.");
+        console.log("Agenda em modo admin: filtro, criação, edição e exclusão liberados.");
         return;
     }
 
-    if (areaFiltroAdmin) {
-        areaFiltroAdmin.style.display = "none";
-    }
-
+    // Visitante, aluno e gestão não podem criar evento.
     if (btnAbrirFormEvento) {
         btnAbrirFormEvento.style.display = "none";
     }
@@ -214,7 +225,7 @@ function configurarPermissoesDaTela() {
         formEvento.style.display = "none";
     }
 
-    console.log("Agenda em modo público: edição desativada.");
+    console.log("Agenda em modo público: filtro visível, edição desativada.");
 }
 
 
@@ -240,12 +251,9 @@ async function carregarEventosDoMes() {
         .order("data", { ascending: true })
         .order("horario_inicio", { ascending: true });
 
-    // Somente admin usa o filtro da tela.
-    if (
-        perfilUsuario &&
-        perfilUsuario.funcao === "admin" &&
-        filtroCursoAgenda
-    ) {
+    // MUDANÇA IMPORTANTE:
+    // O filtro por curso funciona para todos, mesmo sem login.
+    if (filtroCursoAgenda) {
         const filtro = filtroCursoAgenda.value;
 
         if (filtro && filtro !== "todos") {
@@ -282,6 +290,7 @@ async function carregarEventosDoMes() {
 // Gestão vê tudo.
 // Aluno, se estiver logado com perfil de aluno, vê eventos do curso dele
 // e eventos gerais.
+//
 // =====================================================
 
 function aplicarFiltroDePermissao(eventos) {
@@ -1175,7 +1184,11 @@ async function interpretarArrasteDoCalendario() {
 
 
 // =====================================================
-// 24. FILTRO ADMIN
+// 24. FILTRO POR CURSO
+// =====================================================
+//
+// Agora o filtro funciona para todos, não apenas admin.
+//
 // =====================================================
 
 if (filtroCursoAgenda) {
