@@ -11,6 +11,8 @@
 // 4. Apenas admin logado pode criar, editar e excluir eventos.
 // 5. O calendário não redireciona mais para login.
 // 6. O botão "+ Criar novo evento" aparece somente para admin.
+// 7. Eventos aparecem resumidos no quadrante do dia, estilo Google Agenda.
+// 8. Ao clicar no quadrante, abre o cronograma completo daquele dia.
 //
 // =====================================================
 
@@ -31,8 +33,6 @@ const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // =====================================================
 // 2. VARIÁVEIS GLOBAIS
 // =====================================================
-
-
 
 let dataAtual = new Date();
 let eventosCarregados = [];
@@ -75,7 +75,6 @@ const btnFecharDetalheEvento = document.getElementById("btnFecharDetalheEvento")
 
 const modalConfirmarExclusao = document.getElementById("modalConfirmarExclusao");
 const btnCancelarExclusao = document.getElementById("btnCancelarExclusao");
-const btnConfirmarExclusao = document.getElementById("btnConfirmarExclusao");
 
 
 // =====================================================
@@ -188,14 +187,8 @@ async function carregarPerfilUsuario() {
 // 6. CONFIGURAR PERMISSÕES DA TELA
 // =====================================================
 //
-// MUDANÇA IMPORTANTE:
-// O filtro por curso fica visível para todos:
-// - visitante sem login;
-// - aluno;
-// - gestão;
-// - admin.
-//
-// Somente o botão de criar evento fica restrito ao admin.
+// O filtro por curso fica visível para todos.
+// Somente criar, editar e excluir ficam restritos ao admin.
 //
 // =====================================================
 
@@ -254,7 +247,6 @@ async function carregarEventosDoMes() {
         .order("data", { ascending: true })
         .order("horario_inicio", { ascending: true });
 
-    // MUDANÇA IMPORTANTE:
     // O filtro por curso funciona para todos, mesmo sem login.
     if (filtroCursoAgenda) {
         const filtro = filtroCursoAgenda.value;
@@ -331,7 +323,7 @@ function aplicarFiltroDePermissao(eventos) {
     }
 
     // Visitante vê eventos públicos.
-    // Como sua proposta é transparência da agenda, deixei visitante vendo tudo.
+    // Como sua proposta é transparência da agenda, visitante vê tudo.
     return eventos;
 }
 
@@ -375,14 +367,14 @@ function renderizarCalendario() {
 
     const diaSemanaInicio = primeiroDiaMes.getDay();
 
-    // Cria espaços vazios antes do primeiro dia do mês
+    // Cria espaços vazios antes do primeiro dia do mês.
     for (let i = 0; i < diaSemanaInicio; i++) {
         const vazio = document.createElement("div");
         vazio.className = "dia-vazio";
         gradeCalendario.appendChild(vazio);
     }
 
-    // Cria todos os dias do mês
+    // Cria todos os dias do mês.
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
         const dataDia = new Date(ano, mes, dia);
         const dataISO = formatarDataISO(dataDia);
@@ -447,7 +439,7 @@ function renderizarCalendario() {
             </div>
         `;
 
-        // Clique no quadrante abre os eventos completos do dia
+        // Clique no quadrante abre os eventos completos do dia.
         cardDia.addEventListener("click", function () {
             if (usuarioFezSwipeNoCalendario) {
                 usuarioFezSwipeNoCalendario = false;
@@ -462,6 +454,7 @@ function renderizarCalendario() {
 
     console.log("Calendário renderizado com sucesso.");
 }
+
 
 // =====================================================
 // 10. ABRIR MODAL DO DIA
@@ -570,7 +563,7 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
         });
     }
 
-    // Botão criar evento só aparece para admin
+    // Botão criar evento só aparece para admin.
     if (btnAbrirFormEvento) {
         if (perfilUsuario && perfilUsuario.funcao === "admin") {
             btnAbrirFormEvento.style.display = "block";
@@ -584,7 +577,7 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
     }
 
     modalDia.classList.add("aberto");
-}}
+}
 
 
 // =====================================================
@@ -643,7 +636,7 @@ function abrirDetalheEvento(idEvento) {
                 ${evento.horario_fim ? " às " + formatarHorarioCurto(evento.horario_fim) : ""}
             </p>
 
-            <p><strong>Curso alvo:</strong> ${escaparHTML(evento.curso_alvo || "Não informado")}</p>
+            <p><strong>Curso alvo:</strong> ${formatarCursoBonito(evento.curso_alvo || "todos")}</p>
 
             <p><strong>Descrição:</strong></p>
 
@@ -725,7 +718,6 @@ function prepararEdicaoEvento(idEvento) {
 }
 
 
-
 // =====================================================
 // 13. EXCLUIR EVENTO - ABRE MODAL COM OPÇÕES
 // =====================================================
@@ -752,6 +744,7 @@ function excluirEvento(idEvento) {
         modalConfirmarExclusao.classList.add("aberto");
     }
 }
+
 
 // =====================================================
 // 14. FECHAR MODAIS
@@ -923,7 +916,7 @@ if (formEvento) {
 // 17. GERAR EVENTOS COM REPETIÇÃO
 // =====================================================
 //
-// Agora todos os eventos repetidos recebem o mesmo serie_id.
+// Todos os eventos repetidos recebem o mesmo serie_id.
 // Isso permite excluir:
 // - somente este;
 // - este e os próximos;
@@ -1539,6 +1532,7 @@ function nomeBonitoTipo(tipo) {
 
     return nomes[normalizarTipo(tipo)] || tipo || "Outro";
 }
+
 
 // =====================================================
 // FORMATAR CURSO PARA APARECER BONITO NA AGENDA
