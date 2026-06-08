@@ -532,6 +532,37 @@ async function salvarPerfilAdminEditavel() {
             return;
         }
 
+        // =====================================================
+// SALVAR FRASE MOTIVACIONAL TAMBÉM PARA A TELA INICIAL
+// =====================================================
+
+const { error: erroFrasePublica } = await banco
+    .from("site_settings")
+    .upsert(
+        [
+            {
+                chave: "frase_motivacional",
+                valor: perfilAtualizado.frase,
+                atualizado_em: new Date().toISOString()
+            }
+        ],
+        {
+            onConflict: "chave"
+        }
+    );
+
+if (erroFrasePublica) {
+    console.log("Erro ao salvar frase pública:", erroFrasePublica);
+
+    if (mensagem) {
+        mensagem.textContent =
+            "Perfil salvo, mas houve erro ao atualizar a frase da tela inicial: " +
+            erroFrasePublica.message;
+    }
+
+    return;
+}
+
         aplicarPerfilAdminNaTela(perfilAtualizado);
 
         if (inputFoto) {

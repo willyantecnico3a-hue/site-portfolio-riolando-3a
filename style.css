@@ -736,3 +736,37 @@
     font-size: 13px;
 }
 
+/* =====================================================
+   FRASE MOTIVACIONAL PÚBLICA NA TELA INICIAL
+===================================================== */
+
+.frase-publica-site {
+    max-width: 1000px;
+    margin: 18px auto;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #f0fdfa, #ffffff);
+    border-left: 6px solid #0f766e;
+    border-radius: 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    text-align: center;
+}
+
+.frase-publica-site p {
+    margin: 0;
+    color: #1e40af;
+    font-size: 20px;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+    .frase-publica-site {
+        margin: 14px 10px;
+        padding: 15px;
+    }
+
+    .frase-publica-site p {
+        font-size: 16px;
+    }
+}

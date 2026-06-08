@@ -984,3 +984,40 @@ function formatarHorarioAluno(horario) {
 
     return horario.substring(0, 5);
 }
+
+// =====================================================
+// CARREGAR FRASE MOTIVACIONAL PÚBLICA NA TELA INICIAL
+// Essa frase vem da tabela site_settings do Supabase.
+// =====================================================
+
+async function carregarFraseMotivacionalPublica() {
+    const elementoFrase = document.getElementById("fraseMotivacionalPublica");
+
+    if (!elementoFrase) {
+        return;
+    }
+
+    try {
+        const { data, error } = await banco
+            .from("site_settings")
+            .select("valor")
+            .eq("chave", "frase_motivacional")
+            .maybeSingle();
+
+        if (error) {
+            console.log("Erro ao carregar frase motivacional:", error);
+            return;
+        }
+
+        if (data && data.valor) {
+            elementoFrase.textContent = data.valor;
+        }
+
+    } catch (erro) {
+        console.log("Erro inesperado ao carregar frase pública:", erro);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    carregarFraseMotivacionalPublica();
+});
