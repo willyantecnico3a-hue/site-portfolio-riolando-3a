@@ -2,6 +2,16 @@
 // AGENDA PEDAGÓGICA INTERATIVA
 // HTML + CSS + JAVASCRIPT PURO + SUPABASE
 // =====================================================
+//
+// Regra principal desta versão:
+//
+// 1. Visitantes sem login podem visualizar a agenda.
+// 2. Alunos, gestão e visitantes conseguem ver eventos.
+// 3. Apenas admin logado pode criar, editar e excluir eventos.
+// 4. O calendário não redireciona mais para login.
+// 5. O botão "+ Criar novo evento" aparece somente para admin.
+//
+// =====================================================
 
 
 // =====================================================
@@ -10,8 +20,8 @@
 
 const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
-// COLE AQUI SUA CHAVE PUBLIC / ANON / PUBLISHABLE DO SUPABASE
-// IMPORTANTE: mantenha a chave entre aspas.
+// Chave pública / anon / publishable do Supabase.
+// Nunca use service_role no navegador.
 const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -68,7 +78,7 @@ const btnConfirmarExclusao = document.getElementById("btnConfirmarExclusao");
 // 4. INICIAR A AGENDA
 // =====================================================
 
-iniciarAgenda();
+document.addEventListener("DOMContentLoaded", iniciarAgenda);
 
 async function iniciarAgenda() {
     await carregarPerfilUsuario();
@@ -80,19 +90,35 @@ async function iniciarAgenda() {
     renderizarCalendario();
 
     configurarArrasteTrocaMesNoCalendario();
+
+    console.log("Agenda pedagógica carregada com sucesso.");
 }
 
 
 // =====================================================
-// 5. CARREGAR PERFIL DO USUÁRIO LOGADO
+// 5. CARREGAR PERFIL DO USUÁRIO
+// =====================================================
+//
+// IMPORTANTE:
+// Esta função NÃO bloqueia visitantes.
+// Se não houver usuário logado, cria um perfil temporário de visitante.
+// Assim a agenda continua pública para visualização.
+//
 // =====================================================
 
 async function carregarPerfilUsuario() {
     const { data: userData, error: userError } = await banco.auth.getUser();
 
-    if (userError || !userData.user) {
-        alert("Você precisa estar logado para acessar a agenda.");
-        console.log("Usuário não logado na agenda.");
+    if (userError || !userData || !userData.user) {
+        perfilUsuario = {
+            id: null,
+            nome: "Visitante",
+            email: "",
+            funcao: "visitante",
+            curso: "todos"
+        };
+
+        console.log("Agenda aberta sem login. Perfil visitante aplicado.");
         return;
     }
 
@@ -100,6 +126,7 @@ async function carregarPerfilUsuario() {
 
     console.log("Usuário logado na agenda:", usuario.email);
 
+    // Primeiro tenta buscar na tabela perfis.
     const { data: perfil, error: erroPerfil } = await banco
         .from("perfis")
         .select("id, nome, email, funcao, curso")
@@ -116,6 +143,7 @@ async function carregarPerfilUsuario() {
         return;
     }
 
+    // Depois tenta reconhecer como admin pela tabela admins.
     const { data: admin, error: erroAdmin } = await banco
         .from("admins")
         .select("email")
@@ -139,15 +167,16 @@ async function carregarPerfilUsuario() {
         return;
     }
 
+    // Se está logado, mas não é admin e não tem perfil cadastrado.
     perfilUsuario = {
         id: usuario.id,
         nome: usuario.email,
         email: usuario.email,
         funcao: "visitante",
-        curso: "nenhum"
+        curso: "todos"
     };
 
-    console.log("Usuário sem perfil administrativo:", perfilUsuario);
+    console.log("Usuário logado sem perfil específico. Tratado como visitante:", perfilUsuario);
 }
 
 
@@ -156,21 +185,36 @@ async function carregarPerfilUsuario() {
 // =====================================================
 
 function configurarPermissoesDaTela() {
-    if (!perfilUsuario) {
-        return;
-    }
+    const usuarioEhAdmin =
+        perfilUsuario &&
+        perfilUsuario.funcao === "admin";
 
-    if (perfilUsuario.funcao === "admin") {
+    if (usuarioEhAdmin) {
         if (areaFiltroAdmin) {
             areaFiltroAdmin.style.display = "block";
         }
 
+        if (btnAbrirFormEvento) {
+            btnAbrirFormEvento.style.display = "block";
+        }
+
+        console.log("Recursos administrativos da agenda liberados.");
         return;
     }
 
     if (areaFiltroAdmin) {
         areaFiltroAdmin.style.display = "none";
     }
+
+    if (btnAbrirFormEvento) {
+        btnAbrirFormEvento.style.display = "none";
+    }
+
+    if (formEvento) {
+        formEvento.style.display = "none";
+    }
+
+    console.log("Agenda em modo público: edição desativada.");
 }
 
 
@@ -179,10 +223,6 @@ function configurarPermissoesDaTela() {
 // =====================================================
 
 async function carregarEventosDoMes() {
-    if (!perfilUsuario) {
-        return;
-    }
-
     const ano = dataAtual.getFullYear();
     const mes = dataAtual.getMonth();
 
@@ -200,7 +240,12 @@ async function carregarEventosDoMes() {
         .order("data", { ascending: true })
         .order("horario_inicio", { ascending: true });
 
-    if (perfilUsuario.funcao === "admin" && filtroCursoAgenda) {
+    // Somente admin usa o filtro da tela.
+    if (
+        perfilUsuario &&
+        perfilUsuario.funcao === "admin" &&
+        filtroCursoAgenda
+    ) {
         const filtro = filtroCursoAgenda.value;
 
         if (filtro && filtro !== "todos") {
@@ -212,20 +257,36 @@ async function carregarEventosDoMes() {
 
     if (error) {
         console.log("Erro ao buscar eventos:", error);
+
+        eventosCarregados = [];
+
+        alert(
+            "Não foi possível carregar os eventos da agenda. Verifique as permissões SELECT da tabela eventos no Supabase."
+        );
+
         return;
     }
 
     eventosCarregados = aplicarFiltroDePermissao(data || []);
+
+    console.log("Eventos carregados:", eventosCarregados);
 }
 
 
 // =====================================================
 // 8. FILTRO DE PERMISSÃO
 // =====================================================
+//
+// Visitante sem login vê a agenda pública.
+// Admin vê tudo.
+// Gestão vê tudo.
+// Aluno, se estiver logado com perfil de aluno, vê eventos do curso dele
+// e eventos gerais.
+// =====================================================
 
 function aplicarFiltroDePermissao(eventos) {
     if (!perfilUsuario) {
-        return [];
+        return eventos;
     }
 
     const funcao = perfilUsuario.funcao;
@@ -250,14 +311,16 @@ function aplicarFiltroDePermissao(eventos) {
                 evento.curso_alvo === "todos" ||
                 evento.curso_alvo === curso ||
                 (
-                    evento.tipo === "ot" &&
+                    normalizarTipo(evento.tipo) === "ot" &&
                     evento.curso_alvo === curso
                 )
             );
         });
     }
 
-    return [];
+    // Visitante vê eventos públicos.
+    // Como sua proposta é transparência da agenda, deixei visitante vendo tudo.
+    return eventos;
 }
 
 
@@ -331,7 +394,6 @@ function renderizarCalendario() {
         `;
 
         cardDia.addEventListener("click", function () {
-            // Se o usuário acabou de fazer swipe, não abre o modal do dia.
             if (usuarioFezSwipeNoCalendario) {
                 usuarioFezSwipeNoCalendario = false;
                 return;
@@ -595,6 +657,11 @@ if (btnFecharDetalheEvento) {
 
 if (btnAbrirFormEvento) {
     btnAbrirFormEvento.addEventListener("click", function () {
+        if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+            alert("Apenas o administrador pode criar eventos.");
+            return;
+        }
+
         eventoEmEdicaoId = null;
 
         limparFormularioEvento();
@@ -854,6 +921,11 @@ if (btnConfirmarExclusao) {
             return;
         }
 
+        if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+            alert("Apenas o administrador pode excluir eventos.");
+            return;
+        }
+
         const { error } = await banco
             .from("eventos")
             .delete()
@@ -930,12 +1002,11 @@ async function mudarMes(direcao) {
 
 // =====================================================
 // 23. TROCAR MÊS ARRASTANDO NO PRÓPRIO CALENDÁRIO
-// Arrastar para direita: mês anterior
-// Arrastar para esquerda: próximo mês
+// =====================================================
 //
-// Agora o gesto fica na área .calendario,
-// igual à experiência do Google Agenda.
-// Os botões continuam funcionando normalmente.
+// Arrastar para direita: mês anterior.
+// Arrastar para esquerda: próximo mês.
+//
 // =====================================================
 
 let toqueInicioX = 0;
@@ -961,7 +1032,6 @@ function configurarArrasteTrocaMesNoCalendario() {
 
     console.log("Swipe de meses configurado no calendário.");
 
-    // Permite que o JavaScript controle o gesto horizontal dentro do calendário.
     areaSwipe.style.touchAction = "pan-y";
     areaSwipe.style.userSelect = "none";
     areaSwipe.style.overscrollBehaviorX = "contain";
@@ -972,10 +1042,9 @@ function configurarArrasteTrocaMesNoCalendario() {
         }
 
         const toque = event.touches[0];
-
-        // Evita conflito com gesto de voltar página nas bordas do navegador.
         const larguraTela = window.innerWidth;
 
+        // Evita conflito com gesto de voltar/avançar página nas bordas do navegador.
         if (toque.clientX < 20 || toque.clientX > larguraTela - 20) {
             return;
         }
@@ -1007,7 +1076,6 @@ function configurarArrasteTrocaMesNoCalendario() {
         const distanciaX = toqueFimX - toqueInicioX;
         const distanciaY = toqueFimY - toqueInicioY;
 
-        // Quando perceber que é gesto horizontal, impede rolagem padrão.
         if (Math.abs(distanciaX) > Math.abs(distanciaY) && Math.abs(distanciaX) > 15) {
             usuarioFezSwipeNoCalendario = true;
 
@@ -1017,7 +1085,7 @@ function configurarArrasteTrocaMesNoCalendario() {
         }
     }, { passive: false });
 
-    areaSwipe.addEventListener("touchend", async function (event) {
+    areaSwipe.addEventListener("touchend", async function () {
         if (!gestoAtivo) {
             return;
         }
@@ -1031,7 +1099,7 @@ function configurarArrasteTrocaMesNoCalendario() {
         gestoAtivo = false;
     });
 
-    // Mouse para teste no computador
+    // Mouse para teste no computador.
     areaSwipe.addEventListener("mousedown", function (event) {
         toqueInicioX = event.clientX;
         toqueFimX = event.clientX;
@@ -1078,16 +1146,11 @@ async function interpretarArrasteDoCalendario() {
     const distanciaX = toqueFimX - toqueInicioX;
     const distanciaY = toqueFimY - toqueInicioY;
 
-    console.log("Distância X:", distanciaX);
-    console.log("Distância Y:", distanciaY);
-
-    // Movimento vertical: usuário só estava rolando a página.
     if (Math.abs(distanciaY) > Math.abs(distanciaX)) {
         usuarioFezSwipeNoCalendario = false;
         return;
     }
 
-    // Gesto curto: considera toque normal.
     if (Math.abs(distanciaX) < 55) {
         usuarioFezSwipeNoCalendario = false;
         return;
@@ -1095,14 +1158,14 @@ async function interpretarArrasteDoCalendario() {
 
     usuarioFezSwipeNoCalendario = true;
 
-    // Arrastou para direita: mês anterior
+    // Arrastou para direita: mês anterior.
     if (distanciaX > 0) {
         console.log("Arrastou para direita: mês anterior.");
         await mudarMes(-1);
         return;
     }
 
-    // Arrastou para esquerda: próximo mês
+    // Arrastou para esquerda: próximo mês.
     if (distanciaX < 0) {
         console.log("Arrastou para esquerda: próximo mês.");
         await mudarMes(1);
@@ -1252,8 +1315,11 @@ function escaparHTML(texto) {
         .replaceAll("'", "&#039;");
 }
 
-document.addEventListener("DOMContentLoaded", async function () {
-    await verificarAdminAgenda();
-    await carregarEventosAgenda();
-    renderizarCalendario();
-});
+
+// =====================================================
+// 26. EXPOR FUNÇÕES PARA O HTML
+// =====================================================
+
+window.abrirDetalheEvento = abrirDetalheEvento;
+window.prepararEdicaoEvento = prepararEdicaoEvento;
+window.excluirEvento = excluirEvento;
