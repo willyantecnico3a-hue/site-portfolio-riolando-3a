@@ -940,9 +940,22 @@ if (btnSalvarAula) {
         const local = document.getElementById("adminLocalAula").value.trim();
         const desafio = document.getElementById("adminDesafioAula").value.trim();
 
-        const pdfUrl = document.getElementById("adminPdfAula")
-            ? document.getElementById("adminPdfAula").value.trim()
-            : "";
+        let pdfUrl = document.getElementById("adminPdfAula")
+    ? document.getElementById("adminPdfAula").value.trim()
+    : "";
+
+const arquivoPdfAula = document.getElementById("arquivoPdfAula");
+
+if (arquivoPdfAula && arquivoPdfAula.files && arquivoPdfAula.files.length > 0) {
+    const urlPdfEnviado = await enviarArquivoParaStorage(arquivoPdfAula, "aulas-pdf");
+
+    if (urlPdfEnviado) {
+        pdfUrl = urlPdfEnviado;
+    } else {
+        mensagem.textContent = "Erro ao enviar o PDF da aula.";
+        return;
+    }
+}
 
         const videoUrl = document.getElementById("adminVideoAula")
             ? document.getElementById("adminVideoAula").value.trim()
@@ -999,6 +1012,10 @@ if (btnSalvarAula) {
                     aula_do_dia: false
                 }
             ]);
+
+            if (arquivoPdfAula) {
+    arquivoPdfAula.value = "";
+}
 
         if (error) {
             mensagem.textContent = "Erro ao salvar aula: " + error.message;

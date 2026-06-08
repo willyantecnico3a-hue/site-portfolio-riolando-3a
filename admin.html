@@ -732,6 +732,55 @@
 
                 <label>Descrição da aula</label>
                 <textarea id="adminDescricaoAula" placeholder="Descreva a aula"></textarea>
+                <!-- FERRAMENTAS SIMPLES PARA APOIAR A ESCRITA -->
+<div class="barra-editor-aula">
+    <button type="button" onclick="inserirMarcacaoTexto('adminDescricaoAula', '**', '**')">
+        Negrito
+    </button>
+
+    <button type="button" onclick="inserirMarcacaoTexto('adminDescricaoAula', '```\n', '\n```')">
+        Código
+    </button>
+
+    <button type="button" onclick="aumentarFonteCampo('adminDescricaoAula')">
+        A+
+    </button>
+
+    <button type="button" onclick="diminuirFonteCampo('adminDescricaoAula')">
+        A-
+    </button>
+
+    <select onchange="trocarFonteCampo('adminDescricaoAula', this.value)">
+        <option value="Arial">Arial</option>
+        <option value="Verdana">Verdana</option>
+        <option value='Consolas, "Courier New", monospace'>Fonte de código</option>
+        <option value="Georgia">Georgia</option>
+    </select>
+</div>
+
+<label for="adminDescricaoAula">Descrição da aula</label>
+<textarea id="adminDescricaoAula" placeholder="Cole aqui a descrição da aula mantendo quebras de linha, códigos e orientações"></textarea>
+
+<label for="adminDesafioAula">Desafio prático</label>
+<textarea id="adminDesafioAula" placeholder="Cole aqui o desafio prático, atividade ou código para o aluno"></textarea>
+
+
+<h3>📎 Materiais da Aula</h3>
+
+<label for="adminPdfAula">Link do PDF da aula</label>
+<input type="url" id="adminPdfAula" placeholder="Cole aqui o link do PDF">
+
+<label for="arquivoPdfAula">Ou envie um PDF do computador</label>
+<input type="file" id="arquivoPdfAula" accept="application/pdf">
+
+<label for="adminVideoAula">Link do vídeo da aula</label>
+<input type="url" id="adminVideoAula" placeholder="Cole aqui o link do YouTube ou vídeo">
+
+<label for="adminAtividadeAula">Link da atividade / quiz / desafio</label>
+<input type="url" id="adminAtividadeAula" placeholder="Cole o link da atividade externa">
+
+<label for="adminMaterialExtraAula">Material complementar</label>
+<input type="url" id="adminMaterialExtraAula" placeholder="Link de apoio, slide, site ou documento">
 
                 <label>Data da aula</label>
                 <div class="linha-data-admin">

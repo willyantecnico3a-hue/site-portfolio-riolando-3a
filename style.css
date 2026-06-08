@@ -810,3 +810,43 @@
         box-sizing: border-box;
     }
 }
+
+.texto-formatado-aula {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.6;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+}
+
+.bloco-codigo-aula {
+    white-space: pre;
+    overflow-x: auto;
+    background-color: #0f172a;
+    color: #e5e7eb;
+    padding: 16px;
+    border-radius: 12px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 14px 0;
+}
+
+.btn-material-aula,
+.btn-link-material {
+    display: inline-block;
+    margin: 8px 8px 8px 0;
+    padding: 10px 14px;
+    background-color: #1e40af;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.aviso-link-externo {
+    margin-top: 8px;
+    color: #475569;
+    font-size: 14px;
+}

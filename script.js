@@ -275,11 +275,6 @@ carregarTurmas();
 
 // =====================================================
 // 8. MOSTRAR AMBIENTE DA TURMA ESCOLHIDA
-// Quando o aluno escolhe uma turma:
-// - mostra dados da turma;
-// - carrega a aula mais recente;
-// - carrega linha do tempo;
-// - mostra inicialmente a seção Aula do Dia.
 // =====================================================
 
 const selectTurma = document.getElementById("selectTurma");
@@ -368,11 +363,6 @@ if (btnFotoTurmaSelecionada) {
 
 // =====================================================
 // 10. MOSTRAR APENAS UMA SEÇÃO DO ALUNO POR VEZ
-// Exemplo:
-// - Aula do Dia
-// - Enviar Portfólio
-// - Portfólios Publicados
-// - Linha do Tempo
 // =====================================================
 
 function mostrarSecaoAluno(idSecao) {
@@ -397,8 +387,6 @@ function mostrarSecaoAluno(idSecao) {
 
 // =====================================================
 // 11. CARREGAR AULA MAIS RECENTE DA TURMA
-// Esta função substitui as versões duplicadas anteriores.
-// Ela já busca PDF, vídeo, atividade e material extra.
 // =====================================================
 
 async function carregarAulaDaTurma(turmaId) {
@@ -421,34 +409,34 @@ async function carregarAulaDaTurma(turmaId) {
 
     aulaDiaConteudo.innerHTML = `<p>Carregando aula mais recente da turma...</p>`;
 
-   const { data, error } = await banco
-    .from("aulas")
-    .select(`
-        id,
-        titulo_aula,
-        subtitulo,
-        descricao,
-        data_aula,
-        horario_inicio,
-        horario_fim,
-        local_aula,
-        desafio_pratico,
-        pdf_url,
-        video_url,
-        atividade_url,
-        material_extra_url,
-        aula_do_dia,
-        disciplinas (
-            nome_disciplina
-        )
-    `)
-    .eq("turma_id", turmaId)
-    .eq("ativo", true)
-    .eq("aula_do_dia", true)
-    .order("data_aula", { ascending: false })
-    .order("horario_inicio", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    const { data, error } = await banco
+        .from("aulas")
+        .select(`
+            id,
+            titulo_aula,
+            subtitulo,
+            descricao,
+            data_aula,
+            horario_inicio,
+            horario_fim,
+            local_aula,
+            desafio_pratico,
+            pdf_url,
+            video_url,
+            atividade_url,
+            material_extra_url,
+            aula_do_dia,
+            disciplinas (
+                nome_disciplina
+            )
+        `)
+        .eq("turma_id", turmaId)
+        .eq("ativo", true)
+        .eq("aula_do_dia", true)
+        .order("data_aula", { ascending: false })
+        .order("horario_inicio", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
     if (error) {
         aulaDiaConteudo.innerHTML = `<p>Erro ao carregar aula: ${error.message}</p>`;
@@ -456,18 +444,18 @@ async function carregarAulaDaTurma(turmaId) {
         return;
     }
 
-   if (!data) {
-    aulaDiaConteudo.innerHTML = `
-        <p>
-            Nenhuma aula foi marcada como <strong>Aula do Dia</strong> para esta turma.
-        </p>
+    if (!data) {
+        aulaDiaConteudo.innerHTML = `
+            <p>
+                Nenhuma aula foi marcada como <strong>Aula do Dia</strong> para esta turma.
+            </p>
 
-        <p>
-            O professor pode ativar uma aula no painel administrativo.
-        </p>
-    `;
-    return;
-}
+            <p>
+                O professor pode ativar uma aula no painel administrativo.
+            </p>
+        `;
+        return;
+    }
 
     aulaDiaConteudo.innerHTML = montarCardAulaCompleta(data, true);
 }
@@ -484,26 +472,27 @@ function montarCardAulaCompleta(aula, mostrarSeloAtual) {
 
             ${
                 mostrarSeloAtual
-                ? `<span class="badge-aula-atual">Aula mais recente</span>`
+                ? `<span class="badge-aula-atual">Aula do Dia</span>`
                 : ""
             }
 
-            <h3>${aula.titulo_aula}</h3>
+            <h3>${escaparHTML(aula.titulo_aula || "Aula sem título")}</h3>
 
             <p>
                 <strong>Disciplina:</strong>
-                ${aula.disciplinas ? aula.disciplinas.nome_disciplina : "Não informada"}
+                ${aula.disciplinas ? escaparHTML(aula.disciplinas.nome_disciplina) : "Não informada"}
             </p>
 
             <p>
                 <strong>Subtítulo:</strong>
-                ${aula.subtitulo || "Não informado"}
+                ${escaparHTML(aula.subtitulo || "Não informado")}
             </p>
 
-            <p>
-                <strong>Descrição:</strong>
-                ${aula.descricao || "Não informada"}
-            </p>
+            <p><strong>Descrição:</strong></p>
+
+            <div class="texto-formatado-aula">
+                ${formatarTextoAula(aula.descricao || "Sem descrição cadastrada.")}
+            </div>
 
             <p>
                 <strong>Data:</strong>
@@ -517,15 +506,15 @@ function montarCardAulaCompleta(aula, mostrarSeloAtual) {
 
             <p>
                 <strong>Local:</strong>
-                ${aula.local_aula || "Não informado"}
+                ${escaparHTML(aula.local_aula || "Não informado")}
             </p>
 
             <div class="desafio-aula">
                 <h4>Desafio Prático</h4>
 
-                <p>
-                    ${aula.desafio_pratico || "Nenhum desafio cadastrado."}
-                </p>
+                <div class="texto-formatado-aula">
+                    ${formatarTextoAula(aula.desafio_pratico || "Nenhum desafio cadastrado.")}
+                </div>
             </div>
 
             <hr>
@@ -541,7 +530,8 @@ function montarCardAulaCompleta(aula, mostrarSeloAtual) {
 
 // =====================================================
 // 13. MONTAR MATERIAIS DA AULA
-// Cria botões de Exibir/Ocultar para PDF, vídeo e atividade.
+// PDF e vídeo podem ser exibidos dentro do site.
+// Atividade/quiz/desafio abre em nova aba, para não travar login externo.
 // =====================================================
 
 function montarMateriaisDaAula(aula) {
@@ -550,13 +540,22 @@ function montarMateriaisDaAula(aula) {
     if (aula.pdf_url) {
         html += `
             <div class="material-aula-card">
-                <button onclick="alternarMaterial('pdfAulaBox-${aula.id}')">
+                <button type="button" onclick="alternarMaterial('pdfAulaBox-${aula.id}')">
                     📄 Exibir / Ocultar PDF
                 </button>
 
+                <a
+                    href="${escaparAtributo(aula.pdf_url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-link-material"
+                >
+                    🔗 Abrir PDF em nova aba
+                </a>
+
                 <div id="pdfAulaBox-${aula.id}" class="conteudo-material-aula" style="display:none;">
                     <iframe
-                        src="${aula.pdf_url}"
+                        src="${escaparAtributo(aula.pdf_url)}"
                         width="100%"
                         height="500"
                         title="PDF da aula">
@@ -569,9 +568,18 @@ function montarMateriaisDaAula(aula) {
     if (aula.video_url) {
         html += `
             <div class="material-aula-card">
-                <button onclick="alternarMaterial('videoAulaBox-${aula.id}')">
+                <button type="button" onclick="alternarMaterial('videoAulaBox-${aula.id}')">
                     🎥 Exibir / Ocultar Vídeo
                 </button>
+
+                <a
+                    href="${escaparAtributo(aula.video_url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-link-material"
+                >
+                    🔗 Abrir vídeo em nova aba
+                </a>
 
                 <div id="videoAulaBox-${aula.id}" class="conteudo-material-aula" style="display:none;">
                     ${montarVideoAula(aula.video_url)}
@@ -583,18 +591,18 @@ function montarMateriaisDaAula(aula) {
     if (aula.atividade_url) {
         html += `
             <div class="material-aula-card">
-                <button onclick="alternarMaterial('atividadeAulaBox-${aula.id}')">
-                    📝 Exibir / Ocultar Atividade
-                </button>
+                <a
+                    href="${escaparAtributo(aula.atividade_url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-material-aula btn-atividade-externa"
+                >
+                    📝 Abrir atividade / quiz / desafio em nova aba
+                </a>
 
-                <div id="atividadeAulaBox-${aula.id}" class="conteudo-material-aula" style="display:none;">
-                    <iframe
-                        src="${aula.atividade_url}"
-                        width="100%"
-                        height="500"
-                        title="Atividade da aula">
-                    </iframe>
-                </div>
+                <p class="aviso-link-externo">
+                    A atividade será aberta fora deste site para permitir login e uso completo da plataforma original.
+                </p>
             </div>
         `;
     }
@@ -602,7 +610,12 @@ function montarMateriaisDaAula(aula) {
     if (aula.material_extra_url) {
         html += `
             <div class="material-aula-card">
-                <a href="${aula.material_extra_url}" target="_blank">
+                <a
+                    href="${escaparAtributo(aula.material_extra_url)}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-material-aula"
+                >
                     🔗 Abrir Material Complementar
                 </a>
             </div>
@@ -628,7 +641,7 @@ function alternarMaterial(idElemento) {
         return;
     }
 
-    if (elemento.style.display === "none") {
+    if (elemento.style.display === "none" || elemento.style.display === "") {
         elemento.style.display = "block";
     } else {
         elemento.style.display = "none";
@@ -673,7 +686,7 @@ function montarVideoAula(url) {
         <iframe
             width="100%"
             height="400"
-            src="${urlVideo}"
+            src="${escaparAtributo(urlVideo)}"
             title="Vídeo da aula"
             frameborder="0"
             allowfullscreen>
@@ -758,18 +771,18 @@ async function carregarLinhaTempoAulas(turmaId) {
                         — ${formatarHorarioAluno(aula.horario_inicio)} às ${formatarHorarioAluno(aula.horario_fim)}
                     </p>
 
-                    <h3>${aula.titulo_aula}</h3>
+                    <h3>${escaparHTML(aula.titulo_aula || "Aula sem título")}</h3>
 
                     <p>
                         <strong>Disciplina:</strong>
-                        ${aula.disciplinas ? aula.disciplinas.nome_disciplina : "Não informada"}
+                        ${aula.disciplinas ? escaparHTML(aula.disciplinas.nome_disciplina) : "Não informada"}
                     </p>
 
-                    <p>
-                        ${aula.descricao || ""}
-                    </p>
+                    <div class="texto-formatado-aula resumo-linha-tempo">
+                        ${formatarTextoAula(resumirTexto(aula.descricao || "", 450))}
+                    </div>
 
-                    <button onclick="abrirResumoAulaLinhaTempo('${aula.id}')">
+                    <button type="button" onclick="abrirResumoAulaLinhaTempo('${aula.id}')">
                         Ver detalhes da aula
                     </button>
 
@@ -783,8 +796,6 @@ async function carregarLinhaTempoAulas(turmaId) {
 
 // =====================================================
 // 17. ABRIR AULA DA LINHA DO TEMPO
-// Quando o aluno clica em uma aula antiga,
-// ela aparece na seção Aula do Dia.
 // =====================================================
 
 function abrirResumoAulaLinhaTempo(idAula) {
@@ -814,7 +825,6 @@ function abrirResumoAulaLinhaTempo(idAula) {
 
 // =====================================================
 // 18. BOTÃO: CADASTRAR PORTFÓLIO
-// A seção pode ficar oculta no HTML e só abrir pelo card.
 // =====================================================
 
 const btnCadastrarPortfolio = document.getElementById("btnCadastrarPortfolio");
@@ -928,15 +938,15 @@ async function carregarPortfoliosPublicados() {
     data.forEach(function (aluno) {
         areaPortfolios.innerHTML += `
             <div class="card-publicado">
-                <h3>${aluno.nome_aluno}</h3>
+                <h3>${escaparHTML(aluno.nome_aluno)}</h3>
 
-                <p><strong>Telefone:</strong> ${aluno.telefone || "Não informado"}</p>
+                <p><strong>Telefone:</strong> ${escaparHTML(aluno.telefone || "Não informado")}</p>
 
-                <p><strong>E-mail:</strong> ${aluno.email || "Não informado"}</p>
+                <p><strong>E-mail:</strong> ${escaparHTML(aluno.email || "Não informado")}</p>
 
                 <p>
                     <strong>Site:</strong>
-                    <a href="${aluno.link_site}" target="_blank">
+                    <a href="${escaparAtributo(aluno.link_site)}" target="_blank" rel="noopener noreferrer">
                         Acessar projeto do aluno
                     </a>
                 </p>
@@ -946,7 +956,7 @@ async function carregarPortfoliosPublicados() {
                     ? `
                         <p>
                             <strong>Vídeo:</strong>
-                            <a href="${aluno.link_video}" target="_blank">
+                            <a href="${escaparAtributo(aluno.link_video)}" target="_blank" rel="noopener noreferrer">
                                 Assistir apresentação
                             </a>
                         </p>
@@ -985,8 +995,9 @@ function formatarHorarioAluno(horario) {
     return horario.substring(0, 5);
 }
 
+
 // =====================================================
-// CARREGAR FRASE MOTIVACIONAL PÚBLICA NA TELA INICIAL
+// 21. CARREGAR FRASE MOTIVACIONAL PÚBLICA NA TELA INICIAL
 // Essa frase vem da tabela site_settings do Supabase.
 // =====================================================
 
@@ -994,6 +1005,10 @@ async function carregarFraseMotivacionalPublica() {
     const elementoFrase = document.getElementById("fraseMotivacionalPublica");
 
     if (!elementoFrase) {
+        return;
+    }
+
+    if (!banco) {
         return;
     }
 
@@ -1021,3 +1036,97 @@ async function carregarFraseMotivacionalPublica() {
 document.addEventListener("DOMContentLoaded", function () {
     carregarFraseMotivacionalPublica();
 });
+
+
+// =====================================================
+// 22. FORMATAR TEXTO DA AULA
+// Mantém identação, quebras de linha, blocos de código e negrito.
+// Para código, use:
+// ```python
+// print("Olá mundo")
+// ```
+//
+// Para negrito, use:
+// **texto em negrito**
+// =====================================================
+
+function formatarTextoAula(texto) {
+    if (!texto) {
+        return "";
+    }
+
+    let textoSeguro = texto
+        .toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    // Converte blocos marcados com ``` código ```
+    textoSeguro = textoSeguro.replace(/```([\s\S]*?)```/g, function (_, codigo) {
+        return `<pre class="bloco-codigo-aula"><code>${codigo}</code></pre>`;
+    });
+
+    // Converte **negrito**
+    textoSeguro = textoSeguro.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    return textoSeguro;
+}
+
+
+// =====================================================
+// 23. FUNÇÕES AUXILIARES DE SEGURANÇA E TEXTO
+// =====================================================
+
+function escaparHTML(texto) {
+    if (!texto) {
+        return "";
+    }
+
+    return texto
+        .toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function escaparAtributo(texto) {
+    if (!texto) {
+        return "";
+    }
+
+    return texto
+        .toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+}
+
+function resumirTexto(texto, limite) {
+    if (!texto) {
+        return "";
+    }
+
+    const textoLimpo = texto.toString();
+
+    if (textoLimpo.length <= limite) {
+        return textoLimpo;
+    }
+
+    return textoLimpo.substring(0, limite) + "...";
+}
+
+
+// =====================================================
+// 24. EXPOR FUNÇÕES PARA USO NO HTML
+// =====================================================
+
+window.mostrarHTML = mostrarHTML;
+window.mostrarCSS = mostrarCSS;
+window.mostrarJS = mostrarJS;
+window.alternarMaterial = alternarMaterial;
+window.abrirResumoAulaLinhaTempo = abrirResumoAulaLinhaTempo;
