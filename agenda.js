@@ -339,6 +339,15 @@ function aplicarFiltroDePermissao(eventos) {
 // =====================================================
 // 9. RENDERIZAR CALENDÁRIO
 // =====================================================
+//
+// Visual estilo Google Agenda:
+// - Cada quadrante do dia mostra os eventos em lista compacta.
+// - Mostra horário + título resumido.
+// - Ao clicar no quadrante, abre o cronograma completo do dia.
+// - Visitantes podem visualizar sem login.
+// - Editar/excluir continua somente para admin no modal de detalhes.
+//
+// =====================================================
 
 function renderizarCalendario() {
     if (!gradeCalendario || !tituloMesAno) {
@@ -362,49 +371,76 @@ function renderizarCalendario() {
 
     const diaSemanaInicio = primeiroDiaMes.getDay();
 
+    // Espaços vazios antes do primeiro dia do mês
     for (let i = 0; i < diaSemanaInicio; i++) {
         const vazio = document.createElement("div");
         vazio.className = "dia-vazio";
         gradeCalendario.appendChild(vazio);
     }
 
+    // Dias do mês
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
         const dataDia = new Date(ano, mes, dia);
         const dataISO = formatarDataISO(dataDia);
 
-        const eventosDoDia = eventosCarregados.filter(function (evento) {
-            return evento.data === dataISO;
-        });
+        const eventosDoDia = eventosCarregados
+            .filter(function (evento) {
+                return evento.data === dataISO;
+            })
+            .sort(function (a, b) {
+                return (a.horario_inicio || "").localeCompare(b.horario_inicio || "");
+            });
 
         const cardDia = document.createElement("div");
-        cardDia.className = "dia-calendario";
+        cardDia.className = "dia-calendario dia-calendario-google";
 
         if (dataISO === formatarDataISO(new Date())) {
             cardDia.classList.add("dia-hoje");
         }
 
+        const limiteEventosVisiveis = window.innerWidth <= 700 ? 5 : 4;
+
+        const eventosVisiveis = eventosDoDia.slice(0, limiteEventosVisiveis);
+        const eventosOcultos = eventosDoDia.length - eventosVisiveis.length;
+
         cardDia.innerHTML = `
-            <div class="cabecalho-dia">
-                <span class="numero-dia">${dia}</span>
-                <span class="quantidade-eventos">${eventosDoDia.length} evento(s)</span>
+            <div class="cabecalho-dia-google">
+                <span class="numero-dia-google">${dia}</span>
             </div>
 
-            <div class="eventos-mini-dia">
-                ${eventosDoDia.map(function (evento) {
-                    return `
-                        <div
-                            class="evento-mini tipo-${normalizarTipo(evento.tipo)}"
-                            title="${escaparHTML(evento.descricao || evento.titulo || "")}"
-                            onclick="event.stopPropagation(); abrirDetalheEvento('${evento.id}')"
-                        >
-                            <span>${formatarHorarioCurto(evento.horario_inicio)}</span>
-                            ${escaparHTML(evento.titulo || "Sem título")}
+            <div class="lista-eventos-google">
+                ${
+                    eventosVisiveis.map(function (evento) {
+                        return `
+                            <div
+                                class="evento-google-resumo tipo-${normalizarTipo(evento.tipo)}"
+                                title="${escaparHTML(evento.titulo || "")}"
+                            >
+                                <span class="hora-evento-google">
+                                    ${formatarHorarioCurto(evento.horario_inicio)}
+                                </span>
+
+                                <span class="titulo-evento-google">
+                                    ${escaparHTML(evento.titulo || "Sem título")}
+                                </span>
+                            </div>
+                        `;
+                    }).join("")
+                }
+
+                ${
+                    eventosOcultos > 0
+                    ? `
+                        <div class="mais-eventos-google">
+                            +${eventosOcultos} evento(s)
                         </div>
-                    `;
-                }).join("")}
+                    `
+                    : ""
+                }
             </div>
         `;
 
+        // Clique no quadrante abre o cronograma completo do dia
         cardDia.addEventListener("click", function () {
             if (usuarioFezSwipeNoCalendario) {
                 usuarioFezSwipeNoCalendario = false;
@@ -422,6 +458,13 @@ function renderizarCalendario() {
 // =====================================================
 // 10. ABRIR MODAL DO DIA
 // =====================================================
+//
+// Ao clicar no quadrante do calendário, abre uma tela com
+// o cronograma completo do dia.
+// Não exige login para visualizar.
+// Admin continua sendo o único que pode criar, editar e excluir.
+//
+// =====================================================
 
 function abrirModalDoDia(dataISO, eventosDoDia) {
     if (!modalDia || !modalTituloData || !listaEventosDia) {
@@ -433,43 +476,93 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
     modalTituloData.textContent = `Eventos de ${formatarDataBR(dataISO)}`;
 
     if (!eventosDoDia || eventosDoDia.length === 0) {
-        listaEventosDia.innerHTML = "<p>Nenhum evento cadastrado para este dia.</p>";
+        listaEventosDia.innerHTML = `
+            <div class="agenda-dia-vazia">
+                <p>Nenhum evento cadastrado para este dia.</p>
+            </div>
+        `;
     } else {
+        const eventosOrdenados = [...eventosDoDia].sort(function (a, b) {
+            return (a.horario_inicio || "").localeCompare(b.horario_inicio || "");
+        });
+
         listaEventosDia.innerHTML = "";
 
-        eventosDoDia.forEach(function (evento) {
+        eventosOrdenados.forEach(function (evento) {
+            const usuarioPodeEditar =
+                perfilUsuario &&
+                perfilUsuario.funcao === "admin";
+
             listaEventosDia.innerHTML += `
-                <div class="card-evento-dia">
-                    <span class="tag-legenda tipo-${normalizarTipo(evento.tipo)}">
-                        ${nomeBonitoTipo(evento.tipo)}
-                    </span>
+                <div class="card-evento-dia card-evento-dia-google">
+
+                    <div class="linha-topo-evento-dia-google">
+                        <span class="tag-legenda tipo-${normalizarTipo(evento.tipo)}">
+                            ${nomeBonitoTipo(evento.tipo)}
+                        </span>
+
+                        <span class="horario-destaque-evento-google">
+                            ${formatarHorarioCurto(evento.horario_inicio)}
+                            ${
+                                evento.horario_fim
+                                ? " às " + formatarHorarioCurto(evento.horario_fim)
+                                : ""
+                            }
+                        </span>
+                    </div>
 
                     <h3>${escaparHTML(evento.titulo || "Sem título")}</h3>
 
-                    <p>
-                        <strong>Horário:</strong>
-                        ${formatarHorarioCurto(evento.horario_inicio)}
-                        ${evento.horario_fim ? " às " + formatarHorarioCurto(evento.horario_fim) : ""}
+                    <p class="descricao-evento-dia-google">
+                        ${escaparHTML(evento.descricao || "Sem descrição cadastrada.")}
                     </p>
 
-                    <p>${escaparHTML(evento.descricao || "Sem descrição.")}</p>
+                    <div class="info-evento-dia-google">
+                        <p>
+                            <strong>Curso alvo:</strong>
+                            ${formatarCursoBonito(evento.curso_alvo || "todos")}
+                        </p>
 
-                    <p><strong>Curso alvo:</strong> ${escaparHTML(evento.curso_alvo || "Não informado")}</p>
+                        ${
+                            evento.link_material
+                            ? `
+                                <p>
+                                    <strong>Material:</strong>
+                                    <a href="${evento.link_material}" target="_blank">
+                                        📎 Abrir material
+                                    </a>
+                                </p>
+                            `
+                            : ""
+                        }
+                    </div>
 
-                    ${
-                        evento.link_material
-                        ? `<p><a href="${evento.link_material}" target="_blank">📎 Acessar material</a></p>`
-                        : ""
-                    }
+                    <div class="acoes-evento-publico-google">
+                        <button onclick="abrirDetalheEvento('${evento.id}')">
+                            Ver detalhes completos
+                        </button>
 
-                    <button onclick="abrirDetalheEvento('${evento.id}')">
-                        Ver detalhes
-                    </button>
+                        ${
+                            usuarioPodeEditar
+                            ? `
+                                <button onclick="prepararEdicaoEvento('${evento.id}')" class="btn-editar-evento-modal">
+                                    ✏️ Editar
+                                </button>
+
+                                <button onclick="excluirEvento('${evento.id}')" class="btn-excluir-evento-modal">
+                                    🗑️ Excluir
+                                </button>
+                            `
+                            : ""
+                        }
+                    </div>
+
                 </div>
             `;
         });
     }
 
+    // Botão criar evento só aparece para admin
     if (btnAbrirFormEvento) {
         if (perfilUsuario && perfilUsuario.funcao === "admin") {
             btnAbrirFormEvento.style.display = "block";
@@ -483,7 +576,7 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
     }
 
     modalDia.classList.add("aberto");
-}
+}}
 
 
 // =====================================================
@@ -1437,6 +1530,23 @@ function nomeBonitoTipo(tipo) {
     };
 
     return nomes[normalizarTipo(tipo)] || tipo || "Outro";
+}
+
+// =====================================================
+// FORMATAR CURSO PARA APARECER BONITO NA AGENDA
+// =====================================================
+
+function formatarCursoBonito(curso) {
+    const nomes = {
+        todos: "Todos",
+        desenvolvimento_sistemas: "Desenvolvimento de Sistemas",
+        vendas: "Vendas",
+        substituicoes: "Substituições",
+        apoio_pedagogico: "Apoio Pedagógico",
+        outro: "Outro"
+    };
+
+    return nomes[curso] || curso || "Não informado";
 }
 
 function getValorCampo(idCampo) {

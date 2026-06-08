@@ -925,3 +925,292 @@ button {
 #btnCancelarExclusao:hover {
     background-color: #cbd5e1;
 }
+
+/* =====================================================
+   CALENDÁRIO ESTILO GOOGLE AGENDA
+   Eventos resumidos dentro do quadrante do dia
+===================================================== */
+
+.dia-calendario-google {
+    padding: 6px;
+    min-height: 118px;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cabecalho-dia-google {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 3px;
+}
+
+.numero-dia-google {
+    font-weight: 800;
+    font-size: 16px;
+    color: #111827;
+}
+
+.dia-hoje .numero-dia-google {
+    background-color: #1e40af;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lista-eventos-google {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+}
+
+.evento-google-resumo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    min-height: 20px;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #0f172a;
+    background-color: #93c5fd;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.hora-evento-google {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 800;
+    opacity: 0.95;
+}
+
+.titulo-evento-google {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mais-eventos-google {
+    font-size: 10px;
+    font-weight: 700;
+    color: #1e40af;
+    padding-left: 4px;
+}
+
+/* Cores por tipo de evento */
+.evento-google-resumo.tipo-aula {
+    background-color: #bfdbfe;
+    color: #1e3a8a;
+}
+
+.evento-google-resumo.tipo-atpcs {
+    background-color: #99f6e4;
+    color: #134e4a;
+}
+
+.evento-google-resumo.tipo-atpcg {
+    background-color: #fed7aa;
+    color: #7c2d12;
+}
+
+.evento-google-resumo.tipo-apd {
+    background-color: #d8b4fe;
+    color: #581c87;
+}
+
+.evento-google-resumo.tipo-efape {
+    background-color: #fef3c7;
+    color: #78350f;
+}
+
+.evento-google-resumo.tipo-multiplica {
+    background-color: #e9d5ff;
+    color: #4c1d95;
+}
+
+.evento-google-resumo.tipo-visita_tecnica {
+    background-color: #a5f3fc;
+    color: #164e63;
+}
+
+.evento-google-resumo.tipo-apoio_pedagogico {
+    background-color: #fbbf24;
+    color: #451a03;
+}
+
+.evento-google-resumo.tipo-ot {
+    background-color: #bbf7d0;
+    color: #14532d;
+}
+
+.evento-google-resumo.tipo-outro {
+    background-color: #cbd5e1;
+    color: #0f172a;
+}
+
+/* =====================================================
+   MODAL DO DIA COM CRONOGRAMA COMPLETO
+===================================================== */
+
+.card-evento-dia-google {
+    padding: 20px;
+    margin-bottom: 18px;
+    border-radius: 22px;
+    background-color: #f8fafc;
+    border-left: 7px solid #0f766e;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+}
+
+.linha-topo-evento-dia-google {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.horario-destaque-evento-google {
+    background-color: #1e40af;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.card-evento-dia-google h3 {
+    font-size: 26px;
+    margin: 12px 0;
+    color: #0f172a;
+}
+
+.descricao-evento-dia-google {
+    font-size: 17px;
+    line-height: 1.5;
+    color: #334155;
+}
+
+.info-evento-dia-google {
+    margin-top: 14px;
+    padding: 12px;
+    background-color: white;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+}
+
+.info-evento-dia-google p {
+    margin: 8px 0;
+}
+
+.acoes-evento-publico-google {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.acoes-evento-publico-google button {
+    padding: 10px 14px;
+    border: none;
+    border-radius: 12px;
+    background-color: #1e40af;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-editar-evento-modal {
+    background-color: #0f766e !important;
+}
+
+.btn-excluir-evento-modal {
+    background-color: #991b1b !important;
+}
+
+.agenda-dia-vazia {
+    padding: 24px;
+    background-color: #f8fafc;
+    border-radius: 18px;
+    text-align: center;
+    color: #475569;
+}
+
+/* =====================================================
+   AJUSTE MOBILE PARA FICAR PARECIDO COM GOOGLE AGENDA
+===================================================== */
+
+@media (max-width: 700px) {
+    .dia-calendario-google {
+        min-height: 112px;
+        padding: 3px;
+    }
+
+    .numero-dia-google {
+        font-size: 13px;
+    }
+
+    .dia-hoje .numero-dia-google {
+        width: 24px;
+        height: 24px;
+        font-size: 13px;
+    }
+
+    .evento-google-resumo {
+        min-height: 18px;
+        padding: 2px 3px;
+        font-size: 9.5px;
+        border-radius: 4px;
+        gap: 2px;
+    }
+
+    .hora-evento-google {
+        display: none;
+    }
+
+    .titulo-evento-google {
+        max-width: 100%;
+    }
+
+    .mais-eventos-google {
+        font-size: 9px;
+    }
+
+    .card-evento-dia-google {
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .card-evento-dia-google h3 {
+        font-size: 24px;
+    }
+
+    .descricao-evento-dia-google {
+        font-size: 16px;
+    }
+
+    .horario-destaque-evento-google {
+        font-size: 14px;
+    }
+
+    .acoes-evento-publico-google {
+        flex-direction: column;
+    }
+
+    .acoes-evento-publico-google button {
+        width: 100%;
+    }
+}
