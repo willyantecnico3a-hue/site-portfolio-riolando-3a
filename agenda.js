@@ -514,9 +514,9 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
 
                     <h3>${escaparHTML(evento.titulo || "Sem título")}</h3>
 
-                    <p class="descricao-evento-dia-google">
-                        ${escaparHTML(evento.descricao || "Sem descrição cadastrada.")}
-                    </p>
+                   <div class="descricao-evento-formatada">
+                     ${formatarTextoEvento(evento.descricao || "Sem descrição cadastrada.")}
+                    </div>
 
                     <div class="info-evento-dia-google">
                         <p>
@@ -636,11 +636,11 @@ function abrirDetalheEvento(idEvento) {
                 ${evento.horario_fim ? " às " + formatarHorarioCurto(evento.horario_fim) : ""}
             </p>
 
-            <p><strong>Curso alvo:</strong> ${formatarCursoBonito(evento.curso_alvo || "todos")}</p>
-
             <p><strong>Descrição:</strong></p>
 
-            <p>${escaparHTML(evento.descricao || "Sem descrição cadastrada.")}</p>
+<div class="descricao-evento-formatada">
+    ${formatarTextoEvento(evento.descricao || "Sem descrição cadastrada.")}
+</div>
 
             ${
                 evento.link_material
@@ -1587,6 +1587,30 @@ function escaparHTML(texto) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+function formatarTextoEvento(texto) {
+    if (!texto) {
+        return "Sem descrição cadastrada.";
+    }
+
+    let textoSeguro = texto
+        .toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    // Permite usar blocos de código com ```
+    textoSeguro = textoSeguro.replace(/```([\s\S]*?)```/g, function (_, codigo) {
+        return `<pre class="bloco-codigo-evento"><code>${codigo}</code></pre>`;
+    });
+
+    // Permite **negrito**
+    textoSeguro = textoSeguro.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    return textoSeguro;
 }
 
 // =====================================================

@@ -1586,3 +1586,40 @@ button {
     font-weight: bold;
     cursor: pointer;
 }
+
+/* =====================================================
+   TEXTO FORMATADO DOS EVENTOS DA AGENDA
+   Mantém quebras de linha, espaços e organização do texto
+===================================================== */
+
+.descricao-evento-formatada {
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.65;
+    font-size: 18px;
+    color: #0f172a;
+    margin-top: 12px;
+}
+
+/* Para códigos colados dentro dos eventos usando ``` */
+.bloco-codigo-evento {
+    white-space: pre;
+    overflow-x: auto;
+    background-color: #0f172a;
+    color: #e5e7eb;
+    padding: 16px;
+    border-radius: 12px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 14px 0;
+}
+
+/* Melhora o campo onde você cola a descrição */
+#eventoDescricao {
+    white-space: pre-wrap;
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    min-height: 180px;
+}
