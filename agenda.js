@@ -3,16 +3,18 @@
 // HTML + CSS + JAVASCRIPT PURO + SUPABASE
 // =====================================================
 //
-// Regra principal desta versão:
+// Regras principais:
 //
 // 1. Visitantes sem login podem visualizar a agenda.
 // 2. Alunos, gestão e visitantes conseguem ver eventos.
 // 3. O filtro por curso fica visível para todos.
 // 4. Apenas admin logado pode criar, editar e excluir eventos.
 // 5. O calendário não redireciona mais para login.
-// 6. O botão "+ Criar novo evento" aparece somente para admin.
+// 6. O botão "+ Criar evento neste dia" aparece somente para admin.
 // 7. Eventos aparecem resumidos no quadrante do dia, estilo Google Agenda.
 // 8. Ao clicar no quadrante, abre o cronograma completo daquele dia.
+// 9. Ao clicar em criar/editar evento, o formulário abre em modal suspenso.
+// 10. O usuário não precisa descer a tela para encontrar a edição.
 //
 // =====================================================
 
@@ -66,6 +68,10 @@ const btnAbrirFormEvento = document.getElementById("btnAbrirFormEvento");
 const formEvento = document.getElementById("formEvento");
 const tituloFormularioEvento = document.getElementById("tituloFormularioEvento");
 
+const modalEventoAgenda = document.getElementById("modalEventoAgenda");
+const tituloModalEvento = document.getElementById("tituloModalEvento");
+const btnFecharModalEvento = document.getElementById("btnFecharModalEvento");
+
 const areaFiltroAdmin = document.getElementById("areaFiltroAdmin");
 const filtroCursoAgenda = document.getElementById("filtroCursoAgenda");
 
@@ -101,13 +107,6 @@ async function iniciarAgenda() {
 // =====================================================
 // 5. CARREGAR PERFIL DO USUÁRIO
 // =====================================================
-//
-// IMPORTANTE:
-// Esta função NÃO bloqueia visitantes.
-// Se não houver usuário logado, cria um perfil temporário de visitante.
-// Assim a agenda continua pública para visualização.
-//
-// =====================================================
 
 async function carregarPerfilUsuario() {
     const { data: userData, error: userError } = await banco.auth.getUser();
@@ -129,7 +128,6 @@ async function carregarPerfilUsuario() {
 
     console.log("Usuário logado na agenda:", usuario.email);
 
-    // Primeiro tenta buscar na tabela perfis.
     const { data: perfil, error: erroPerfil } = await banco
         .from("perfis")
         .select("id, nome, email, funcao, curso")
@@ -146,7 +144,6 @@ async function carregarPerfilUsuario() {
         return;
     }
 
-    // Depois tenta reconhecer como admin pela tabela admins.
     const { data: admin, error: erroAdmin } = await banco
         .from("admins")
         .select("email")
@@ -170,7 +167,6 @@ async function carregarPerfilUsuario() {
         return;
     }
 
-    // Se está logado, mas não é admin e não tem perfil cadastrado.
     perfilUsuario = {
         id: usuario.id,
         nome: usuario.email,
@@ -186,42 +182,25 @@ async function carregarPerfilUsuario() {
 // =====================================================
 // 6. CONFIGURAR PERMISSÕES DA TELA
 // =====================================================
-//
-// O filtro por curso fica visível para todos.
-// Somente criar, editar e excluir ficam restritos ao admin.
-//
-// =====================================================
 
 function configurarPermissoesDaTela() {
     const usuarioEhAdmin =
         perfilUsuario &&
         perfilUsuario.funcao === "admin";
 
-    // Filtro por curso fica sempre visível.
     if (areaFiltroAdmin) {
         areaFiltroAdmin.style.display = "block";
     }
 
-    // Admin pode criar evento.
-    if (usuarioEhAdmin) {
-        if (btnAbrirFormEvento) {
-            btnAbrirFormEvento.style.display = "block";
-        }
-
-        console.log("Agenda em modo admin: filtro, criação, edição e exclusão liberados.");
-        return;
-    }
-
-    // Visitante, aluno e gestão não podem criar evento.
     if (btnAbrirFormEvento) {
-        btnAbrirFormEvento.style.display = "none";
+        btnAbrirFormEvento.style.display = usuarioEhAdmin ? "block" : "none";
     }
 
-    if (formEvento) {
-        formEvento.style.display = "none";
-    }
-
-    console.log("Agenda em modo público: filtro visível, edição desativada.");
+    console.log(
+        usuarioEhAdmin
+            ? "Agenda em modo admin: criação, edição e exclusão liberadas."
+            : "Agenda em modo público: apenas visualização liberada."
+    );
 }
 
 
@@ -247,7 +226,6 @@ async function carregarEventosDoMes() {
         .order("data", { ascending: true })
         .order("horario_inicio", { ascending: true });
 
-    // O filtro por curso funciona para todos, mesmo sem login.
     if (filtroCursoAgenda) {
         const filtro = filtroCursoAgenda.value;
 
@@ -278,14 +256,6 @@ async function carregarEventosDoMes() {
 
 // =====================================================
 // 8. FILTRO DE PERMISSÃO
-// =====================================================
-//
-// Visitante sem login vê a agenda pública.
-// Admin vê tudo.
-// Gestão vê tudo.
-// Aluno, se estiver logado com perfil de aluno, vê eventos do curso dele
-// e eventos gerais.
-//
 // =====================================================
 
 function aplicarFiltroDePermissao(eventos) {
@@ -322,8 +292,6 @@ function aplicarFiltroDePermissao(eventos) {
         });
     }
 
-    // Visitante vê eventos públicos.
-    // Como sua proposta é transparência da agenda, visitante vê tudo.
     return eventos;
 }
 
@@ -331,24 +299,12 @@ function aplicarFiltroDePermissao(eventos) {
 // =====================================================
 // 9. RENDERIZAR CALENDÁRIO
 // =====================================================
-//
-// Versão corrigida:
-// - Garante que os dias do mês apareçam.
-// - Mostra eventos resumidos dentro do quadrante.
-// - Ao clicar no quadrante, abre o cronograma completo.
-// - Visitantes visualizam sem login.
-// - Admin continua com editar/excluir/criar.
-//
-// =====================================================
 
 function renderizarCalendario() {
     if (!gradeCalendario || !tituloMesAno) {
         console.log("Erro: gradeCalendario ou tituloMesAno não encontrado no HTML.");
         return;
     }
-
-    console.log("Renderizando calendário...");
-    console.log("Eventos carregados:", eventosCarregados);
 
     gradeCalendario.innerHTML = "";
 
@@ -367,14 +323,12 @@ function renderizarCalendario() {
 
     const diaSemanaInicio = primeiroDiaMes.getDay();
 
-    // Cria espaços vazios antes do primeiro dia do mês.
     for (let i = 0; i < diaSemanaInicio; i++) {
         const vazio = document.createElement("div");
         vazio.className = "dia-vazio";
         gradeCalendario.appendChild(vazio);
     }
 
-    // Cria todos os dias do mês.
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
         const dataDia = new Date(ano, mes, dia);
         const dataISO = formatarDataISO(dataDia);
@@ -389,8 +343,6 @@ function renderizarCalendario() {
 
         const cardDia = document.createElement("div");
 
-        // Mantém a classe antiga e adiciona a nova.
-        // Isso evita quebrar o CSS que já existia.
         cardDia.className = "dia-calendario dia-calendario-google";
 
         if (dataISO === formatarDataISO(new Date())) {
@@ -439,7 +391,6 @@ function renderizarCalendario() {
             </div>
         `;
 
-        // Clique no quadrante abre os eventos completos do dia.
         cardDia.addEventListener("click", function () {
             if (usuarioFezSwipeNoCalendario) {
                 usuarioFezSwipeNoCalendario = false;
@@ -458,13 +409,6 @@ function renderizarCalendario() {
 
 // =====================================================
 // 10. ABRIR MODAL DO DIA
-// =====================================================
-//
-// Ao clicar no quadrante do calendário, abre uma tela com
-// o cronograma completo do dia.
-// Não exige login para visualizar.
-// Admin continua sendo o único que pode criar, editar e excluir.
-//
 // =====================================================
 
 function abrirModalDoDia(dataISO, eventosDoDia) {
@@ -514,8 +458,8 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
 
                     <h3>${escaparHTML(evento.titulo || "Sem título")}</h3>
 
-                   <div class="descricao-evento-formatada">
-                     ${formatarTextoEvento(evento.descricao || "Sem descrição cadastrada.")}
+                    <div class="descricao-evento-formatada">
+                        ${formatarTextoEvento(evento.descricao || "Sem descrição cadastrada.")}
                     </div>
 
                     <div class="info-evento-dia-google">
@@ -529,7 +473,7 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
                             ? `
                                 <p>
                                     <strong>Material:</strong>
-                                    <a href="${evento.link_material}" target="_blank">
+                                    <a href="${escaparAtributo(evento.link_material)}" target="_blank">
                                         📎 Abrir material
                                     </a>
                                 </p>
@@ -563,17 +507,12 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
         });
     }
 
-    // Botão criar evento só aparece para admin.
     if (btnAbrirFormEvento) {
         if (perfilUsuario && perfilUsuario.funcao === "admin") {
             btnAbrirFormEvento.style.display = "block";
         } else {
             btnAbrirFormEvento.style.display = "none";
         }
-    }
-
-    if (formEvento) {
-        formEvento.style.display = "none";
     }
 
     modalDia.classList.add("aberto");
@@ -638,13 +577,13 @@ function abrirDetalheEvento(idEvento) {
 
             <p><strong>Descrição:</strong></p>
 
-<div class="descricao-evento-formatada">
-    ${formatarTextoEvento(evento.descricao || "Sem descrição cadastrada.")}
-</div>
+            <div class="descricao-evento-formatada">
+                ${formatarTextoEvento(evento.descricao || "Sem descrição cadastrada.")}
+            </div>
 
             ${
                 evento.link_material
-                ? `<p><a href="${evento.link_material}" target="_blank">📎 Abrir material</a></p>`
+                ? `<p><a href="${escaparAtributo(evento.link_material)}" target="_blank">📎 Abrir material</a></p>`
                 : ""
             }
         </div>
@@ -655,7 +594,71 @@ function abrirDetalheEvento(idEvento) {
 
 
 // =====================================================
-// 12. PREPARAR EDIÇÃO
+// 12. MODAL SUSPENSO DE CADASTRO / EDIÇÃO
+// =====================================================
+
+function abrirModalEventoAgenda(modo = "novo") {
+    if (!modalEventoAgenda) {
+        console.log("Modal de evento não encontrado no HTML.");
+        return;
+    }
+
+    if (tituloModalEvento) {
+        tituloModalEvento.textContent =
+            modo === "editar"
+                ? "Editar evento da agenda"
+                : "Cadastrar novo evento";
+    }
+
+    modalEventoAgenda.classList.add("aberto");
+    document.body.style.overflow = "hidden";
+
+    setTimeout(function () {
+        const campoTitulo = document.getElementById("eventoTitulo");
+
+        if (campoTitulo) {
+            campoTitulo.focus();
+        }
+    }, 150);
+}
+
+function fecharModalEventoAgenda() {
+    if (modalEventoAgenda) {
+        modalEventoAgenda.classList.remove("aberto");
+    }
+
+    document.body.style.overflow = "";
+}
+
+if (btnFecharModalEvento) {
+    btnFecharModalEvento.addEventListener("click", fecharModalEventoAgenda);
+}
+
+if (modalEventoAgenda) {
+    modalEventoAgenda.addEventListener("click", function (event) {
+        if (event.target === modalEventoAgenda) {
+            fecharModalEventoAgenda();
+        }
+    });
+}
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        fecharModalEventoAgenda();
+
+        if (modalDetalheEvento) {
+            modalDetalheEvento.classList.remove("aberto");
+        }
+
+        if (modalConfirmarExclusao) {
+            modalConfirmarExclusao.classList.remove("aberto");
+        }
+    }
+});
+
+
+// =====================================================
+// 13. PREPARAR EDIÇÃO
 // =====================================================
 
 function prepararEdicaoEvento(idEvento) {
@@ -680,21 +683,11 @@ function prepararEdicaoEvento(idEvento) {
         modalDetalheEvento.classList.remove("aberto");
     }
 
-    const eventosDoDia = eventosCarregados.filter(function (item) {
-        return item.data === evento.data;
-    });
-
-    abrirModalDoDia(evento.data, eventosDoDia);
-
-    if (formEvento) {
-        formEvento.style.display = "block";
-    }
-
     if (tituloFormularioEvento) {
         tituloFormularioEvento.textContent = "Editar Evento";
     }
 
-    setValorCampo("eventoTipo", evento.tipo);
+    setValorCampo("eventoTipo", evento.tipo || "aula");
     setValorCampo("eventoTitulo", evento.titulo || "");
     setValorCampo("eventoHorarioInicio", formatarHorarioParaInput(evento.horario_inicio));
     setValorCampo("eventoHorarioFim", formatarHorarioParaInput(evento.horario_fim));
@@ -716,11 +709,13 @@ function prepararEdicaoEvento(idEvento) {
     if (botaoSalvar) {
         botaoSalvar.textContent = "💾 Atualizar Evento";
     }
+
+    abrirModalEventoAgenda("editar");
 }
 
 
 // =====================================================
-// 13. EXCLUIR EVENTO - ABRE MODAL COM OPÇÕES
+// 14. EXCLUIR EVENTO - ABRE MODAL COM OPÇÕES
 // =====================================================
 
 function excluirEvento(idEvento) {
@@ -748,7 +743,7 @@ function excluirEvento(idEvento) {
 
 
 // =====================================================
-// 14. FECHAR MODAIS
+// 15. FECHAR MODAIS
 // =====================================================
 
 if (btnFecharModal) {
@@ -769,13 +764,18 @@ if (btnFecharDetalheEvento) {
 
 
 // =====================================================
-// 15. ABRIR FORMULÁRIO
+// 16. ABRIR FORMULÁRIO DE NOVO EVENTO
 // =====================================================
 
 if (btnAbrirFormEvento) {
     btnAbrirFormEvento.addEventListener("click", function () {
         if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
             alert("Apenas o administrador pode criar eventos.");
+            return;
+        }
+
+        if (!dataSelecionadaNoModal) {
+            alert("Selecione um dia no calendário antes de criar o evento.");
             return;
         }
 
@@ -787,18 +787,19 @@ if (btnAbrirFormEvento) {
             tituloFormularioEvento.textContent = "Novo Evento";
         }
 
-        if (formEvento) {
-            formEvento.style.display =
-                formEvento.style.display === "none" || formEvento.style.display === ""
-                    ? "block"
-                    : "none";
+        const botaoSalvar = formEvento ? formEvento.querySelector("button[type='submit']") : null;
+
+        if (botaoSalvar) {
+            botaoSalvar.textContent = "💾 Salvar Evento";
         }
+
+        abrirModalEventoAgenda("novo");
     });
 }
 
 
 // =====================================================
-// 16. SALVAR OU ATUALIZAR EVENTO
+// 17. SALVAR OU ATUALIZAR EVENTO
 // =====================================================
 
 if (formEvento) {
@@ -836,16 +837,23 @@ if (formEvento) {
             return;
         }
 
+        if (!dataSelecionadaNoModal) {
+            if (mensagemEvento) {
+                mensagemEvento.textContent = "Data do evento não encontrada. Feche e selecione o dia novamente.";
+            }
+            return;
+        }
+
         const dadosBase = {
-    tipo: tipo,
-    titulo: titulo,
-    horario_inicio: horarioInicio,
-    horario_fim: horarioFim || null,
-    descricao: descricao,
-    curso_alvo: cursoAlvo,
-    link_material: linkMaterial,
-    lembrete_minutos: lembreteMinutos
-};
+            tipo: tipo,
+            titulo: titulo,
+            horario_inicio: horarioInicio,
+            horario_fim: horarioFim || null,
+            descricao: descricao,
+            curso_alvo: cursoAlvo,
+            link_material: linkMaterial || null,
+            lembrete_minutos: lembreteMinutos
+        };
 
         let resultado;
 
@@ -900,6 +908,8 @@ if (formEvento) {
                 : "Evento salvo com sucesso!";
         }
 
+        const dataParaReabrir = dataSelecionadaNoModal;
+
         limparFormularioEvento();
 
         await carregarEventosDoMes();
@@ -907,24 +917,26 @@ if (formEvento) {
         renderizarCalendario();
 
         const eventosAtualizados = eventosCarregados.filter(function (evento) {
-            return evento.data === dataSelecionadaNoModal;
+            return evento.data === dataParaReabrir;
         });
 
-        abrirModalDoDia(dataSelecionadaNoModal, eventosAtualizados);
+        if (modalDia && modalDia.classList.contains("aberto")) {
+            abrirModalDoDia(dataParaReabrir, eventosAtualizados);
+        }
+
+        fecharModalEventoAgenda();
+
+        alert(
+            eventoEmEdicaoId
+                ? "Evento atualizado com sucesso!"
+                : "Evento salvo com sucesso!"
+        );
     });
 }
 
 
 // =====================================================
-// 17. GERAR EVENTOS COM REPETIÇÃO
-// =====================================================
-//
-// Todos os eventos repetidos recebem o mesmo serie_id.
-// Isso permite excluir:
-// - somente este;
-// - este e os próximos;
-// - toda a série.
-//
+// 18. GERAR EVENTOS COM REPETIÇÃO
 // =====================================================
 
 function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
@@ -978,7 +990,7 @@ function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
 
 
 // =====================================================
-// GERAR ID DA SÉRIE DO EVENTO
+// 19. GERAR ID DA SÉRIE DO EVENTO
 // =====================================================
 
 function gerarSerieIdEvento() {
@@ -987,7 +999,7 @@ function gerarSerieIdEvento() {
 
 
 // =====================================================
-// 18. VERIFICAR DIAS LETIVOS
+// 20. VERIFICAR DIAS LETIVOS
 // =====================================================
 
 const feriadosFixos = [
@@ -1021,14 +1033,16 @@ function dataEhDiaLetivo(data) {
 
 
 // =====================================================
-// 19. LIMPAR FORMULÁRIO
+// 21. LIMPAR FORMULÁRIO
 // =====================================================
 
 function limparFormularioEvento() {
+    setValorCampo("eventoTipo", "aula");
     setValorCampo("eventoTitulo", "");
     setValorCampo("eventoHorarioInicio", "");
     setValorCampo("eventoHorarioFim", "");
     setValorCampo("eventoDescricao", "");
+    setValorCampo("eventoCursoAlvo", "todos");
     setValorCampo("eventoLinkMaterial", "");
     setValorCampo("eventoRepeticao", "nao_repete");
     setValorCampo("eventoRepetirAte", "");
@@ -1055,7 +1069,7 @@ function limparFormularioEvento() {
 
 
 // =====================================================
-// 20. CONFIRMAR EXCLUSÃO COM OPÇÕES TIPO GOOGLE AGENDA
+// 22. CONFIRMAR EXCLUSÃO COM OPÇÕES TIPO GOOGLE AGENDA
 // =====================================================
 
 const btnExcluirSomenteEste = document.getElementById("btnExcluirSomenteEste");
@@ -1082,7 +1096,7 @@ if (btnExcluirTodaSerie) {
 
 
 // =====================================================
-// EXCLUIR SOMENTE ESTE EVENTO
+// 23. EXCLUIR SOMENTE ESTE EVENTO
 // =====================================================
 
 async function excluirSomenteEsteEvento() {
@@ -1106,7 +1120,7 @@ async function excluirSomenteEsteEvento() {
 
 
 // =====================================================
-// EXCLUIR ESTE E OS PRÓXIMOS EVENTOS DA SÉRIE
+// 24. EXCLUIR ESTE E OS PRÓXIMOS EVENTOS DA SÉRIE
 // =====================================================
 
 async function excluirEsteEProximosEventos() {
@@ -1146,7 +1160,7 @@ async function excluirEsteEProximosEventos() {
 
 
 // =====================================================
-// EXCLUIR TODOS OS EVENTOS DA SÉRIE
+// 25. EXCLUIR TODOS OS EVENTOS DA SÉRIE
 // =====================================================
 
 async function excluirTodaSerieEventos() {
@@ -1184,7 +1198,7 @@ async function excluirTodaSerieEventos() {
 
 
 // =====================================================
-// FINALIZAR EXCLUSÃO
+// 26. FINALIZAR EXCLUSÃO
 // =====================================================
 
 async function finalizarExclusaoEvento(mensagem) {
@@ -1200,6 +1214,8 @@ async function finalizarExclusaoEvento(mensagem) {
         modalDia.classList.remove("aberto");
     }
 
+    fecharModalEventoAgenda();
+
     eventoParaExcluirId = null;
     eventoParaExcluirObjeto = null;
 
@@ -1212,7 +1228,7 @@ async function finalizarExclusaoEvento(mensagem) {
 
 
 // =====================================================
-// 21. CANCELAR EXCLUSÃO
+// 27. CANCELAR EXCLUSÃO
 // =====================================================
 
 if (btnCancelarExclusao) {
@@ -1228,7 +1244,7 @@ if (btnCancelarExclusao) {
 
 
 // =====================================================
-// 22. NAVEGAÇÃO ENTRE MESES PELOS BOTÕES
+// 28. NAVEGAÇÃO ENTRE MESES PELOS BOTÕES
 // =====================================================
 
 if (btnMesAnterior) {
@@ -1253,12 +1269,7 @@ async function mudarMes(direcao) {
 
 
 // =====================================================
-// 23. TROCAR MÊS ARRASTANDO NO PRÓPRIO CALENDÁRIO
-// =====================================================
-//
-// Arrastar para direita: mês anterior.
-// Arrastar para esquerda: próximo mês.
-//
+// 29. TROCAR MÊS ARRASTANDO NO PRÓPRIO CALENDÁRIO
 // =====================================================
 
 let toqueInicioX = 0;
@@ -1282,8 +1293,6 @@ function configurarArrasteTrocaMesNoCalendario() {
 
     swipeConfigurado = true;
 
-    console.log("Swipe de meses configurado no calendário.");
-
     areaSwipe.style.touchAction = "pan-y";
     areaSwipe.style.userSelect = "none";
     areaSwipe.style.overscrollBehaviorX = "contain";
@@ -1296,7 +1305,6 @@ function configurarArrasteTrocaMesNoCalendario() {
         const toque = event.touches[0];
         const larguraTela = window.innerWidth;
 
-        // Evita conflito com gesto de voltar/avançar página nas bordas do navegador.
         if (toque.clientX < 20 || toque.clientX > larguraTela - 20) {
             return;
         }
@@ -1351,7 +1359,6 @@ function configurarArrasteTrocaMesNoCalendario() {
         gestoAtivo = false;
     });
 
-    // Mouse para teste no computador.
     areaSwipe.addEventListener("mousedown", function (event) {
         toqueInicioX = event.clientX;
         toqueFimX = event.clientX;
@@ -1410,16 +1417,12 @@ async function interpretarArrasteDoCalendario() {
 
     usuarioFezSwipeNoCalendario = true;
 
-    // Arrastou para direita: mês anterior.
     if (distanciaX > 0) {
-        console.log("Arrastou para direita: mês anterior.");
         await mudarMes(-1);
         return;
     }
 
-    // Arrastou para esquerda: próximo mês.
     if (distanciaX < 0) {
-        console.log("Arrastou para esquerda: próximo mês.");
         await mudarMes(1);
         return;
     }
@@ -1427,11 +1430,7 @@ async function interpretarArrasteDoCalendario() {
 
 
 // =====================================================
-// 24. FILTRO POR CURSO
-// =====================================================
-//
-// Agora o filtro funciona para todos, não apenas admin.
-//
+// 30. FILTRO POR CURSO
 // =====================================================
 
 if (filtroCursoAgenda) {
@@ -1444,7 +1443,7 @@ if (filtroCursoAgenda) {
 
 
 // =====================================================
-// 25. FUNÇÕES AUXILIARES
+// 31. FUNÇÕES AUXILIARES
 // =====================================================
 
 function criarDataLocal(dataISO) {
@@ -1537,11 +1536,6 @@ function nomeBonitoTipo(tipo) {
     return nomes[normalizarTipo(tipo)] || tipo || "Outro";
 }
 
-
-// =====================================================
-// FORMATAR CURSO PARA APARECER BONITO NA AGENDA
-// =====================================================
-
 function formatarCursoBonito(curso) {
     const nomes = {
         todos: "Todos",
@@ -1589,6 +1583,10 @@ function escaparHTML(texto) {
         .replaceAll("'", "&#039;");
 }
 
+function escaparAtributo(texto) {
+    return escaparHTML(texto || "");
+}
+
 function formatarTextoEvento(texto) {
     if (!texto) {
         return "Sem descrição cadastrada.";
@@ -1602,28 +1600,18 @@ function formatarTextoEvento(texto) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 
-    // Permite usar blocos de código com ```
     textoSeguro = textoSeguro.replace(/```([\s\S]*?)```/g, function (_, codigo) {
         return `<pre class="bloco-codigo-evento"><code>${codigo}</code></pre>`;
     });
 
-    // Permite **negrito**
     textoSeguro = textoSeguro.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
     return textoSeguro;
 }
 
+
 // =====================================================
-// 27. LEMBRETES SONOROS E NOTIFICAÇÕES DA AGENDA
-// =====================================================
-//
-// Funciona quando a agenda estiver aberta no navegador.
-// Se o navegador estiver minimizado, a notificação do sistema
-// pode aparecer normalmente, desde que o usuário tenha permitido.
-//
-// Para tocar som, o professor precisa clicar antes no botão:
-// "🔔 Ativar lembretes sonoros".
-//
+// 32. LEMBRETES SONOROS DA AGENDA
 // =====================================================
 
 let lembretesAtivos = false;
@@ -1634,8 +1622,6 @@ let intervaloLembretesAgenda = null;
 const btnAtivarLembretesAgenda = document.getElementById("btnAtivarLembretesAgenda");
 const mensagemLembretesAgenda = document.getElementById("mensagemLembretesAgenda");
 
-// Som simples criado pelo próprio navegador.
-// Não precisa de arquivo MP3.
 let audioContextoAgenda = null;
 
 if (btnAtivarLembretesAgenda) {
@@ -1645,20 +1631,17 @@ if (btnAtivarLembretesAgenda) {
 }
 
 async function ativarLembretesDaAgenda() {
-    // Apenas admin recebe alerta nessa primeira versão.
     if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
         alert("Os lembretes sonoros estão disponíveis apenas para o administrador logado.");
         return;
     }
 
-    // Pede permissão para notificação do navegador.
     if ("Notification" in window) {
         if (Notification.permission === "default") {
             await Notification.requestPermission();
         }
     }
 
-    // Libera áudio após clique do usuário.
     try {
         audioContextoAgenda = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1690,7 +1673,7 @@ async function ativarLembretesDaAgenda() {
     if (!intervaloLembretesAgenda) {
         intervaloLembretesAgenda = setInterval(function () {
             verificarLembretesDaAgenda();
-        }, 60000);
+        }, 30000);
     }
 }
 
@@ -1781,7 +1764,7 @@ function mostrarNotificacaoNavegadorAgenda(tituloEvento, mensagem) {
 
     new Notification("🔔 Lembrete da Agenda Pedagógica", {
         body: mensagem,
-        icon: "favicon.ico",
+        icon: "/assets/icons/icon-192.png",
         tag: "lembrete-agenda-" + tituloEvento
     });
 }
@@ -1809,8 +1792,6 @@ function mostrarAlertaVisualAgenda(tituloEvento, mensagem) {
 
     document.body.appendChild(alerta);
 
-    // Também mostra alert tradicional como reforço.
-    // Se preferir algo menos invasivo, pode remover essa linha.
     alert("🔔 Lembrete da Agenda\n\n" + mensagem);
 }
 
@@ -1828,29 +1809,49 @@ function tocarSomLembreteAgenda() {
     }
 
     try {
-        const oscilador = audioContextoAgenda.createOscillator();
-        const ganho = audioContextoAgenda.createGain();
-
-        oscilador.type = "sine";
-        oscilador.frequency.setValueAtTime(880, audioContextoAgenda.currentTime);
-
-        ganho.gain.setValueAtTime(0.001, audioContextoAgenda.currentTime);
-        ganho.gain.exponentialRampToValueAtTime(0.3, audioContextoAgenda.currentTime + 0.02);
-        ganho.gain.exponentialRampToValueAtTime(0.001, audioContextoAgenda.currentTime + 0.6);
-
-        oscilador.connect(ganho);
-        ganho.connect(audioContextoAgenda.destination);
-
-        oscilador.start();
-        oscilador.stop(audioContextoAgenda.currentTime + 0.65);
+        tocarBipAgenda(880, 0);
+        tocarBipAgenda(660, 0.22);
+        tocarBipAgenda(880, 0.44);
     } catch (erro) {
         console.log("Erro ao tocar som do lembrete:", erro);
     }
 }
 
+function tocarBipAgenda(frequencia, atraso) {
+    const oscilador = audioContextoAgenda.createOscillator();
+    const ganho = audioContextoAgenda.createGain();
+
+    oscilador.type = "sine";
+    oscilador.frequency.setValueAtTime(
+        frequencia,
+        audioContextoAgenda.currentTime + atraso
+    );
+
+    ganho.gain.setValueAtTime(
+        0.001,
+        audioContextoAgenda.currentTime + atraso
+    );
+
+    ganho.gain.exponentialRampToValueAtTime(
+        0.25,
+        audioContextoAgenda.currentTime + atraso + 0.02
+    );
+
+    ganho.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContextoAgenda.currentTime + atraso + 0.18
+    );
+
+    oscilador.connect(ganho);
+    ganho.connect(audioContextoAgenda.destination);
+
+    oscilador.start(audioContextoAgenda.currentTime + atraso);
+    oscilador.stop(audioContextoAgenda.currentTime + atraso + 0.2);
+}
+
+
 // =====================================================
-// PUSH NOTIFICATION - AGENDA PWA
-// Fase 2: notificação mesmo com app fechado
+// 33. PUSH NOTIFICATION - AGENDA PWA
 // =====================================================
 
 const VAPID_PUBLIC_KEY = "BCRsdEr9PGw8gNfgmka1NZIovnJNQQBCls7u4t7jAjcovzqqUiJIiEk4el6X4myFDVo3smR-mtGubNb5w0Nyb7U";
@@ -1976,13 +1977,14 @@ function converterBase64ParaUint8Array(base64String) {
     return outputArray;
 }
 
-window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
-
 
 // =====================================================
-// 26. EXPOR FUNÇÕES PARA O HTML
+// 34. EXPOR FUNÇÕES PARA O HTML
 // =====================================================
 
 window.abrirDetalheEvento = abrirDetalheEvento;
 window.prepararEdicaoEvento = prepararEdicaoEvento;
 window.excluirEvento = excluirEvento;
+window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
+window.abrirModalEventoAgenda = abrirModalEventoAgenda;
+window.fecharModalEventoAgenda = fecharModalEventoAgenda;

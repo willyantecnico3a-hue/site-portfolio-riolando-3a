@@ -2167,3 +2167,296 @@ button {
         padding: 18px;
     }
 }
+
+/* =====================================================
+   CORREÇÃO FINAL - HOME À ESQUERDA E MODAL DE EVENTO
+===================================================== */
+
+.topo-agenda {
+    display: block !important;
+    position: relative;
+}
+
+.topo-agenda-navegacao {
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-bottom: 18px !important;
+}
+
+.btn-home-agenda,
+.btn-voltar-site {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+
+    width: auto !important;
+    max-width: fit-content !important;
+
+    background: #ffffff !important;
+    color: #0f172a !important;
+
+    text-decoration: none !important;
+    font-weight: 900 !important;
+    font-size: 16px !important;
+
+    padding: 12px 18px !important;
+    border-radius: 16px !important;
+
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.55) !important;
+
+    margin-left: 0 !important;
+    margin-right: auto !important;
+    float: none !important;
+}
+
+.btn-home-agenda:hover,
+.btn-voltar-site:hover {
+    transform: translateY(-2px);
+    background: #f8fafc !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.25) !important;
+}
+
+/* =====================================================
+   MODAL SUSPENSO DE CADASTRO / EDIÇÃO DO EVENTO
+===================================================== */
+
+.modal-evento-agenda {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 999999 !important;
+
+    display: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 20px !important;
+    background: rgba(15, 23, 42, 0.72) !important;
+    backdrop-filter: blur(5px) !important;
+}
+
+.modal-evento-agenda.aberto {
+    display: flex !important;
+}
+
+.modal-conteudo-evento {
+    width: min(900px, 96vw) !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+
+    background: #ffffff !important;
+    border-radius: 28px !important;
+    padding: 26px !important;
+
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.38) !important;
+    border-top: 8px solid #0f766e !important;
+
+    animation: abrirModalEventoAgenda 0.25s ease !important;
+}
+
+.modal-conteudo-evento .modal-topo {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+
+    margin-bottom: 20px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+}
+
+.modal-conteudo-evento .modal-topo h2 {
+    margin: 0 !important;
+    color: #0f172a !important;
+    font-size: 26px !important;
+}
+
+#btnFecharModalEvento {
+    width: 44px !important;
+    height: 44px !important;
+
+    border: none !important;
+    border-radius: 50% !important;
+
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+
+    font-size: 22px !important;
+    font-weight: 900 !important;
+    cursor: pointer !important;
+}
+
+#btnFecharModalEvento:hover {
+    background: #fecaca !important;
+    transform: scale(1.05) !important;
+}
+
+.modal-conteudo-evento .form-evento {
+    display: block !important;
+    background: #f8fafc !important;
+    border-radius: 22px !important;
+    padding: 22px !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.modal-conteudo-evento .form-evento h3 {
+    margin-top: 0 !important;
+    color: #0f766e !important;
+    font-size: 24px !important;
+}
+
+.modal-conteudo-evento .form-evento label {
+    display: block !important;
+    margin-top: 16px !important;
+    margin-bottom: 6px !important;
+
+    color: #0f172a !important;
+    font-weight: 900 !important;
+}
+
+.modal-conteudo-evento .form-evento input,
+.modal-conteudo-evento .form-evento select,
+.modal-conteudo-evento .form-evento textarea {
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    padding: 13px 14px !important;
+    border-radius: 14px !important;
+    border: 2px solid #0f766e !important;
+
+    font-size: 16px !important;
+    color: #0f172a !important;
+    background: #ffffff !important;
+
+    outline: none !important;
+}
+
+.modal-conteudo-evento .form-evento input:focus,
+.modal-conteudo-evento .form-evento select:focus,
+.modal-conteudo-evento .form-evento textarea:focus {
+    border-color: #1e40af !important;
+    box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.15) !important;
+}
+
+.modal-conteudo-evento .form-evento textarea {
+    min-height: 150px !important;
+    resize: vertical !important;
+    line-height: 1.5 !important;
+}
+
+.linha-form-evento {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+}
+
+.area-lembrete-evento,
+.area-repeticao-evento {
+    margin-top: 22px !important;
+    padding: 18px !important;
+    border-radius: 18px !important;
+    background: #ffffff !important;
+    border-left: 6px solid #0f766e !important;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08) !important;
+}
+
+.area-lembrete-evento h4,
+.area-repeticao-evento h4 {
+    margin-top: 0 !important;
+    color: #0f766e !important;
+    font-size: 19px !important;
+}
+
+.observacao-repeticao {
+    margin-top: 10px !important;
+    color: #475569 !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+}
+
+.btn-salvar-evento,
+.modal-conteudo-evento .form-evento button[type="submit"] {
+    margin-top: 22px !important;
+    width: 100% !important;
+
+    background: linear-gradient(135deg, #0f766e, #1e40af) !important;
+    color: #ffffff !important;
+
+    border: none !important;
+    border-radius: 18px !important;
+    padding: 16px 22px !important;
+
+    font-size: 17px !important;
+    font-weight: 900 !important;
+    cursor: pointer !important;
+
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.28) !important;
+}
+
+.btn-salvar-evento:hover,
+.modal-conteudo-evento .form-evento button[type="submit"]:hover {
+    transform: translateY(-2px) !important;
+    filter: brightness(1.06) !important;
+    box-shadow: 0 12px 28px rgba(15, 118, 110, 0.36) !important;
+}
+
+#mensagemEvento {
+    margin-top: 12px !important;
+    color: #0f766e !important;
+    font-weight: 800 !important;
+}
+
+@keyframes abrirModalEventoAgenda {
+    from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 700px) {
+    .topo-agenda-navegacao {
+        justify-content: flex-start !important;
+        margin-bottom: 14px !important;
+    }
+
+    .btn-home-agenda,
+    .btn-voltar-site {
+        font-size: 15px !important;
+        padding: 11px 15px !important;
+        border-radius: 14px !important;
+    }
+
+    .modal-evento-agenda {
+        padding: 12px !important;
+        align-items: flex-start !important;
+    }
+
+    .modal-conteudo-evento {
+        width: 96vw !important;
+        max-height: 94vh !important;
+        padding: 20px !important;
+        border-radius: 22px !important;
+        margin-top: 16px !important;
+    }
+
+    .modal-conteudo-evento .modal-topo h2 {
+        font-size: 22px !important;
+    }
+
+    .linha-form-evento {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    .modal-conteudo-evento .form-evento {
+        padding: 18px !important;
+    }
+}

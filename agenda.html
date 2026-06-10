@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
 
+    <!-- CONFIGURAÇÃO PWA -->
     <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0f766e">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Riolando Técnico">
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+
+    <meta name="theme-color" content="#0f766e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Riolando Técnico">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -23,7 +26,13 @@
     ====================================================== -->
     <header class="topo-agenda">
 
-        <div>
+        <div class="topo-agenda-navegacao">
+            <a href="index.html" class="btn-home-agenda">
+                🏠 Início
+            </a>
+        </div>
+
+        <div class="conteudo-topo-agenda">
             <span class="selo-agenda">Agenda Pedagógica</span>
 
             <h1>Calendário Interativo</h1>
@@ -33,10 +42,6 @@
                 apoio pedagógico e demais rotinas escolares.
             </p>
         </div>
-
-        <a href="index.html" class="btn-voltar-site">
-            🏠 Início do Site
-        </a>
 
     </header>
 
@@ -75,18 +80,22 @@
 
         </section>
 
+
+        <!-- BOTÃO DE NOTIFICAÇÕES PUSH NO CELULAR -->
         <section class="area-push-agenda">
+
             <button type="button" id="btnAtivarPushAgenda" class="btn-push-agenda">
-        📲 Ativar notificações no celular
+                📲 Ativar notificações no celular
             </button>
 
             <p id="mensagemPushAgenda" class="mensagem-push-agenda">
-        Ative para receber lembretes da agenda mesmo quando o aplicativo estiver fechado.
-        </p>
-            </section>
+                Ative para receber lembretes da agenda mesmo quando o aplicativo estiver fechado.
+            </p>
+
+        </section>
 
 
-        <!-- FILTRO VISÍVEL PARA TODOS -->
+        <!-- FILTRO VISÍVEL PARA ADMIN -->
         <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
 
             <label for="filtroCursoAgenda">
@@ -159,9 +168,40 @@
                 + Criar evento neste dia
             </button>
 
+        </div>
+
+    </div>
+
+
+    
+
+    <!-- =====================================================
+         MODAL DE DETALHES DO EVENTO
+    ====================================================== -->
+    <div id="modalDetalheEvento" class="modal-agenda">
+
+        <!-- =====================================================
+         MODAL SUSPENSO DE CADASTRO / EDIÇÃO DO EVENTO
+         Agora o formulário não fica mais perdido embaixo.
+    ====================================================== -->
+    <div id="modalEventoAgenda" class="modal-agenda modal-evento-agenda">
+
+        <div class="modal-conteudo-agenda modal-conteudo-evento">
+
+            <div class="modal-topo">
+                <div>
+                    <span class="selo-agenda">Cadastro / Edição</span>
+                    <h2 id="tituloModalEvento">Evento da Agenda</h2>
+                </div>
+
+                <button id="btnFecharModalEvento" type="button" onclick="fecharModalEventoAgenda()">
+                    ✕
+                </button>
+            </div>
+
 
             <!-- FORMULÁRIO DE CADASTRO/EDIÇÃO DO EVENTO -->
-            <form id="formEvento" class="form-evento" style="display:none;">
+            <form id="formEvento" class="form-evento">
 
                 <h3 id="tituloFormularioEvento">Novo Evento</h3>
 
@@ -228,7 +268,7 @@
                     </select>
 
                     <p class="observacao-repeticao">
-                        O lembrete funciona quando o administrador estiver logado e com a agenda aberta no navegador.
+                        O lembrete sonoro funciona quando a agenda estiver aberta. As notificações no celular dependem da permissão do aparelho.
                     </p>
 
                 </div>
@@ -257,7 +297,7 @@
 
                 </div>
 
-                <button type="submit">
+                <button type="submit" class="btn-salvar-evento">
                     💾 Salvar Evento
                 </button>
 
@@ -269,11 +309,6 @@
 
     </div>
 
-
-    <!-- =====================================================
-         MODAL DE DETALHES DO EVENTO
-    ====================================================== -->
-    <div id="modalDetalheEvento" class="modal-agenda">
 
         <div class="modal-conteudo-agenda detalhe-evento">
 
@@ -335,19 +370,20 @@
 
     <script src="agenda.js"></script>
 
+    <!-- Registro do Service Worker para o PWA -->
     <script>
-    if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function () {
-            navigator.serviceWorker.register("/service-worker.js")
-                .then(function () {
-                    console.log("Service Worker registrado com sucesso.");
-                })
-                .catch(function (erro) {
-                    console.log("Erro ao registrar Service Worker:", erro);
-                });
-        });
-    }
-</script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .then(function () {
+                        console.log("Service Worker registrado com sucesso.");
+                    })
+                    .catch(function (erro) {
+                        console.log("Erro ao registrar Service Worker:", erro);
+                    });
+            });
+        }
+    </script>
 
 </body>
 </html>
