@@ -27,6 +27,9 @@ const mensagemLogin = document.getElementById("mensagemLogin");
 
 let aulaEmEdicaoId = null;
 let turmaEmEdicaoId = null;
+let alunoPaeetEmEdicaoId = null;
+let alunoSelecionadoAtendimentoId = null;
+let nomeAlunoSelecionadoAtendimento = "";
 
 
 // =====================================================
@@ -532,6 +535,10 @@ function configurarMenuSobrepostoAdmin() {
                 carregarTurmasAdmin();
                 carregarDisciplinasAdmin();
                 carregarAulasAdmin();
+            }
+
+            if (telaEscolhida === "telaPaeet") {
+                carregarAlunosPaeet();
             }
 
             if (telaEscolhida === "telaPortfolios") {
@@ -2172,6 +2179,552 @@ window.inserirMarcacaoTexto = inserirMarcacaoTexto;
 window.aumentarFonteCampo = aumentarFonteCampo;
 window.diminuirFonteCampo = diminuirFonteCampo;
 window.trocarFonteCampo = trocarFonteCampo;
+
+window.editarAlunoPaeet = editarAlunoPaeet;
+window.abrirAtendimentoPaeet = abrirAtendimentoPaeet;
+window.carregarHistoricoPaeet = carregarHistoricoPaeet;
+window.concluirAcompanhamentoPaeet = concluirAcompanhamentoPaeet;
+window.excluirAlunoPaeet = excluirAlunoPaeet;
+// =====================================================
+// PAEET - APOIA TÉCNICO RIOLANDO
+// =====================================================
+
+const btnSalvarAlunoPaeet = document.getElementById("btnSalvarAlunoPaeet");
+const btnCarregarAlunosPaeet = document.getElementById("btnCarregarAlunosPaeet");
+const btnFiltrarPaeet = document.getElementById("btnFiltrarPaeet");
+const btnLimparFiltroPaeet = document.getElementById("btnLimparFiltroPaeet");
+const btnSalvarAtendimentoPaeet = document.getElementById("btnSalvarAtendimentoPaeet");
+const btnCancelarAtendimentoPaeet = document.getElementById("btnCancelarAtendimentoPaeet");
+
+if (btnSalvarAlunoPaeet) {
+    btnSalvarAlunoPaeet.addEventListener("click", salvarAlunoPaeet);
+}
+
+if (btnCarregarAlunosPaeet) {
+    btnCarregarAlunosPaeet.addEventListener("click", carregarAlunosPaeet);
+}
+
+if (btnFiltrarPaeet) {
+    btnFiltrarPaeet.addEventListener("click", carregarAlunosPaeet);
+}
+
+if (btnLimparFiltroPaeet) {
+    btnLimparFiltroPaeet.addEventListener("click", function () {
+        limparCampoSeExistir("filtroPaeetNome");
+        preencherCampoSeExistir("filtroPaeetSituacao", "todos");
+        carregarAlunosPaeet();
+    });
+}
+
+if (btnSalvarAtendimentoPaeet) {
+    btnSalvarAtendimentoPaeet.addEventListener("click", salvarAtendimentoPaeet);
+}
+
+if (btnCancelarAtendimentoPaeet) {
+    btnCancelarAtendimentoPaeet.addEventListener("click", cancelarAtendimentoPaeet);
+}
+
+
+// =====================================================
+// SALVAR OU ATUALIZAR ALUNO EM ACOMPANHAMENTO
+// =====================================================
+
+async function salvarAlunoPaeet() {
+    const mensagem = document.getElementById("mensagemPaeetAluno");
+
+    const nome = pegarValorCampo("paeetNomeAluno");
+    const turma = pegarValorCampo("paeetTurmaAluno");
+    const curso = pegarValorCampo("paeetCursoAluno");
+    const situacao = pegarValorCampo("paeetSituacaoAluno") || "verde";
+    const dificuldade = pegarValorCampo("paeetDificuldadeAluno");
+    const observacao = pegarValorCampo("paeetObservacaoAluno");
+    const proximoPasso = pegarValorCampo("paeetProximoPassoAluno");
+
+    if (!nome) {
+        if (mensagem) {
+            mensagem.textContent = "Preencha o nome do aluno.";
+        }
+        return;
+    }
+
+    const { data: userData } = await banco.auth.getUser();
+
+    const dadosAluno = {
+        nome_aluno: nome,
+        turma: turma,
+        curso: curso,
+        situacao: situacao,
+        dificuldade_principal: dificuldade,
+        observacao: observacao,
+        proximo_passo: proximoPasso,
+        status: "em_acompanhamento",
+        atualizado_em: new Date().toISOString()
+    };
+
+    if (!alunoPaeetEmEdicaoId) {
+        dadosAluno.criado_por = userData && userData.user ? userData.user.id : null;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = alunoPaeetEmEdicaoId
+            ? "Atualizando acompanhamento..."
+            : "Salvando acompanhamento...";
+    }
+
+    let resultado;
+
+    if (alunoPaeetEmEdicaoId) {
+        resultado = await banco
+            .from("alunos_acompanhamento")
+            .update(dadosAluno)
+            .eq("id", alunoPaeetEmEdicaoId);
+    } else {
+        resultado = await banco
+            .from("alunos_acompanhamento")
+            .insert([dadosAluno]);
+    }
+
+    if (resultado.error) {
+        if (mensagem) {
+            mensagem.textContent = "Erro ao salvar: " + resultado.error.message;
+        }
+
+        console.log("Erro PAEET:", resultado.error);
+        return;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = alunoPaeetEmEdicaoId
+            ? "Acompanhamento atualizado com sucesso!"
+            : "Aluno cadastrado em acompanhamento com sucesso!";
+    }
+
+    alunoPaeetEmEdicaoId = null;
+
+    limparFormularioAlunoPaeet();
+
+    if (btnSalvarAlunoPaeet) {
+        btnSalvarAlunoPaeet.textContent = "💾 Salvar acompanhamento";
+    }
+
+    await carregarAlunosPaeet();
+}
+
+
+// =====================================================
+// CARREGAR ALUNOS ACOMPANHADOS
+// =====================================================
+
+async function carregarAlunosPaeet() {
+    const lista = document.getElementById("listaAlunosPaeet");
+
+    if (!lista) {
+        return;
+    }
+
+    lista.innerHTML = "<p>Carregando acompanhamentos...</p>";
+
+    const filtroNome = pegarValorCampo("filtroPaeetNome");
+    const filtroSituacao = pegarValorCampo("filtroPaeetSituacao") || "todos";
+
+    let consulta = banco
+        .from("alunos_acompanhamento")
+        .select("*")
+        .order("atualizado_em", { ascending: false });
+
+    if (filtroNome) {
+        consulta = consulta.ilike("nome_aluno", `%${filtroNome}%`);
+    }
+
+    if (filtroSituacao && filtroSituacao !== "todos") {
+        consulta = consulta.eq("situacao", filtroSituacao);
+    }
+
+    const { data, error } = await consulta;
+
+    if (error) {
+        lista.innerHTML = `<p>Erro ao carregar acompanhamentos: ${error.message}</p>`;
+        console.log("Erro ao carregar PAEET:", error);
+        return;
+    }
+
+    atualizarResumoPaeet(data || []);
+
+    if (!data || data.length === 0) {
+        lista.innerHTML = "<p>Nenhum aluno em acompanhamento encontrado.</p>";
+        return;
+    }
+
+    lista.innerHTML = "";
+
+    data.forEach(function (aluno) {
+        lista.innerHTML += `
+            <div class="card-aluno-paeet borda-${aluno.situacao || "verde"}">
+
+                <div class="topo-card-aluno-paeet">
+                    <h4>${escaparHTML(aluno.nome_aluno || "Aluno sem nome")}</h4>
+                    <span class="selo-paeet situacao-${aluno.situacao || "verde"}">
+                        ${nomeSituacaoPaeet(aluno.situacao)}
+                    </span>
+                </div>
+
+                <p><strong>Turma:</strong> ${escaparHTML(aluno.turma || "Não informada")}</p>
+                <p><strong>Curso:</strong> ${escaparHTML(aluno.curso || "Não informado")}</p>
+
+                <p><strong>Dificuldade principal:</strong></p>
+                <p>${escaparHTML(aluno.dificuldade_principal || "Não informada")}</p>
+
+                <p><strong>Observação:</strong></p>
+                <p>${escaparHTML(aluno.observacao || "Sem observação")}</p>
+
+                <p><strong>Próximo passo:</strong></p>
+                <p>${escaparHTML(aluno.proximo_passo || "Não informado")}</p>
+
+                <div class="acoes-paeet">
+                    <button type="button" onclick="editarAlunoPaeet('${aluno.id}')">
+                        ✏️ Editar
+                    </button>
+
+                    <button type="button" onclick="abrirAtendimentoPaeet('${aluno.id}', '${escaparAtributo(aluno.nome_aluno || "")}')">
+                        📝 Registrar atendimento
+                    </button>
+
+                    <button type="button" onclick="carregarHistoricoPaeet('${aluno.id}', '${escaparAtributo(aluno.nome_aluno || "")}')">
+                        📚 Ver histórico
+                    </button>
+
+                    <button type="button" onclick="concluirAcompanhamentoPaeet('${aluno.id}')">
+                        ✅ Concluir
+                    </button>
+
+                    <button type="button" onclick="excluirAlunoPaeet('${aluno.id}')">
+                        🗑️ Excluir
+                    </button>
+                </div>
+
+            </div>
+        `;
+    });
+}
+
+
+// =====================================================
+// EDITAR ALUNO PAEET
+// =====================================================
+
+async function editarAlunoPaeet(idAluno) {
+    const { data, error } = await banco
+        .from("alunos_acompanhamento")
+        .select("*")
+        .eq("id", idAluno)
+        .maybeSingle();
+
+    if (error || !data) {
+        alert("Erro ao carregar aluno para edição.");
+        console.log("Erro editar PAEET:", error);
+        return;
+    }
+
+    alunoPaeetEmEdicaoId = data.id;
+
+    preencherCampoSeExistir("paeetNomeAluno", data.nome_aluno || "");
+    preencherCampoSeExistir("paeetTurmaAluno", data.turma || "");
+    preencherCampoSeExistir("paeetCursoAluno", data.curso || "");
+    preencherCampoSeExistir("paeetSituacaoAluno", data.situacao || "verde");
+    preencherCampoSeExistir("paeetDificuldadeAluno", data.dificuldade_principal || "");
+    preencherCampoSeExistir("paeetObservacaoAluno", data.observacao || "");
+    preencherCampoSeExistir("paeetProximoPassoAluno", data.proximo_passo || "");
+
+    if (btnSalvarAlunoPaeet) {
+        btnSalvarAlunoPaeet.textContent = "💾 Atualizar acompanhamento";
+    }
+
+    const mensagem = document.getElementById("mensagemPaeetAluno");
+
+    if (mensagem) {
+        mensagem.textContent = "Editando acompanhamento do aluno.";
+    }
+
+    const campoNome = document.getElementById("paeetNomeAluno");
+
+    if (campoNome) {
+        campoNome.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+}
+
+
+// =====================================================
+// ABRIR ÁREA DE ATENDIMENTO
+// =====================================================
+
+function abrirAtendimentoPaeet(idAluno, nomeAluno) {
+    alunoSelecionadoAtendimentoId = idAluno;
+    nomeAlunoSelecionadoAtendimento = nomeAluno;
+
+    const area = document.getElementById("areaAtendimentoPaeet");
+    const textoAluno = document.getElementById("alunoSelecionadoAtendimentoPaeet");
+
+    if (area) {
+        area.style.display = "block";
+    }
+
+    if (textoAluno) {
+        textoAluno.innerHTML = `<strong>Aluno selecionado:</strong> ${escaparHTML(nomeAluno)}`;
+    }
+
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoje.getDate()).padStart(2, "0");
+
+    preencherCampoSeExistir("paeetDataAtendimento", `${ano}-${mes}-${dia}`);
+
+    if (area) {
+        area.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+}
+
+
+// =====================================================
+// SALVAR ATENDIMENTO
+// =====================================================
+
+async function salvarAtendimentoPaeet() {
+    const mensagem = document.getElementById("mensagemAtendimentoPaeet");
+
+    if (!alunoSelecionadoAtendimentoId) {
+        if (mensagem) {
+            mensagem.textContent = "Selecione um aluno antes de registrar atendimento.";
+        }
+        return;
+    }
+
+    const { data: userData } = await banco.auth.getUser();
+
+    const dadosAtendimento = {
+        aluno_id: Number(alunoSelecionadoAtendimentoId),
+        data_atendimento: pegarValorCampo("paeetDataAtendimento") || null,
+        motivo: pegarValorCampo("paeetMotivoAtendimento"),
+        orientacao_realizada: pegarValorCampo("paeetOrientacaoAtendimento"),
+        combinado: pegarValorCampo("paeetCombinadoAtendimento"),
+        proximo_retorno: pegarValorCampo("paeetProximoRetorno") || null,
+        professor_responsavel: pegarValorCampo("paeetProfessorResponsavel"),
+        criado_por: userData && userData.user ? userData.user.id : null
+    };
+
+    if (!dadosAtendimento.motivo && !dadosAtendimento.orientacao_realizada) {
+        if (mensagem) {
+            mensagem.textContent = "Preencha pelo menos o motivo ou a orientação realizada.";
+        }
+        return;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = "Salvando atendimento...";
+    }
+
+    const { error } = await banco
+        .from("atendimentos_paeet")
+        .insert([dadosAtendimento]);
+
+    if (error) {
+        if (mensagem) {
+            mensagem.textContent = "Erro ao salvar atendimento: " + error.message;
+        }
+
+        console.log("Erro atendimento PAEET:", error);
+        return;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = "Atendimento salvo com sucesso!";
+    }
+
+    limparFormularioAtendimentoPaeet();
+
+    await carregarHistoricoPaeet(alunoSelecionadoAtendimentoId, nomeAlunoSelecionadoAtendimento);
+}
+
+
+// =====================================================
+// CARREGAR HISTÓRICO DE ATENDIMENTOS
+// =====================================================
+
+async function carregarHistoricoPaeet(idAluno, nomeAluno) {
+    const historico = document.getElementById("historicoAtendimentosPaeet");
+
+    if (!historico) {
+        return;
+    }
+
+    historico.innerHTML = `<p>Carregando histórico de ${escaparHTML(nomeAluno)}...</p>`;
+
+    const { data, error } = await banco
+        .from("atendimentos_paeet")
+        .select("*")
+        .eq("aluno_id", idAluno)
+        .order("data_atendimento", { ascending: false })
+        .order("criado_em", { ascending: false });
+
+    if (error) {
+        historico.innerHTML = `<p>Erro ao carregar histórico: ${error.message}</p>`;
+        console.log("Erro histórico PAEET:", error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        historico.innerHTML = `
+            <p>Nenhum atendimento registrado para <strong>${escaparHTML(nomeAluno)}</strong>.</p>
+        `;
+        return;
+    }
+
+    historico.innerHTML = `
+        <h4>Histórico de ${escaparHTML(nomeAluno)}</h4>
+    `;
+
+    data.forEach(function (item) {
+        historico.innerHTML += `
+            <div class="card-historico-paeet">
+                <p><strong>Data:</strong> ${formatarDataAdmin(item.data_atendimento)}</p>
+                <p><strong>Motivo:</strong> ${escaparHTML(item.motivo || "Não informado")}</p>
+                <p><strong>Orientação:</strong> ${escaparHTML(item.orientacao_realizada || "Não informada")}</p>
+                <p><strong>Combinado:</strong> ${escaparHTML(item.combinado || "Não informado")}</p>
+                <p><strong>Próximo retorno:</strong> ${formatarDataAdmin(item.proximo_retorno)}</p>
+                <p><strong>Professor responsável:</strong> ${escaparHTML(item.professor_responsavel || "Não informado")}</p>
+            </div>
+        `;
+    });
+}
+
+
+// =====================================================
+// CONCLUIR ACOMPANHAMENTO
+// =====================================================
+
+async function concluirAcompanhamentoPaeet(idAluno) {
+    const confirmar = confirm("Deseja marcar este acompanhamento como concluído?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("alunos_acompanhamento")
+        .update({
+            status: "concluido",
+            situacao: "verde",
+            atualizado_em: new Date().toISOString()
+        })
+        .eq("id", idAluno);
+
+    if (error) {
+        alert("Erro ao concluir acompanhamento: " + error.message);
+        return;
+    }
+
+    alert("Acompanhamento concluído com sucesso!");
+    await carregarAlunosPaeet();
+}
+
+
+// =====================================================
+// EXCLUIR ALUNO DO ACOMPANHAMENTO
+// =====================================================
+
+async function excluirAlunoPaeet(idAluno) {
+    const confirmar = confirm(
+        "Tem certeza que deseja excluir este acompanhamento? O histórico vinculado também poderá ser removido."
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("alunos_acompanhamento")
+        .delete()
+        .eq("id", idAluno);
+
+    if (error) {
+        alert("Erro ao excluir acompanhamento: " + error.message);
+        return;
+    }
+
+    alert("Acompanhamento excluído com sucesso!");
+    await carregarAlunosPaeet();
+}
+
+
+// =====================================================
+// FUNÇÕES AUXILIARES PAEET
+// =====================================================
+
+function limparFormularioAlunoPaeet() {
+    limparCampoSeExistir("paeetNomeAluno");
+    limparCampoSeExistir("paeetTurmaAluno");
+    limparCampoSeExistir("paeetCursoAluno");
+    preencherCampoSeExistir("paeetSituacaoAluno", "verde");
+    limparCampoSeExistir("paeetDificuldadeAluno");
+    limparCampoSeExistir("paeetObservacaoAluno");
+    limparCampoSeExistir("paeetProximoPassoAluno");
+}
+
+function limparFormularioAtendimentoPaeet() {
+    limparCampoSeExistir("paeetMotivoAtendimento");
+    limparCampoSeExistir("paeetOrientacaoAtendimento");
+    limparCampoSeExistir("paeetCombinadoAtendimento");
+    limparCampoSeExistir("paeetProximoRetorno");
+}
+
+function cancelarAtendimentoPaeet() {
+    alunoSelecionadoAtendimentoId = null;
+    nomeAlunoSelecionadoAtendimento = "";
+
+    const area = document.getElementById("areaAtendimentoPaeet");
+
+    if (area) {
+        area.style.display = "none";
+    }
+
+    limparFormularioAtendimentoPaeet();
+}
+
+function nomeSituacaoPaeet(situacao) {
+    const nomes = {
+        verde: "🟢 Normal",
+        amarelo: "🟡 Atenção",
+        vermelho: "🔴 Intervenção"
+    };
+
+    return nomes[situacao] || "🟢 Normal";
+}
+
+function atualizarResumoPaeet(alunos) {
+    const total = alunos.length;
+    const verdes = alunos.filter(function (aluno) {
+        return aluno.situacao === "verde";
+    }).length;
+
+    const amarelos = alunos.filter(function (aluno) {
+        return aluno.situacao === "amarelo";
+    }).length;
+
+    const vermelhos = alunos.filter(function (aluno) {
+        return aluno.situacao === "vermelho";
+    }).length;
+
+    preencherTexto("totalAlunosPaeet", total);
+    preencherTexto("totalVerdePaeet", verdes);
+    preencherTexto("totalAmareloPaeet", amarelos);
+    preencherTexto("totalVermelhoPaeet", vermelhos);
+}
 
 window.aprovarPortfolio = aprovarPortfolio;
 window.ocultarPortfolio = ocultarPortfolio;

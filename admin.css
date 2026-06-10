@@ -100,3 +100,208 @@
 .btn-admin-secundario:hover {
     background-color: #2563eb;
 }
+
+/* =====================================================
+   PAEET - APOIA TÉCNICO RIOLANDO
+===================================================== */
+
+.resumo-paeet-admin {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.card-resumo-paeet {
+    background: white;
+    border-radius: 18px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
+.card-resumo-paeet h3 {
+    font-size: 34px;
+    margin: 0;
+}
+
+.card-resumo-paeet p {
+    margin: 8px 0 0;
+    font-weight: bold;
+}
+
+.card-admin-paeet {
+    background: #f8fafc;
+    border-left: 6px solid #0f766e;
+    border-radius: 18px;
+    padding: 22px;
+    margin: 22px 0;
+}
+
+.card-admin-paeet input,
+.card-admin-paeet textarea,
+.card-admin-paeet select,
+.filtros-paeet-admin input,
+.filtros-paeet-admin select {
+    width: 100%;
+    padding: 13px;
+    margin: 8px 0 16px;
+    border: 2px solid #1e40af;
+    border-radius: 12px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.card-admin-paeet textarea {
+    min-height: 90px;
+}
+
+.card-admin-paeet button,
+.filtros-paeet-admin button,
+.cabecalho-lista-paeet button {
+    background: #1e40af;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 6px 6px 6px 0;
+}
+
+.card-admin-paeet button:hover,
+.filtros-paeet-admin button:hover,
+.cabecalho-lista-paeet button:hover {
+    background: #2563eb;
+}
+
+.filtros-paeet-admin {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 18px;
+    padding: 18px;
+    margin: 22px 0;
+}
+
+.cabecalho-lista-paeet {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.card-aluno-paeet {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 18px;
+    padding: 18px;
+    margin: 16px 0;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.borda-verde {
+    border-left: 8px solid #16a34a;
+}
+
+.borda-amarelo {
+    border-left: 8px solid #d97706;
+}
+
+.borda-vermelho {
+    border-left: 8px solid #dc2626;
+}
+
+.topo-card-aluno-paeet {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.topo-card-aluno-paeet h4 {
+    font-size: 24px;
+    color: #0f766e;
+    margin: 0;
+}
+
+.selo-paeet {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-weight: bold;
+}
+
+.situacao-verde {
+    background: #dcfce7;
+    color: #14532d;
+}
+
+.situacao-amarelo {
+    background: #fef3c7;
+    color: #78350f;
+}
+
+.situacao-vermelho {
+    background: #fee2e2;
+    color: #7f1d1d;
+}
+
+.acoes-paeet {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.acoes-paeet button {
+    background: #0f766e;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.card-historico-paeet {
+    background: white;
+    border-left: 5px solid #1e40af;
+    border-radius: 14px;
+    padding: 16px;
+    margin: 14px 0;
+    border: 1px solid #cbd5e1;
+}
+
+.status-verde {
+    border-top: 5px solid #16a34a;
+}
+
+.status-amarelo {
+    border-top: 5px solid #d97706;
+}
+
+.status-vermelho {
+    border-top: 5px solid #dc2626;
+}
+
+.status-total {
+    border-top: 5px solid #1e40af;
+}
+
+@media (max-width: 800px) {
+    .resumo-paeet-admin {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .resumo-paeet-admin {
+        grid-template-columns: 1fr;
+    }
+
+    .topo-card-aluno-paeet {
+        align-items: flex-start;
+    }
+}

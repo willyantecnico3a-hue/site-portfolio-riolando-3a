@@ -656,6 +656,11 @@
                 <span>Planejamento, horários e desafios</span>
             </button>
 
+            <button class="item-menu-admin" data-tela="telaPaeet">
+                 🧭 Apoia Técnico / PAEET
+                <span>Acompanhamento dos estudantes</span>
+            </button>
+
             <button class="item-menu-admin" data-tela="telaAssistenteIA" type="button">
                 🤖 Assistente IA
                 <span>Gerar aulas, planos, materiais e rubricas</span>
@@ -869,6 +874,182 @@
             </div>
 
         </section>
+
+        <!-- =====================================================
+     TELA PAEET - APOIA TÉCNICO RIOLANDO
+====================================================== -->
+<section id="telaPaeet" class="tela-admin-sobreposta">
+
+    <div class="topo-tela-admin">
+        <h2>🧭 Apoia Técnico Riolando / PAEET</h2>
+
+        <button type="button" class="btnVoltarMenuAdmin">
+            ⬅ Voltar
+        </button>
+    </div>
+
+    <p>
+        Área para acompanhamento, acolhimento e orientação dos estudantes do Ensino Técnico.
+    </p>
+
+    <!-- RESUMO RÁPIDO -->
+    <section class="resumo-paeet-admin">
+
+        <div class="card-resumo-paeet status-verde">
+            <h3 id="totalVerdePaeet">0</h3>
+            <p>🟢 Normal</p>
+        </div>
+
+        <div class="card-resumo-paeet status-amarelo">
+            <h3 id="totalAmareloPaeet">0</h3>
+            <p>🟡 Atenção</p>
+        </div>
+
+        <div class="card-resumo-paeet status-vermelho">
+            <h3 id="totalVermelhoPaeet">0</h3>
+            <p>🔴 Intervenção</p>
+        </div>
+
+        <div class="card-resumo-paeet status-total">
+            <h3 id="totalAlunosPaeet">0</h3>
+            <p>Total acompanhados</p>
+        </div>
+
+    </section>
+
+
+    <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
+    <section class="card-admin-paeet">
+
+        <h3>➕ Cadastrar aluno em acompanhamento</h3>
+
+        <label for="paeetNomeAluno">Nome do aluno</label>
+        <input type="text" id="paeetNomeAluno" placeholder="Nome completo do aluno">
+
+        <label for="paeetTurmaAluno">Turma</label>
+        <input type="text" id="paeetTurmaAluno" placeholder="Ex: 3ºA">
+
+        <label for="paeetCursoAluno">Curso</label>
+        <input type="text" id="paeetCursoAluno" placeholder="Ex: Desenvolvimento de Sistemas">
+
+        <label for="paeetSituacaoAluno">Situação</label>
+        <select id="paeetSituacaoAluno">
+            <option value="verde">🟢 Acompanhamento normal</option>
+            <option value="amarelo">🟡 Atenção pedagógica</option>
+            <option value="vermelho">🔴 Necessita intervenção</option>
+        </select>
+
+        <label for="paeetDificuldadeAluno">Dificuldade principal</label>
+        <textarea id="paeetDificuldadeAluno" placeholder="Ex: dificuldade em lógica, faltas, atividades atrasadas..."></textarea>
+
+        <label for="paeetObservacaoAluno">Observação</label>
+        <textarea id="paeetObservacaoAluno" placeholder="Observações importantes sobre o acompanhamento"></textarea>
+
+        <label for="paeetProximoPassoAluno">Próximo passo / combinado</label>
+        <textarea id="paeetProximoPassoAluno" placeholder="Ex: revisar atividade, conversar novamente, acompanhar entrega..."></textarea>
+
+        <button type="button" id="btnSalvarAlunoPaeet">
+            💾 Salvar acompanhamento
+        </button>
+
+        <p id="mensagemPaeetAluno"></p>
+
+    </section>
+
+
+    <!-- FILTROS -->
+    <section class="filtros-paeet-admin">
+
+        <h3>🔎 Filtrar acompanhamentos</h3>
+
+        <input type="text" id="filtroPaeetNome" placeholder="Buscar por nome do aluno">
+
+        <select id="filtroPaeetSituacao">
+            <option value="todos">Todas as situações</option>
+            <option value="verde">🟢 Normal</option>
+            <option value="amarelo">🟡 Atenção</option>
+            <option value="vermelho">🔴 Intervenção</option>
+        </select>
+
+        <button type="button" id="btnFiltrarPaeet">
+            Filtrar
+        </button>
+
+        <button type="button" id="btnLimparFiltroPaeet">
+            Limpar filtros
+        </button>
+
+    </section>
+
+
+    <!-- LISTA DE ALUNOS -->
+    <section class="card-admin-paeet">
+
+        <div class="cabecalho-lista-paeet">
+            <h3>📋 Alunos acompanhados</h3>
+
+            <button type="button" id="btnCarregarAlunosPaeet">
+                🔄 Atualizar lista
+            </button>
+        </div>
+
+        <div id="listaAlunosPaeet">
+            <p>Carregando acompanhamentos...</p>
+        </div>
+
+    </section>
+
+
+    <!-- FORMULÁRIO DE ATENDIMENTO -->
+    <section class="card-admin-paeet" id="areaAtendimentoPaeet" style="display:none;">
+
+        <h3>📝 Registrar atendimento PAEET</h3>
+
+        <p id="alunoSelecionadoAtendimentoPaeet"></p>
+
+        <label for="paeetDataAtendimento">Data do atendimento</label>
+        <input type="date" id="paeetDataAtendimento">
+
+        <label for="paeetMotivoAtendimento">Motivo do atendimento</label>
+        <textarea id="paeetMotivoAtendimento" placeholder="Motivo do atendimento"></textarea>
+
+        <label for="paeetOrientacaoAtendimento">Orientação realizada</label>
+        <textarea id="paeetOrientacaoAtendimento" placeholder="O que foi orientado ao estudante?"></textarea>
+
+        <label for="paeetCombinadoAtendimento">Combinado com o aluno</label>
+        <textarea id="paeetCombinadoAtendimento" placeholder="Qual combinado foi feito?"></textarea>
+
+        <label for="paeetProximoRetorno">Próximo retorno</label>
+        <input type="date" id="paeetProximoRetorno">
+
+        <label for="paeetProfessorResponsavel">Professor responsável</label>
+        <input type="text" id="paeetProfessorResponsavel" value="Willyan Vieira">
+
+        <button type="button" id="btnSalvarAtendimentoPaeet">
+            💾 Salvar atendimento
+        </button>
+
+        <button type="button" id="btnCancelarAtendimentoPaeet">
+            ❌ Cancelar
+        </button>
+
+        <p id="mensagemAtendimentoPaeet"></p>
+
+    </section>
+
+
+    <!-- HISTÓRICO -->
+    <section class="card-admin-paeet">
+
+        <h3>📚 Histórico de atendimentos</h3>
+
+        <div id="historicoAtendimentosPaeet">
+            <p>Selecione um aluno para ver o histórico.</p>
+        </div>
+
+    </section>
+
+</section>
 
 
         <!-- =============================
