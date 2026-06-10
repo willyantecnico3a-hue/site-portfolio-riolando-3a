@@ -1989,3 +1989,233 @@ window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
 window.abrirModalEventoAgenda = abrirModalEventoAgenda;
 window.fecharModalEventoAgenda = fecharModalEventoAgenda;
 
+// =====================================================
+// CORREÇÃO DEFINITIVA - FORMULÁRIO DE EVENTO EM MODAL SOBREPOSTO
+// Impede o comportamento antigo de abrir o formulário embaixo
+// e força criar/editar evento em janela flutuante.
+// =====================================================
+
+(function corrigirFormularioEventoFlutuante() {
+    const formularioOriginal = document.getElementById("formEvento");
+    const botaoCriarOriginal = document.getElementById("btnAbrirFormEvento");
+
+    if (!formularioOriginal) {
+        console.log("Correção modal flutuante: formEvento não encontrado.");
+        return;
+    }
+
+    criarEstruturaModalEventoFlutuante();
+
+    if (botaoCriarOriginal) {
+        botaoCriarOriginal.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+
+            if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+                alert("Apenas o administrador pode criar eventos.");
+                return;
+            }
+
+            if (!dataSelecionadaNoModal) {
+                alert("Selecione um dia no calendário antes de criar o evento.");
+                return;
+            }
+
+            eventoEmEdicaoId = null;
+
+            limparFormularioEvento();
+
+            const tituloFormulario = document.getElementById("tituloFormularioEvento");
+            if (tituloFormulario) {
+                tituloFormulario.textContent = "Novo Evento";
+            }
+
+            const botaoSalvar = formularioOriginal.querySelector("button[type='submit']");
+            if (botaoSalvar) {
+                botaoSalvar.textContent = "💾 Salvar Evento";
+            }
+
+            abrirModalEventoFlutuante("novo");
+
+        }, true);
+    }
+
+    const formulario = document.getElementById("formEvento");
+
+    if (formulario) {
+        formulario.addEventListener("submit", function () {
+            setTimeout(function () {
+                fecharModalEventoFlutuante();
+            }, 900);
+        });
+    }
+
+    console.log("Correção definitiva do modal flutuante aplicada.");
+})();
+
+function criarEstruturaModalEventoFlutuante() {
+    const formulario = document.getElementById("formEvento");
+
+    if (!formulario) {
+        return;
+    }
+
+    let modal = document.getElementById("modalEventoFlutuante");
+
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "modalEventoFlutuante";
+        modal.className = "modal-evento-flutuante";
+
+        const caixa = document.createElement("div");
+        caixa.className = "caixa-modal-evento-flutuante";
+
+        const topo = document.createElement("div");
+        topo.className = "topo-modal-evento-flutuante";
+
+        topo.innerHTML = `
+            <div>
+                <span class="selo-modal-evento-flutuante">Agenda Pedagógica</span>
+                <h2 id="tituloModalEventoFlutuante">Evento da Agenda</h2>
+                <p>Cadastre ou edite o evento em uma janela suspensa.</p>
+            </div>
+
+            <button type="button" class="btn-fechar-evento-flutuante" onclick="fecharModalEventoFlutuante()">
+                ✕
+            </button>
+        `;
+
+        caixa.appendChild(topo);
+
+        modal.appendChild(caixa);
+        document.body.appendChild(modal);
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                fecharModalEventoFlutuante();
+            }
+        });
+    }
+
+    const caixaModal = modal.querySelector(".caixa-modal-evento-flutuante");
+
+    if (caixaModal && formulario.parentElement !== caixaModal) {
+        formulario.style.display = "block";
+        caixaModal.appendChild(formulario);
+    }
+}
+
+function abrirModalEventoFlutuante(modo) {
+    criarEstruturaModalEventoFlutuante();
+
+    const modal = document.getElementById("modalEventoFlutuante");
+    const titulo = document.getElementById("tituloModalEventoFlutuante");
+
+    if (!modal) {
+        console.log("modalEventoFlutuante não encontrado.");
+        return;
+    }
+
+    if (titulo) {
+        titulo.textContent = modo === "editar"
+            ? "Editar evento da agenda"
+            : "Criar novo evento da agenda";
+    }
+
+    const formulario = document.getElementById("formEvento");
+
+    if (formulario) {
+        formulario.style.display = "block";
+    }
+
+    modal.classList.add("aberto");
+    document.body.style.overflow = "hidden";
+
+    setTimeout(function () {
+        const campoTitulo = document.getElementById("eventoTitulo");
+
+        if (campoTitulo) {
+            campoTitulo.focus();
+        }
+    }, 150);
+}
+
+function fecharModalEventoFlutuante() {
+    const modal = document.getElementById("modalEventoFlutuante");
+
+    if (modal) {
+        modal.classList.remove("aberto");
+    }
+
+    document.body.style.overflow = "";
+}
+
+
+// =====================================================
+// SOBRESCREVE A FUNÇÃO DE EDITAR PARA ABRIR EM MODAL
+// =====================================================
+
+window.prepararEdicaoEvento = function (idEvento) {
+    const evento = eventosCarregados.find(function (item) {
+        return String(item.id) === String(idEvento);
+    });
+
+    if (!evento) {
+        alert("Evento não encontrado para edição.");
+        return;
+    }
+
+    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+        alert("Apenas o administrador pode editar eventos.");
+        return;
+    }
+
+    eventoEmEdicaoId = evento.id;
+    dataSelecionadaNoModal = evento.data;
+
+    if (modalDetalheEvento) {
+        modalDetalheEvento.classList.remove("aberto");
+    }
+
+    const tituloFormulario = document.getElementById("tituloFormularioEvento");
+
+    if (tituloFormulario) {
+        tituloFormulario.textContent = "Editar Evento";
+    }
+
+    setValorCampo("eventoTipo", evento.tipo || "aula");
+    setValorCampo("eventoTitulo", evento.titulo || "");
+    setValorCampo("eventoHorarioInicio", formatarHorarioParaInput(evento.horario_inicio));
+    setValorCampo("eventoHorarioFim", formatarHorarioParaInput(evento.horario_fim));
+    setValorCampo("eventoDescricao", evento.descricao || "");
+    setValorCampo("eventoCursoAlvo", evento.curso_alvo || "todos");
+    setValorCampo("eventoLinkMaterial", evento.link_material || "");
+    setValorCampo("eventoLembreteMinutos", evento.lembrete_minutos || 10);
+    setValorCampo("eventoRepeticao", "nao_repete");
+    setValorCampo("eventoRepetirAte", "");
+
+    const mensagemEvento = document.getElementById("mensagemEvento");
+
+    if (mensagemEvento) {
+        mensagemEvento.textContent = "Editando evento selecionado.";
+    }
+
+    const formulario = document.getElementById("formEvento");
+    const botaoSalvar = formulario ? formulario.querySelector("button[type='submit']") : null;
+
+    if (botaoSalvar) {
+        botaoSalvar.textContent = "💾 Atualizar Evento";
+    }
+
+    abrirModalEventoFlutuante("editar");
+};
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        fecharModalEventoFlutuante();
+    }
+});
+
+window.abrirModalEventoFlutuante = abrirModalEventoFlutuante;
+window.fecharModalEventoFlutuante = fecharModalEventoFlutuante;
