@@ -180,135 +180,7 @@
     ====================================================== -->
     <div id="modalDetalheEvento" class="modal-agenda">
 
-        <!-- =====================================================
-         MODAL SUSPENSO DE CADASTRO / EDIÇÃO DO EVENTO
-         Agora o formulário não fica mais perdido embaixo.
-    ====================================================== -->
-    <div id="modalEventoAgenda" class="modal-agenda modal-evento-agenda">
-
-        <div class="modal-conteudo-agenda modal-conteudo-evento">
-
-            <div class="modal-topo">
-                <div>
-                    <span class="selo-agenda">Cadastro / Edição</span>
-                    <h2 id="tituloModalEvento">Evento da Agenda</h2>
-                </div>
-
-                <button id="btnFecharModalEvento" type="button" onclick="fecharModalEventoAgenda()">
-                    ✕
-                </button>
-            </div>
-
-
-            <!-- FORMULÁRIO DE CADASTRO/EDIÇÃO DO EVENTO -->
-            <form id="formEvento" class="form-evento">
-
-                <h3 id="tituloFormularioEvento">Novo Evento</h3>
-
-                <label for="eventoTipo">Tipo do evento</label>
-                <select id="eventoTipo">
-                    <option value="aula">Aula</option>
-                    <option value="atpcs">ATPCS</option>
-                    <option value="atpcg">ATPCG</option>
-                    <option value="apd">APD</option>
-                    <option value="efape">EFAPE</option>
-                    <option value="multiplica">Multiplica</option>
-                    <option value="visita_tecnica">Visita Técnica</option>
-                    <option value="apoio_pedagogico">Apoio Pedagógico</option>
-                    <option value="ot">OT</option>
-                    <option value="outro">Outro</option>
-                </select>
-
-                <label for="eventoTitulo">Nome/Título do evento</label>
-                <input type="text" id="eventoTitulo" placeholder="Ex: Aula de Front-End">
-
-                <div class="linha-form-evento">
-                    <div>
-                        <label for="eventoHorarioInicio">Horário de início</label>
-                        <input type="time" id="eventoHorarioInicio">
-                    </div>
-
-                    <div>
-                        <label for="eventoHorarioFim">Horário de fim</label>
-                        <input type="time" id="eventoHorarioFim">
-                    </div>
-                </div>
-
-                <label for="eventoCursoAlvo">Curso alvo</label>
-                <select id="eventoCursoAlvo">
-                    <option value="todos">Todos</option>
-                    <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
-                    <option value="vendas">Vendas</option>
-                    <option value="substituicoes">Substituições</option>
-                </select>
-
-                <label for="eventoDescricao">Descrição do evento</label>
-                <textarea id="eventoDescricao" placeholder="Descreva o evento, aula, orientação, plano de aula ou recado"></textarea>
-
-                <label for="eventoLinkMaterial">Link do material</label>
-                <input type="url" id="eventoLinkMaterial" placeholder="Link do PDF, vídeo, slide ou atividade">
-
-
-                <!-- LEMBRETE DO EVENTO -->
-                <div class="area-lembrete-evento">
-
-                    <h4>🔔 Lembrete do evento</h4>
-
-                    <label for="eventoLembreteMinutos">
-                        Avisar antes do compromisso
-                    </label>
-
-                    <select id="eventoLembreteMinutos">
-                        <option value="0">Sem lembrete</option>
-                        <option value="5">5 minutos antes</option>
-                        <option value="10" selected>10 minutos antes</option>
-                        <option value="15">15 minutos antes</option>
-                        <option value="30">30 minutos antes</option>
-                        <option value="60">1 hora antes</option>
-                    </select>
-
-                    <p class="observacao-repeticao">
-                        O lembrete sonoro funciona quando a agenda estiver aberta. As notificações no celular dependem da permissão do aparelho.
-                    </p>
-
-                </div>
-
-
-                <!-- REPETIÇÃO ESTILO GOOGLE AGENDA -->
-                <div class="area-repeticao-evento">
-
-                    <h4>🔁 Repetição do evento</h4>
-
-                    <label for="eventoRepeticao">Repetir</label>
-                    <select id="eventoRepeticao">
-                        <option value="nao_repete">Não se repete</option>
-                        <option value="diariamente">Todos os dias úteis</option>
-                        <option value="semanalmente">Todas as semanas</option>
-                        <option value="mensalmente">Todos os meses</option>
-                        <option value="anualmente">Todos os anos</option>
-                    </select>
-
-                    <label for="eventoRepetirAte">Repetir até</label>
-                    <input type="date" id="eventoRepetirAte">
-
-                    <p class="observacao-repeticao">
-                        Sábados, domingos e feriados fixos serão ignorados automaticamente.
-                    </p>
-
-                </div>
-
-                <button type="submit" class="btn-salvar-evento">
-                    💾 Salvar Evento
-                </button>
-
-                <p id="mensagemEvento"></p>
-
-            </form>
-
-        </div>
-
-    </div>
-
+        
 
         <div class="modal-conteudo-agenda detalhe-evento">
 
@@ -325,6 +197,28 @@
         </div>
 
     </div>
+
+    <div id="modalDia" class="modal-agenda">
+
+    <div class="modal-conteudo-agenda">
+
+        <div class="modal-topo">
+            <h2 id="modalTituloData"></h2>
+
+            <button id="btnFecharModal" type="button">
+                ✕
+            </button>
+        </div>
+
+        <div id="listaEventosDia"></div>
+
+        <button id="btnAbrirFormEvento" class="btn-criar-evento" type="button" style="display:none;">
+            + Criar evento neste dia
+        </button>
+
+    </div>
+
+</div>
 
 
     <!-- =====================================================
