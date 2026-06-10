@@ -3023,3 +3023,32 @@ button {
         background-color: inherit;
     }
 }
+
+/* =====================================================
+   DESTAQUE VISUAL AO ROLAR PARA O FORMULÁRIO DE EVENTO
+===================================================== */
+
+.form-evento-destaque {
+    animation: destaqueFormularioEvento 2.5s ease;
+    border: 3px solid #0f766e !important;
+    box-shadow: 0 0 0 6px rgba(15, 118, 110, 0.18),
+                0 18px 45px rgba(15, 23, 42, 0.20) !important;
+}
+
+@keyframes destaqueFormularioEvento {
+    0% {
+        transform: scale(0.98);
+        background-color: #ecfdf5;
+    }
+
+    40% {
+        transform: scale(1.01);
+        background-color: #f0fdfa;
+    }
+
+    100% {
+        transform: scale(1);
+        background-color: inherit;
+    }
+}
+
