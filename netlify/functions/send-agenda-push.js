@@ -17,19 +17,20 @@ exports.handler = async function () {
     try {
         if (!SUPABASE_SERVICE_ROLE_KEY || !VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
             return respostaJson(500, {
-                error: "Variáveis de ambiente não configuradas."
+                error: "Variáveis de ambiente não configuradas.",
+                dica: "Confira VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY e SUPABASE_SERVICE_ROLE_KEY no Netlify."
             });
         }
 
-        const agora = new Date();
-
-        const hoje = formatarDataISO(agora);
+        const agoraBrasil = obterAgoraBrasil();
+        const hoje = agoraBrasil.data;
 
         const eventos = await buscarEventosDeHoje(hoje);
 
         if (!eventos || eventos.length === 0) {
             return respostaJson(200, {
-                message: "Nenhum evento para verificar."
+                message: "Nenhum evento para verificar.",
+                agora_brasil: agoraBrasil
             });
         }
 
@@ -37,26 +38,44 @@ exports.handler = async function () {
 
         if (!assinaturas || assinaturas.length === 0) {
             return respostaJson(200, {
-                message: "Nenhuma assinatura push ativa encontrada."
+                message: "Nenhuma assinatura push ativa encontrada.",
+                eventos_encontrados: eventos.length,
+                agora_brasil: agoraBrasil
             });
         }
 
         let enviados = 0;
         let ignorados = 0;
+        let errosPush = 0;
+        let detalhes = [];
 
         for (const evento of eventos) {
-            const deveEnviar = await verificarSeDeveEnviarEvento(evento, agora);
+            const deveEnviar = await verificarSeDeveEnviarEvento(evento, agoraBrasil);
 
             if (!deveEnviar.enviar) {
                 ignorados++;
+
+                detalhes.push({
+                    evento_id: evento.id,
+                    titulo: evento.titulo,
+                    data: evento.data,
+                    horario_inicio: evento.horario_inicio,
+                    lembrete_minutos: evento.lembrete_minutos,
+                    agora_brasil: agoraBrasil,
+                    motivo: deveEnviar.motivo || "Evento fora da janela de envio",
+                    minutos_faltando: deveEnviar.minutos
+                });
+
                 continue;
             }
 
             const payload = JSON.stringify({
                 title: "🔔 Lembrete da Agenda Riolando",
                 body: `${evento.titulo} começa em ${deveEnviar.minutos} minuto(s).`,
-                url: "/agenda.html"
+                url: `${SITE_URL}/agenda.html`
             });
+
+            let enviadosNesteEvento = 0;
 
             for (const item of assinaturas) {
                 const subscription = {
@@ -70,8 +89,14 @@ exports.handler = async function () {
                 try {
                     await webpush.sendNotification(subscription, payload);
                     enviados++;
+                    enviadosNesteEvento++;
                 } catch (erroPush) {
-                    console.log("Erro ao enviar push:", erroPush.statusCode, erroPush.body);
+                    errosPush++;
+
+                    console.log("Erro ao enviar push:", {
+                        statusCode: erroPush.statusCode,
+                        body: erroPush.body
+                    });
 
                     if (erroPush.statusCode === 404 || erroPush.statusCode === 410) {
                         await desativarAssinatura(item.id);
@@ -80,12 +105,29 @@ exports.handler = async function () {
             }
 
             await registrarLogEnvio(evento);
+
+            detalhes.push({
+                evento_id: evento.id,
+                titulo: evento.titulo,
+                data: evento.data,
+                horario_inicio: evento.horario_inicio,
+                lembrete_minutos: evento.lembrete_minutos,
+                agora_brasil: agoraBrasil,
+                motivo: "Notificação enviada",
+                minutos_faltando: deveEnviar.minutos,
+                enviados_neste_evento: enviadosNesteEvento
+            });
         }
 
         return respostaJson(200, {
             message: "Verificação de agenda concluída.",
+            agora_brasil: agoraBrasil,
+            eventos_encontrados: eventos.length,
+            assinaturas_ativas: assinaturas.length,
             enviados: enviados,
-            ignorados: ignorados
+            ignorados: ignorados,
+            erros_push: errosPush,
+            detalhes: detalhes
         });
 
     } catch (erro) {
@@ -112,7 +154,7 @@ async function buscarEventosDeHoje(hoje) {
 }
 
 async function buscarAssinaturasPush() {
-    const url = `${SUPABASE_URL}/rest/v1/push_subscriptions?select=id,endpoint,p256dh,auth&ativo=eq.true`;
+    const url = `${SUPABASE_URL}/rest/v1/push_subscriptions?select=id,endpoint,p256dh,auth,ativo&ativo=eq.true`;
 
     const resposta = await fetch(url, {
         headers: headersSupabase()
@@ -125,11 +167,12 @@ async function buscarAssinaturasPush() {
     return await resposta.json();
 }
 
-async function verificarSeDeveEnviarEvento(evento, agora) {
+async function verificarSeDeveEnviarEvento(evento, agoraBrasil) {
     if (!evento.horario_inicio) {
         return {
             enviar: false,
-            minutos: null
+            minutos: null,
+            motivo: "Evento sem horário de início"
         };
     }
 
@@ -138,18 +181,31 @@ async function verificarSeDeveEnviarEvento(evento, agora) {
     if (minutosAntes <= 0) {
         return {
             enviar: false,
-            minutos: null
+            minutos: null,
+            motivo: "Evento está sem lembrete ou lembrete está zerado"
         };
     }
 
-    const dataHoraEvento = new Date(`${evento.data}T${evento.horario_inicio}`);
-    const diferencaMs = dataHoraEvento.getTime() - agora.getTime();
-    const diferencaMinutos = Math.round(diferencaMs / 60000);
+    const horarioEvento = evento.horario_inicio.toString().substring(0, 5);
 
-    if (diferencaMinutos < 0 || diferencaMinutos > minutosAntes) {
+    const minutosAgora = converterHorarioParaMinutos(agoraBrasil.hora);
+    const minutosEvento = converterHorarioParaMinutos(horarioEvento);
+
+    const diferencaMinutos = minutosEvento - minutosAgora;
+
+    if (diferencaMinutos < 0) {
         return {
             enviar: false,
-            minutos: diferencaMinutos
+            minutos: diferencaMinutos,
+            motivo: "Horário do evento já passou"
+        };
+    }
+
+    if (diferencaMinutos > minutosAntes) {
+        return {
+            enviar: false,
+            minutos: diferencaMinutos,
+            motivo: "Ainda não está dentro do tempo do lembrete"
         };
     }
 
@@ -160,13 +216,15 @@ async function verificarSeDeveEnviarEvento(evento, agora) {
     if (jaEnviado) {
         return {
             enviar: false,
-            minutos: diferencaMinutos
+            minutos: diferencaMinutos,
+            motivo: "Esse evento já foi enviado antes e está registrado em push_agenda_logs"
         };
     }
 
     return {
         enviar: true,
-        minutos: diferencaMinutos
+        minutos: diferencaMinutos,
+        motivo: "Dentro da janela de envio"
     };
 }
 
@@ -194,7 +252,7 @@ async function registrarLogEnvio(evento) {
         headers: {
             ...headersSupabase(),
             "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
+            "Prefer": "return=minimal"
         },
         body: JSON.stringify({
             evento_id: evento.id,
@@ -214,7 +272,8 @@ async function desativarAssinatura(id) {
         method: "PATCH",
         headers: {
             ...headersSupabase(),
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal"
         },
         body: JSON.stringify({
             ativo: false,
@@ -231,18 +290,52 @@ function montarChaveEvento(evento) {
     return `${evento.id}-${evento.data}-${evento.horario_inicio}`;
 }
 
-function formatarDataISO(data) {
-    const ano = data.getFullYear();
-    const mes = String(data.getMonth() + 1).padStart(2, "0");
-    const dia = String(data.getDate()).padStart(2, "0");
+function obterAgoraBrasil() {
+    const partes = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    }).formatToParts(new Date());
 
-    return `${ano}-${mes}-${dia}`;
+    const mapa = {};
+
+    partes.forEach(function (parte) {
+        mapa[parte.type] = parte.value;
+    });
+
+    let hora = mapa.hour;
+
+    if (hora === "24") {
+        hora = "00";
+    }
+
+    return {
+        data: `${mapa.year}-${mapa.month}-${mapa.day}`,
+        hora: `${hora}:${mapa.minute}`
+    };
+}
+
+function converterHorarioParaMinutos(horario) {
+    if (!horario || typeof horario !== "string") {
+        return 0;
+    }
+
+    const partes = horario.split(":");
+    const horas = Number(partes[0] || 0);
+    const minutos = Number(partes[1] || 0);
+
+    return horas * 60 + minutos;
 }
 
 function headersSupabase() {
     return {
         apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        Accept: "application/json"
     };
 }
 
