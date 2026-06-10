@@ -484,9 +484,9 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
                         ${
                             usuarioPodeEditar
                             ? `
-                                <button onclick="prepararEdicaoEvento('${evento.id}')" class="btn-editar-evento-modal">
-                                    ✏️ Editar
-                                </button>
+                                <button type="button" onclick="prepararEdicaoEvento('${evento.id}')" class="btn-editar-evento-modal">
+    ✏️ Editar
+</button>
 
                                 <button onclick="excluirEvento('${evento.id}')" class="btn-excluir-evento-modal">
                                     🗑️ Excluir
@@ -550,9 +550,9 @@ function abrirDetalheEvento(idEvento) {
                     usuarioPodeEditar
                     ? `
                         <div class="acoes-evento-admin">
-                            <button class="btn-editar-evento" onclick="prepararEdicaoEvento('${evento.id}')">
-                                ✏️
-                            </button>
+                            <button type="button" class="btn-editar-evento" onclick="prepararEdicaoEvento('${evento.id}')">
+    ✏️
+</button>
 
                             <button class="btn-excluir-evento" onclick="excluirEvento('${evento.id}')">
                                 🗑️
@@ -596,12 +596,15 @@ function abrirDetalheEvento(idEvento) {
 ===================================================== */
 
 function prepararEdicaoEvento(idEvento) {
+    console.log("Clicou em editar evento:", idEvento);
+
     const evento = eventosCarregados.find(function (item) {
         return String(item.id) === String(idEvento);
     });
 
     if (!evento) {
         alert("Evento não encontrado para edição.");
+        console.log("Evento não encontrado:", idEvento);
         return;
     }
 
@@ -656,7 +659,6 @@ function prepararEdicaoEvento(idEvento) {
 
     rolarAteFormularioEvento();
 }
-
 
 /* =====================================================
    13. EXCLUIR EVENTO - ABRE MODAL COM OPÇÕES
@@ -1395,9 +1397,8 @@ function rolarAteFormularioEvento() {
         if (campoTitulo) {
             campoTitulo.focus();
         }
-    }, 250);
+    }, 300);
 }
-
 
 /* =====================================================
    25. FUNÇÕES AUXILIARES
