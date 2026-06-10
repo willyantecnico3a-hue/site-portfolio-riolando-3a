@@ -539,7 +539,8 @@ function configurarMenuSobrepostoAdmin() {
 
             if (telaEscolhida === "telaPaeet") {
                 carregarAlunosPaeet();
-            }
+                carregarSolicitacoesAjudaAdmin();
+}
 
             if (telaEscolhida === "telaPortfolios") {
                 carregarPortfoliosAdmin();
@@ -2224,6 +2225,167 @@ if (btnCancelarAtendimentoPaeet) {
     btnCancelarAtendimentoPaeet.addEventListener("click", cancelarAtendimentoPaeet);
 }
 
+// =====================================================
+// SOLICITAÇÕES DE AJUDA DOS ALUNOS
+// =====================================================
+
+const btnCarregarSolicitacoesAjuda = document.getElementById("btnCarregarSolicitacoesAjuda");
+
+if (btnCarregarSolicitacoesAjuda) {
+    btnCarregarSolicitacoesAjuda.addEventListener("click", carregarSolicitacoesAjudaAdmin);
+}
+
+async function carregarSolicitacoesAjudaAdmin() {
+    const lista = document.getElementById("listaSolicitacoesAjudaAdmin");
+
+    if (!lista) {
+        return;
+    }
+
+    lista.innerHTML = "<p>Carregando solicitações de ajuda...</p>";
+
+    const { data, error } = await banco
+        .from("solicitacoes_ajuda")
+        .select("*")
+        .order("criado_em", { ascending: false });
+
+    if (error) {
+        lista.innerHTML = `<p>Erro ao carregar solicitações: ${error.message}</p>`;
+        console.log("Erro solicitações ajuda:", error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        lista.innerHTML = "<p>Nenhuma solicitação de ajuda encontrada.</p>";
+        return;
+    }
+
+    lista.innerHTML = "";
+
+    data.forEach(function (pedido) {
+        lista.innerHTML += `
+            <div class="card-solicitacao-ajuda status-${pedido.status || "aguardando"}">
+
+                <div class="topo-card-aluno-paeet">
+                    <h4>${escaparHTML(pedido.nome_aluno || "Aluno sem nome")}</h4>
+
+                    <span class="selo-paeet">
+                        ${nomeStatusSolicitacaoAjuda(pedido.status)}
+                    </span>
+                </div>
+
+                <p><strong>Turma:</strong> ${escaparHTML(pedido.turma || "Não informada")}</p>
+                <p><strong>Curso:</strong> ${escaparHTML(pedido.curso || "Não informado")}</p>
+                <p><strong>Disciplina:</strong> ${escaparHTML(pedido.disciplina || "Não informada")}</p>
+                <p><strong>Dificuldade:</strong> ${escaparHTML(pedido.dificuldade || "Não informada")}</p>
+
+                <p><strong>Mensagem do aluno:</strong></p>
+                <p class="texto-solicitacao-ajuda">${escaparHTML(pedido.mensagem || "Sem mensagem")}</p>
+
+                <p><strong>Contato:</strong> ${escaparHTML(pedido.contato || "Não informado")}</p>
+
+                <p><strong>Enviado em:</strong> ${new Date(pedido.criado_em).toLocaleString("pt-BR")}</p>
+
+                <div class="acoes-paeet">
+                    <button type="button" onclick="marcarSolicitacaoAjuda('${pedido.id}', 'em_atendimento')">
+                        🟡 Marcar em atendimento
+                    </button>
+
+                    <button type="button" onclick="marcarSolicitacaoAjuda('${pedido.id}', 'resolvido')">
+                        ✅ Marcar resolvido
+                    </button>
+
+                    <button type="button" onclick="transformarSolicitacaoEmAcompanhamento('${pedido.id}')">
+                        🧭 Criar acompanhamento PAEET
+                    </button>
+
+                    <button type="button" onclick="excluirSolicitacaoAjuda('${pedido.id}')">
+                        🗑️ Excluir
+                    </button>
+                </div>
+
+            </div>
+        `;
+    });
+}
+
+function nomeStatusSolicitacaoAjuda(status) {
+    const nomes = {
+        aguardando: "🔵 Aguardando",
+        em_atendimento: "🟡 Em atendimento",
+        resolvido: "✅ Resolvido"
+    };
+
+    return nomes[status] || "🔵 Aguardando";
+}
+
+async function marcarSolicitacaoAjuda(idPedido, novoStatus) {
+    const { error } = await banco
+        .from("solicitacoes_ajuda")
+        .update({ status: novoStatus })
+        .eq("id", idPedido);
+
+    if (error) {
+        alert("Erro ao atualizar solicitação: " + error.message);
+        return;
+    }
+
+    await carregarSolicitacoesAjudaAdmin();
+}
+
+async function excluirSolicitacaoAjuda(idPedido) {
+    const confirmar = confirm("Deseja excluir esta solicitação de ajuda?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("solicitacoes_ajuda")
+        .delete()
+        .eq("id", idPedido);
+
+    if (error) {
+        alert("Erro ao excluir solicitação: " + error.message);
+        return;
+    }
+
+    alert("Solicitação excluída com sucesso!");
+    await carregarSolicitacoesAjudaAdmin();
+}
+
+async function transformarSolicitacaoEmAcompanhamento(idPedido) {
+    const { data, error } = await banco
+        .from("solicitacoes_ajuda")
+        .select("*")
+        .eq("id", idPedido)
+        .maybeSingle();
+
+    if (error || !data) {
+        alert("Erro ao carregar solicitação.");
+        return;
+    }
+
+    preencherCampoSeExistir("paeetNomeAluno", data.nome_aluno || "");
+    preencherCampoSeExistir("paeetTurmaAluno", data.turma || "");
+    preencherCampoSeExistir("paeetCursoAluno", data.curso || "");
+    preencherCampoSeExistir("paeetSituacaoAluno", "amarelo");
+    preencherCampoSeExistir("paeetDificuldadeAluno", data.dificuldade || "");
+    preencherCampoSeExistir("paeetObservacaoAluno", data.mensagem || "");
+    preencherCampoSeExistir("paeetProximoPassoAluno", "Realizar atendimento individual e registrar orientação.");
+
+    const campoNome = document.getElementById("paeetNomeAluno");
+
+    if (campoNome) {
+        campoNome.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+    alert("Dados enviados para o formulário de acompanhamento PAEET. Revise e clique em salvar.");
+}
+
 
 // =====================================================
 // SALVAR OU ATUALIZAR ALUNO EM ACOMPANHAMENTO
@@ -2729,6 +2891,9 @@ function atualizarResumoPaeet(alunos) {
 window.aprovarPortfolio = aprovarPortfolio;
 window.ocultarPortfolio = ocultarPortfolio;
 window.excluirPortfolio = excluirPortfolio;
+window.marcarSolicitacaoAjuda = marcarSolicitacaoAjuda;
+window.excluirSolicitacaoAjuda = excluirSolicitacaoAjuda;
+window.transformarSolicitacaoEmAcompanhamento = transformarSolicitacaoEmAcompanhamento;
 
 
 // =====================================================

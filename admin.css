@@ -305,3 +305,37 @@
         align-items: flex-start;
     }
 }
+
+/* =====================================================
+   SOLICITAÇÕES DE AJUDA - ADMIN
+===================================================== */
+
+.card-solicitacao-ajuda {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 18px;
+    padding: 18px;
+    margin: 16px 0;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+
+.card-solicitacao-ajuda.status-aguardando {
+    border-left: 8px solid #2563eb;
+}
+
+.card-solicitacao-ajuda.status-em_atendimento {
+    border-left: 8px solid #d97706;
+}
+
+.card-solicitacao-ajuda.status-resolvido {
+    border-left: 8px solid #16a34a;
+}
+
+.texto-solicitacao-ajuda {
+    white-space: pre-wrap;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    line-height: 1.6;
+}

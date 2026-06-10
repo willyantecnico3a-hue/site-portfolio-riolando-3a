@@ -238,6 +238,69 @@
 
             </section>
 
+            <!-- =====================================================
+     ÁREA PÚBLICA - PRECISO DE AJUDA
+====================================================== -->
+<section class="area-ajuda-aluno">
+
+    <div class="cabecalho-ajuda-aluno">
+        <span class="selo-ajuda-aluno">Apoia Técnico Riolando</span>
+
+        <h2>🙋 Preciso de Ajuda</h2>
+
+        <p>
+            Este espaço é para o estudante do Ensino Técnico solicitar apoio, orientação
+            ou informar alguma dificuldade relacionada às aulas, atividades, projetos,
+            organização dos estudos ou participação no curso.
+        </p>
+    </div>
+
+    <button type="button" id="btnAbrirAjudaAluno" class="btn-preciso-ajuda">
+        🙋 Abrir formulário de ajuda
+    </button>
+
+    <form id="formAjudaAluno" class="form-ajuda-aluno" style="display:none;">
+
+        <label for="ajudaNomeAluno">Nome do aluno</label>
+        <input type="text" id="ajudaNomeAluno" placeholder="Digite seu nome completo">
+
+        <label for="ajudaTurmaAluno">Turma</label>
+        <input type="text" id="ajudaTurmaAluno" placeholder="Ex: 3ºA">
+
+        <label for="ajudaCursoAluno">Curso</label>
+        <input type="text" id="ajudaCursoAluno" placeholder="Ex: Desenvolvimento de Sistemas">
+
+        <label for="ajudaDisciplinaAluno">Disciplina / assunto</label>
+        <input type="text" id="ajudaDisciplinaAluno" placeholder="Ex: Lógica, Front-End, Banco de Dados">
+
+        <label for="ajudaDificuldadeAluno">Qual é sua principal dificuldade?</label>
+        <select id="ajudaDificuldadeAluno">
+            <option value="">Selecione uma opção</option>
+            <option value="Não entendi o conteúdo da aula">Não entendi o conteúdo da aula</option>
+            <option value="Tenho atividade atrasada">Tenho atividade atrasada</option>
+            <option value="Tenho dificuldade com programação">Tenho dificuldade com programação</option>
+            <option value="Preciso de orientação para organizar os estudos">Preciso de orientação para organizar os estudos</option>
+            <option value="Preciso de ajuda com projeto ou portfólio">Preciso de ajuda com projeto ou portfólio</option>
+            <option value="Quero conversar com o professor">Quero conversar com o professor</option>
+            <option value="Outro">Outro</option>
+        </select>
+
+        <label for="ajudaMensagemAluno">Explique melhor sua situação</label>
+        <textarea id="ajudaMensagemAluno" placeholder="Escreva aqui sua dúvida, dificuldade ou pedido de orientação."></textarea>
+
+        <label for="ajudaContatoAluno">Contato opcional</label>
+        <input type="text" id="ajudaContatoAluno" placeholder="E-mail, WhatsApp ou outro contato, se quiser informar">
+
+        <button type="button" id="btnEnviarAjudaAluno">
+            📩 Enviar pedido de ajuda
+        </button>
+
+        <p id="mensagemAjudaAluno"></p>
+
+    </form>
+
+</section>
+
 
             <!-- =====================================================
                  SEÇÃO 2: LINHA DO TEMPO DAS AULAS

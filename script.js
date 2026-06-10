@@ -1120,6 +1120,132 @@ function resumirTexto(texto, limite) {
     return textoLimpo.substring(0, limite) + "...";
 }
 
+// =====================================================
+// ÁREA PÚBLICA - PRECISO DE AJUDA
+// =====================================================
+
+const btnAbrirAjudaAluno = document.getElementById("btnAbrirAjudaAluno");
+const formAjudaAluno = document.getElementById("formAjudaAluno");
+const btnEnviarAjudaAluno = document.getElementById("btnEnviarAjudaAluno");
+
+if (btnAbrirAjudaAluno) {
+    btnAbrirAjudaAluno.addEventListener("click", function () {
+        if (!formAjudaAluno) {
+            return;
+        }
+
+        if (formAjudaAluno.style.display === "none" || formAjudaAluno.style.display === "") {
+            formAjudaAluno.style.display = "block";
+            btnAbrirAjudaAluno.textContent = "❌ Fechar formulário de ajuda";
+        } else {
+            formAjudaAluno.style.display = "none";
+            btnAbrirAjudaAluno.textContent = "🙋 Abrir formulário de ajuda";
+        }
+    });
+}
+
+if (btnEnviarAjudaAluno) {
+    btnEnviarAjudaAluno.addEventListener("click", enviarSolicitacaoAjudaAluno);
+}
+
+async function enviarSolicitacaoAjudaAluno() {
+    const mensagem = document.getElementById("mensagemAjudaAluno");
+
+    if (!banco) {
+        if (mensagem) {
+            mensagem.textContent = "Erro: conexão com o banco de dados não encontrada.";
+        }
+        return;
+    }
+
+    const nome = document.getElementById("ajudaNomeAluno")
+        ? document.getElementById("ajudaNomeAluno").value.trim()
+        : "";
+
+    const turma = document.getElementById("ajudaTurmaAluno")
+        ? document.getElementById("ajudaTurmaAluno").value.trim()
+        : "";
+
+    const curso = document.getElementById("ajudaCursoAluno")
+        ? document.getElementById("ajudaCursoAluno").value.trim()
+        : "";
+
+    const disciplina = document.getElementById("ajudaDisciplinaAluno")
+        ? document.getElementById("ajudaDisciplinaAluno").value.trim()
+        : "";
+
+    const dificuldade = document.getElementById("ajudaDificuldadeAluno")
+        ? document.getElementById("ajudaDificuldadeAluno").value.trim()
+        : "";
+
+    const mensagemAluno = document.getElementById("ajudaMensagemAluno")
+        ? document.getElementById("ajudaMensagemAluno").value.trim()
+        : "";
+
+    const contato = document.getElementById("ajudaContatoAluno")
+        ? document.getElementById("ajudaContatoAluno").value.trim()
+        : "";
+
+    if (!nome || !turma || !dificuldade || !mensagemAluno) {
+        if (mensagem) {
+            mensagem.textContent = "Preencha pelo menos nome, turma, dificuldade e mensagem.";
+        }
+        return;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = "Enviando sua solicitação...";
+    }
+
+    const { error } = await banco
+        .from("solicitacoes_ajuda")
+        .insert([
+            {
+                nome_aluno: nome,
+                turma: turma,
+                curso: curso,
+                disciplina: disciplina,
+                dificuldade: dificuldade,
+                mensagem: mensagemAluno,
+                contato: contato,
+                status: "aguardando"
+            }
+        ]);
+
+    if (error) {
+        if (mensagem) {
+            mensagem.textContent = "Erro ao enviar solicitação: " + error.message;
+        }
+
+        console.log("Erro ao enviar solicitação de ajuda:", error);
+        return;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = "Pedido de ajuda enviado com sucesso! O professor irá analisar sua solicitação.";
+    }
+
+    limparFormularioAjudaAluno();
+}
+
+function limparFormularioAjudaAluno() {
+    limparCampoPublico("ajudaNomeAluno");
+    limparCampoPublico("ajudaTurmaAluno");
+    limparCampoPublico("ajudaCursoAluno");
+    limparCampoPublico("ajudaDisciplinaAluno");
+    limparCampoPublico("ajudaDificuldadeAluno");
+    limparCampoPublico("ajudaMensagemAluno");
+    limparCampoPublico("ajudaContatoAluno");
+}
+
+function limparCampoPublico(idCampo) {
+    const campo = document.getElementById(idCampo);
+
+    if (campo) {
+        campo.value = "";
+    }
+}
+
 
 // =====================================================
 // 24. EXPOR FUNÇÕES PARA USO NO HTML
