@@ -2,11 +2,12 @@
    AGENDA PEDAGÓGICA INTERATIVA
    HTML + CSS + JAVASCRIPT PURO + SUPABASE
 
-   Versão corrigida:
-   - Mantém o formulário funcionando embaixo como antes.
-   - Ao clicar em EDITAR, o site rola automaticamente até o formulário.
-   - Ao clicar em "+ Criar evento neste dia", também rola até o formulário.
-   - Remove a dependência de modal flutuante/sobreposto.
+   VERSÃO LIMPA:
+   - Remove todas as tentativas de modal flutuante/sobreposto.
+   - Mantém o formulário dentro do modal do dia.
+   - Botão EDITAR volta a funcionar.
+   - Botão + CRIAR EVENTO NESTE DIA volta a funcionar.
+   - Ao clicar em editar/criar, a tela desce automaticamente até o formulário.
 ===================================================== */
 
 
@@ -31,7 +32,6 @@ let dataSelecionadaNoModal = null;
 let eventoEmEdicaoId = null;
 let eventoParaExcluirId = null;
 let eventoParaExcluirObjeto = null;
-
 let usuarioFezSwipeNoCalendario = false;
 
 
@@ -81,6 +81,8 @@ async function iniciarAgenda() {
     renderizarCalendario();
 
     configurarArrasteTrocaMesNoCalendario();
+
+    configurarCliqueDosBotoesDinamicos();
 
     console.log("Agenda pedagógica carregada com sucesso.");
 }
@@ -174,24 +176,19 @@ function configurarPermissoesDaTela() {
         areaFiltroAdmin.style.display = "block";
     }
 
-    if (usuarioEhAdmin) {
-        if (btnAbrirFormEvento) {
-            btnAbrirFormEvento.style.display = "block";
-        }
-
-        console.log("Agenda em modo admin: filtro, criação, edição e exclusão liberados.");
-        return;
-    }
-
     if (btnAbrirFormEvento) {
-        btnAbrirFormEvento.style.display = "none";
+        btnAbrirFormEvento.style.display = usuarioEhAdmin ? "block" : "none";
     }
 
-    if (formEvento) {
+    if (!usuarioEhAdmin && formEvento) {
         formEvento.style.display = "none";
     }
 
-    console.log("Agenda em modo público: filtro visível, edição desativada.");
+    console.log(
+        usuarioEhAdmin
+            ? "Agenda em modo admin: criação, edição e exclusão liberados."
+            : "Agenda em modo público: edição desativada."
+    );
 }
 
 
@@ -296,9 +293,6 @@ function renderizarCalendario() {
         console.log("Erro: gradeCalendario ou tituloMesAno não encontrado no HTML.");
         return;
     }
-
-    console.log("Renderizando calendário...");
-    console.log("Eventos carregados:", eventosCarregados);
 
     gradeCalendario.innerHTML = "";
 
@@ -477,18 +471,18 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
                     </div>
 
                     <div class="acoes-evento-publico-google">
-                        <button onclick="abrirDetalheEvento('${evento.id}')">
+                        <button type="button" class="btn-ver-detalhes-evento" data-evento-id="${evento.id}">
                             Ver detalhes completos
                         </button>
 
                         ${
                             usuarioPodeEditar
                             ? `
-                                <button type="button" onclick="prepararEdicaoEvento('${evento.id}')" class="btn-editar-evento-modal">
-    ✏️ Editar
-</button>
+                                <button type="button" class="btn-editar-evento-modal" data-evento-id="${evento.id}">
+                                    ✏️ Editar
+                                </button>
 
-                                <button onclick="excluirEvento('${evento.id}')" class="btn-excluir-evento-modal">
+                                <button type="button" class="btn-excluir-evento-modal" data-evento-id="${evento.id}">
                                     🗑️ Excluir
                                 </button>
                             `
@@ -502,12 +496,13 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
     }
 
     if (btnAbrirFormEvento) {
-        if (perfilUsuario && perfilUsuario.funcao === "admin") {
-            btnAbrirFormEvento.style.display = "block";
-        } else {
-            btnAbrirFormEvento.style.display = "none";
-        }
+        btnAbrirFormEvento.style.display =
+            perfilUsuario && perfilUsuario.funcao === "admin"
+                ? "block"
+                : "none";
     }
+
+    recolocarFormularioNoModalDoDia();
 
     if (formEvento) {
         formEvento.style.display = "none";
@@ -518,7 +513,67 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
 
 
 /* =====================================================
-   11. ABRIR DETALHE DO EVENTO
+   11. CLIQUES DOS BOTÕES CRIADOS PELO JAVASCRIPT
+===================================================== */
+
+let cliqueDinamicoConfigurado = false;
+
+function configurarCliqueDosBotoesDinamicos() {
+    if (cliqueDinamicoConfigurado) {
+        return;
+    }
+
+    cliqueDinamicoConfigurado = true;
+
+    document.addEventListener("click", function (event) {
+        const botao = event.target.closest("button");
+
+        if (!botao) {
+            return;
+        }
+
+        if (botao.classList.contains("btn-ver-detalhes-evento")) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const idEvento = botao.dataset.eventoId;
+
+            abrirDetalheEvento(idEvento);
+            return;
+        }
+
+        if (
+            botao.classList.contains("btn-editar-evento-modal") ||
+            botao.classList.contains("btn-editar-evento")
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const idEvento = botao.dataset.eventoId;
+
+            console.log("Botão editar clicado. ID:", idEvento);
+
+            prepararEdicaoEvento(idEvento);
+            return;
+        }
+
+        if (
+            botao.classList.contains("btn-excluir-evento-modal") ||
+            botao.classList.contains("btn-excluir-evento")
+        ) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const idEvento = botao.dataset.eventoId;
+
+            excluirEvento(idEvento);
+        }
+    });
+}
+
+
+/* =====================================================
+   12. ABRIR DETALHE DO EVENTO
 ===================================================== */
 
 function abrirDetalheEvento(idEvento) {
@@ -531,6 +586,7 @@ function abrirDetalheEvento(idEvento) {
     });
 
     if (!evento) {
+        alert("Evento não encontrado.");
         return;
     }
 
@@ -550,11 +606,11 @@ function abrirDetalheEvento(idEvento) {
                     usuarioPodeEditar
                     ? `
                         <div class="acoes-evento-admin">
-                            <button type="button" class="btn-editar-evento" onclick="prepararEdicaoEvento('${evento.id}')">
-    ✏️
-</button>
+                            <button type="button" class="btn-editar-evento" data-evento-id="${evento.id}">
+                                ✏️
+                            </button>
 
-                            <button class="btn-excluir-evento" onclick="excluirEvento('${evento.id}')">
+                            <button type="button" class="btn-excluir-evento" data-evento-id="${evento.id}">
                                 🗑️
                             </button>
                         </div>
@@ -592,7 +648,7 @@ function abrirDetalheEvento(idEvento) {
 
 
 /* =====================================================
-   12. PREPARAR EDIÇÃO
+   13. PREPARAR EDIÇÃO
 ===================================================== */
 
 function prepararEdicaoEvento(idEvento) {
@@ -625,6 +681,8 @@ function prepararEdicaoEvento(idEvento) {
     });
 
     abrirModalDoDia(evento.data, eventosDoDia);
+
+    recolocarFormularioNoModalDoDia();
 
     if (formEvento) {
         formEvento.style.display = "block";
@@ -660,8 +718,9 @@ function prepararEdicaoEvento(idEvento) {
     rolarAteFormularioEvento();
 }
 
+
 /* =====================================================
-   13. EXCLUIR EVENTO - ABRE MODAL COM OPÇÕES
+   14. EXCLUIR EVENTO
 ===================================================== */
 
 function excluirEvento(idEvento) {
@@ -689,7 +748,7 @@ function excluirEvento(idEvento) {
 
 
 /* =====================================================
-   14. FECHAR MODAIS
+   15. FECHAR MODAIS
 ===================================================== */
 
 if (btnFecharModal) {
@@ -710,46 +769,55 @@ if (btnFecharDetalheEvento) {
 
 
 /* =====================================================
-   15. ABRIR FORMULÁRIO
+   16. BOTÃO + CRIAR EVENTO NESTE DIA
 ===================================================== */
 
 if (btnAbrirFormEvento) {
-    btnAbrirFormEvento.addEventListener("click", function () {
-        if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-            alert("Apenas o administrador pode criar eventos.");
-            return;
-        }
+    btnAbrirFormEvento.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
 
-        if (!dataSelecionadaNoModal) {
-            alert("Selecione um dia no calendário antes de criar o evento.");
-            return;
-        }
-
-        eventoEmEdicaoId = null;
-
-        limparFormularioEvento();
-
-        if (tituloFormularioEvento) {
-            tituloFormularioEvento.textContent = "Novo Evento";
-        }
-
-        if (formEvento) {
-            formEvento.style.display = "block";
-        }
-
-        const botaoSalvar = formEvento ? formEvento.querySelector("button[type='submit']") : null;
-
-        if (botaoSalvar) {
-            botaoSalvar.textContent = "💾 Salvar Evento";
-        }
-
-        rolarAteFormularioEvento();
+        abrirFormularioNovoEvento();
     });
+}
+
+function abrirFormularioNovoEvento() {
+    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+        alert("Apenas o administrador pode criar eventos.");
+        return;
+    }
+
+    if (!dataSelecionadaNoModal) {
+        alert("Selecione um dia no calendário antes de criar o evento.");
+        return;
+    }
+
+    eventoEmEdicaoId = null;
+
+    recolocarFormularioNoModalDoDia();
+
+    limparFormularioEvento();
+
+    if (tituloFormularioEvento) {
+        tituloFormularioEvento.textContent = "Novo Evento";
+    }
+
+    if (formEvento) {
+        formEvento.style.display = "block";
+    }
+
+    const botaoSalvar = formEvento ? formEvento.querySelector("button[type='submit']") : null;
+
+    if (botaoSalvar) {
+        botaoSalvar.textContent = "💾 Salvar Evento";
+    }
+
+    rolarAteFormularioEvento();
 }
 
 
 /* =====================================================
-   16. SALVAR OU ATUALIZAR EVENTO
+   17. SALVAR OU ATUALIZAR EVENTO
 ===================================================== */
 
 if (formEvento) {
@@ -854,12 +922,6 @@ if (formEvento) {
             return;
         }
 
-        if (mensagemEvento) {
-            mensagemEvento.textContent = estavaEditando
-                ? "Evento atualizado com sucesso!"
-                : "Evento salvo com sucesso!";
-        }
-
         const dataParaReabrir = dataSelecionadaNoModal;
 
         limparFormularioEvento();
@@ -884,7 +946,69 @@ if (formEvento) {
 
 
 /* =====================================================
-   17. GERAR EVENTOS COM REPETIÇÃO
+   18. REPOSICIONAR FORMULÁRIO NO MODAL DO DIA
+===================================================== */
+
+function recolocarFormularioNoModalDoDia() {
+    if (!formEvento || !btnAbrirFormEvento) {
+        return;
+    }
+
+    const areaCorreta = btnAbrirFormEvento.parentElement;
+
+    if (areaCorreta && formEvento.parentElement !== areaCorreta) {
+        btnAbrirFormEvento.insertAdjacentElement("afterend", formEvento);
+    }
+
+    const modalFlutuanteAntigo = document.getElementById("modalEventoFlutuante");
+
+    if (modalFlutuanteAntigo) {
+        modalFlutuanteAntigo.remove();
+    }
+
+    const modalEventoAgendaAntigo = document.getElementById("modalEventoAgenda");
+
+    if (modalEventoAgendaAntigo) {
+        modalEventoAgendaAntigo.style.display = "none";
+    }
+}
+
+
+/* =====================================================
+   19. ROLAR AUTOMATICAMENTE ATÉ O FORMULÁRIO
+===================================================== */
+
+function rolarAteFormularioEvento() {
+    if (!formEvento) {
+        console.log("Formulário de evento não encontrado para rolagem.");
+        return;
+    }
+
+    formEvento.style.display = "block";
+
+    setTimeout(function () {
+        formEvento.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+        formEvento.classList.add("form-evento-destaque");
+
+        setTimeout(function () {
+            formEvento.classList.remove("form-evento-destaque");
+        }, 2500);
+
+        const campoTitulo = document.getElementById("eventoTitulo");
+
+        if (campoTitulo) {
+            campoTitulo.focus();
+        }
+    }, 300);
+}
+
+
+/* =====================================================
+   20. GERAR EVENTOS COM REPETIÇÃO
 ===================================================== */
 
 function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
@@ -936,14 +1060,13 @@ function gerarEventosComRepeticao(eventoBase, repeticao, repetirAte) {
     return eventos;
 }
 
-
 function gerarSerieIdEvento() {
     return "serie_" + Date.now() + "_" + Math.random().toString(36).substring(2, 10);
 }
 
 
 /* =====================================================
-   18. VERIFICAR DIAS LETIVOS
+   21. VERIFICAR DIAS LETIVOS
 ===================================================== */
 
 const feriadosFixos = [
@@ -977,7 +1100,7 @@ function dataEhDiaLetivo(data) {
 
 
 /* =====================================================
-   19. LIMPAR FORMULÁRIO
+   22. LIMPAR FORMULÁRIO
 ===================================================== */
 
 function limparFormularioEvento() {
@@ -1013,7 +1136,7 @@ function limparFormularioEvento() {
 
 
 /* =====================================================
-   20. CONFIRMAR EXCLUSÃO COM OPÇÕES
+   23. EXCLUSÃO COM OPÇÕES
 ===================================================== */
 
 const btnExcluirSomenteEste = document.getElementById("btnExcluirSomenteEste");
@@ -1038,7 +1161,6 @@ if (btnExcluirTodaSerie) {
     });
 }
 
-
 async function excluirSomenteEsteEvento() {
     if (!eventoParaExcluirId) {
         return;
@@ -1057,7 +1179,6 @@ async function excluirSomenteEsteEvento() {
 
     finalizarExclusaoEvento("Evento excluído com sucesso!");
 }
-
 
 async function excluirEsteEProximosEventos() {
     if (!eventoParaExcluirObjeto) {
@@ -1094,7 +1215,6 @@ async function excluirEsteEProximosEventos() {
     finalizarExclusaoEvento("Este evento e os próximos foram excluídos com sucesso!");
 }
 
-
 async function excluirTodaSerieEventos() {
     if (!eventoParaExcluirObjeto) {
         return;
@@ -1128,7 +1248,6 @@ async function excluirTodaSerieEventos() {
     finalizarExclusaoEvento("Todos os eventos da série foram excluídos com sucesso!");
 }
 
-
 async function finalizarExclusaoEvento(mensagem) {
     if (modalConfirmarExclusao) {
         modalConfirmarExclusao.classList.remove("aberto");
@@ -1152,7 +1271,6 @@ async function finalizarExclusaoEvento(mensagem) {
     renderizarCalendario();
 }
 
-
 if (btnCancelarExclusao) {
     btnCancelarExclusao.addEventListener("click", function () {
         eventoParaExcluirId = null;
@@ -1166,7 +1284,7 @@ if (btnCancelarExclusao) {
 
 
 /* =====================================================
-   21. NAVEGAÇÃO ENTRE MESES
+   24. NAVEGAÇÃO ENTRE MESES
 ===================================================== */
 
 if (btnMesAnterior) {
@@ -1191,7 +1309,7 @@ async function mudarMes(direcao) {
 
 
 /* =====================================================
-   22. TROCAR MÊS ARRASTANDO
+   25. SWIPE / ARRASTAR CALENDÁRIO
 ===================================================== */
 
 let toqueInicioX = 0;
@@ -1214,8 +1332,6 @@ function configurarArrasteTrocaMesNoCalendario() {
     }
 
     swipeConfigurado = true;
-
-    console.log("Swipe de meses configurado no calendário.");
 
     areaSwipe.style.touchAction = "pan-y";
     areaSwipe.style.userSelect = "none";
@@ -1286,7 +1402,6 @@ function configurarArrasteTrocaMesNoCalendario() {
     areaSwipe.addEventListener("mousedown", function (event) {
         toqueInicioX = event.clientX;
         toqueFimX = event.clientX;
-
         toqueInicioY = event.clientY;
         toqueFimY = event.clientY;
 
@@ -1348,13 +1463,12 @@ async function interpretarArrasteDoCalendario() {
 
     if (distanciaX < 0) {
         await mudarMes(1);
-        return;
     }
 }
 
 
 /* =====================================================
-   23. FILTRO POR CURSO
+   26. FILTRO POR CURSO
 ===================================================== */
 
 if (filtroCursoAgenda) {
@@ -1367,41 +1481,7 @@ if (filtroCursoAgenda) {
 
 
 /* =====================================================
-   24. ROLAR AUTOMATICAMENTE ATÉ O FORMULÁRIO
-===================================================== */
-
-function rolarAteFormularioEvento() {
-    const formulario = document.getElementById("formEvento");
-
-    if (!formulario) {
-        console.log("Formulário de evento não encontrado para rolagem.");
-        return;
-    }
-
-    formulario.style.display = "block";
-
-    setTimeout(function () {
-        formulario.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-
-        formulario.classList.add("form-evento-destaque");
-
-        setTimeout(function () {
-            formulario.classList.remove("form-evento-destaque");
-        }, 2500);
-
-        const campoTitulo = document.getElementById("eventoTitulo");
-
-        if (campoTitulo) {
-            campoTitulo.focus();
-        }
-    }, 300);
-}
-
-/* =====================================================
-   25. FUNÇÕES AUXILIARES
+   27. FUNÇÕES AUXILIARES
 ===================================================== */
 
 function criarDataLocal(dataISO) {
@@ -1569,7 +1649,7 @@ function formatarTextoEvento(texto) {
 
 
 /* =====================================================
-   26. LEMBRETES SONOROS E NOTIFICAÇÕES DA AGENDA
+   28. LEMBRETES SONOROS
 ===================================================== */
 
 let lembretesAtivos = false;
@@ -1594,10 +1674,8 @@ async function ativarLembretesDaAgenda() {
         return;
     }
 
-    if ("Notification" in window) {
-        if (Notification.permission === "default") {
-            await Notification.requestPermission();
-        }
+    if ("Notification" in window && Notification.permission === "default") {
+        await Notification.requestPermission();
     }
 
     try {
@@ -1629,9 +1707,7 @@ async function ativarLembretesDaAgenda() {
     verificarLembretesDaAgenda();
 
     if (!intervaloLembretesAgenda) {
-        intervaloLembretesAgenda = setInterval(function () {
-            verificarLembretesDaAgenda();
-        }, 30000);
+        intervaloLembretesAgenda = setInterval(verificarLembretesDaAgenda, 30000);
     }
 }
 
@@ -1699,24 +1775,19 @@ function criarDataHoraEvento(dataISO, horario) {
 function dispararLembreteEvento(evento, diferencaMinutos) {
     const tituloEvento = evento.titulo || "Compromisso da agenda";
     const horarioEvento = formatarHorarioCurto(evento.horario_inicio);
-
     const mensagem = `${tituloEvento} começa em ${diferencaMinutos} minuto(s). Horário: ${horarioEvento}.`;
 
     tocarSomLembreteAgenda();
-
     mostrarNotificacaoNavegadorAgenda(tituloEvento, mensagem);
-
     mostrarAlertaVisualAgenda(tituloEvento, mensagem);
 }
 
 function mostrarNotificacaoNavegadorAgenda(tituloEvento, mensagem) {
     if (!("Notification" in window)) {
-        console.log("Navegador não suporta notificações.");
         return;
     }
 
     if (Notification.permission !== "granted") {
-        console.log("Permissão de notificação não concedida.");
         return;
     }
 
@@ -1780,6 +1851,7 @@ function tocarBipAgenda(frequencia, atraso) {
     const ganho = audioContextoAgenda.createGain();
 
     oscilador.type = "sine";
+
     oscilador.frequency.setValueAtTime(
         frequencia,
         audioContextoAgenda.currentTime + atraso
@@ -1809,7 +1881,7 @@ function tocarBipAgenda(frequencia, atraso) {
 
 
 /* =====================================================
-   27. PUSH NOTIFICATION - AGENDA PWA
+   29. PUSH NOTIFICATION - PWA
 ===================================================== */
 
 const VAPID_PUBLIC_KEY = "BCRsdEr9PGw8gNfgmka1NZIovnJNQQBCls7u4t7jAjcovzqqUiJIiEk4el6X4myFDVo3smR-mtGubNb5w0Nyb7U";
@@ -1937,410 +2009,10 @@ function converterBase64ParaUint8Array(base64String) {
 
 
 /* =====================================================
-   28. EXPOR FUNÇÕES PARA O HTML
+   30. EXPOR FUNÇÕES PARA O HTML
 ===================================================== */
 
 window.abrirDetalheEvento = abrirDetalheEvento;
 window.prepararEdicaoEvento = prepararEdicaoEvento;
 window.excluirEvento = excluirEvento;
 window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
-
-// =====================================================
-// CORREÇÃO FINAL DO BOTÃO EDITAR
-// Mantém o formulário embaixo e rola automaticamente até ele.
-// Também corrige conflito caso alguma tentativa de modal flutuante
-// tenha movido o formulário para outro lugar.
-// =====================================================
-
-(function corrigirBotaoEditarAgenda() {
-    console.log("Correção do botão Editar carregada.");
-
-    window.prepararEdicaoEvento = prepararEdicaoEventoCorrigido;
-
-    document.addEventListener("click", function (event) {
-        const botaoEditar = event.target.closest(".btn-editar-evento-modal, .btn-editar-evento");
-
-        if (!botaoEditar) {
-            return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-
-        let idEvento = botaoEditar.getAttribute("data-evento-id");
-
-        if (!idEvento) {
-            const onclickAntigo = botaoEditar.getAttribute("onclick") || "";
-            const encontrado = onclickAntigo.match(/prepararEdicaoEvento\(['"]([^'"]+)['"]\)/);
-
-            if (encontrado && encontrado[1]) {
-                idEvento = encontrado[1];
-            }
-        }
-
-        console.log("Clique no botão Editar capturado. ID:", idEvento);
-
-        if (!idEvento) {
-            alert("Não foi possível identificar o evento para edição.");
-            return;
-        }
-
-        prepararEdicaoEventoCorrigido(idEvento);
-
-    }, true);
-})();
-
-
-function prepararEdicaoEventoCorrigido(idEvento) {
-    console.log("Abrindo edição corrigida para o evento:", idEvento);
-
-    const evento = eventosCarregados.find(function (item) {
-        return String(item.id) === String(idEvento);
-    });
-
-    if (!evento) {
-        alert("Evento não encontrado para edição.");
-        console.log("Evento não encontrado:", idEvento);
-        return;
-    }
-
-    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas o administrador pode editar eventos.");
-        return;
-    }
-
-    eventoEmEdicaoId = evento.id;
-    dataSelecionadaNoModal = evento.data;
-
-    if (modalDetalheEvento) {
-        modalDetalheEvento.classList.remove("aberto");
-    }
-
-    const eventosDoDia = eventosCarregados.filter(function (item) {
-        return item.data === evento.data;
-    });
-
-    abrirModalDoDia(evento.data, eventosDoDia);
-
-    garantirFormularioEventoNoModalDoDia();
-
-    const formulario = document.getElementById("formEvento");
-
-    if (formulario) {
-        formulario.style.display = "block";
-    }
-
-    if (tituloFormularioEvento) {
-        tituloFormularioEvento.textContent = "Editar Evento";
-    }
-
-    setValorCampo("eventoTipo", evento.tipo || "aula");
-    setValorCampo("eventoTitulo", evento.titulo || "");
-    setValorCampo("eventoHorarioInicio", formatarHorarioParaInput(evento.horario_inicio));
-    setValorCampo("eventoHorarioFim", formatarHorarioParaInput(evento.horario_fim));
-    setValorCampo("eventoDescricao", evento.descricao || "");
-    setValorCampo("eventoCursoAlvo", evento.curso_alvo || "todos");
-    setValorCampo("eventoLinkMaterial", evento.link_material || "");
-    setValorCampo("eventoLembreteMinutos", evento.lembrete_minutos || 10);
-    setValorCampo("eventoRepeticao", "nao_repete");
-    setValorCampo("eventoRepetirAte", "");
-
-    const mensagemEvento = document.getElementById("mensagemEvento");
-
-    if (mensagemEvento) {
-        mensagemEvento.textContent = "Editando evento selecionado.";
-    }
-
-    const botaoSalvar = formulario ? formulario.querySelector("button[type='submit']") : null;
-
-    if (botaoSalvar) {
-        botaoSalvar.textContent = "💾 Atualizar Evento";
-    }
-
-    rolarAteFormularioEventoCorrigido();
-}
-
-
-function garantirFormularioEventoNoModalDoDia() {
-    const formulario = document.getElementById("formEvento");
-    const botaoCriar = document.getElementById("btnAbrirFormEvento");
-
-    if (!formulario || !botaoCriar) {
-        console.log("Não foi possível localizar formEvento ou btnAbrirFormEvento.");
-        return;
-    }
-
-    const areaCorreta = botaoCriar.parentElement;
-
-    if (areaCorreta && formulario.parentElement !== areaCorreta) {
-        botaoCriar.insertAdjacentElement("afterend", formulario);
-        console.log("Formulário de evento recolocado abaixo do botão criar evento.");
-    }
-
-    const modalFlutuanteAntigo = document.getElementById("modalEventoFlutuante");
-
-    if (modalFlutuanteAntigo) {
-        modalFlutuanteAntigo.remove();
-        console.log("Modal flutuante antigo removido para evitar conflito.");
-    }
-}
-
-
-function rolarAteFormularioEventoCorrigido() {
-    const formulario = document.getElementById("formEvento");
-
-    if (!formulario) {
-        console.log("Formulário de evento não encontrado para rolagem.");
-        return;
-    }
-
-    formulario.style.display = "block";
-
-    setTimeout(function () {
-        formulario.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-
-        formulario.classList.add("form-evento-destaque");
-
-        setTimeout(function () {
-            formulario.classList.remove("form-evento-destaque");
-        }, 2500);
-
-        const campoTitulo = document.getElementById("eventoTitulo");
-
-        if (campoTitulo) {
-            campoTitulo.focus();
-        }
-    }, 300);
-}
-
-// =====================================================
-// CORREÇÃO FINAL SIMPLES - BOTÕES EDITAR E CRIAR EVENTO
-// Mantém o formulário no próprio modal do dia e faz a tela
-// descer automaticamente até a área de edição.
-// =====================================================
-
-(function corrigirBotoesAgendaSimples() {
-    console.log("Correção simples dos botões da agenda carregada.");
-
-    document.addEventListener("click", function (event) {
-        const botao = event.target.closest("button");
-
-        if (!botao) {
-            return;
-        }
-
-        const textoBotao = (botao.textContent || "").trim().toLowerCase();
-
-        // BOTÃO EDITAR
-        if (
-            botao.classList.contains("btn-editar-evento-modal") ||
-            botao.classList.contains("btn-editar-evento") ||
-            textoBotao.includes("editar")
-        ) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            let idEvento = botao.getAttribute("data-evento-id");
-
-            if (!idEvento) {
-                const onclickAntigo = botao.getAttribute("onclick") || "";
-                const encontrado = onclickAntigo.match(/prepararEdicaoEvento\(['"]([^'"]+)['"]\)/);
-
-                if (encontrado && encontrado[1]) {
-                    idEvento = encontrado[1];
-                }
-            }
-
-            if (!idEvento) {
-                alert("Não foi possível identificar o evento para edição.");
-                console.log("Botão editar sem ID:", botao);
-                return;
-            }
-
-            console.log("Editar clicado. Evento:", idEvento);
-
-            prepararEdicaoEventoSimples(idEvento);
-            return;
-        }
-
-        // BOTÃO CRIAR EVENTO NESTE DIA
-        if (
-            botao.id === "btnAbrirFormEvento" ||
-            textoBotao.includes("criar evento")
-        ) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            console.log("Criar evento clicado.");
-
-            abrirFormularioNovoEventoSimples();
-            return;
-        }
-    }, true);
-
-    window.prepararEdicaoEvento = prepararEdicaoEventoSimples;
-})();
-
-
-function prepararEdicaoEventoSimples(idEvento) {
-    const evento = eventosCarregados.find(function (item) {
-        return String(item.id) === String(idEvento);
-    });
-
-    if (!evento) {
-        alert("Evento não encontrado para edição.");
-        console.log("Evento não encontrado:", idEvento);
-        return;
-    }
-
-    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas o administrador pode editar eventos.");
-        return;
-    }
-
-    eventoEmEdicaoId = evento.id;
-    dataSelecionadaNoModal = evento.data;
-
-    if (modalDetalheEvento) {
-        modalDetalheEvento.classList.remove("aberto");
-    }
-
-    const eventosDoDia = eventosCarregados.filter(function (item) {
-        return item.data === evento.data;
-    });
-
-    abrirModalDoDia(evento.data, eventosDoDia);
-
-    recolocarFormularioDepoisDoBotaoCriar();
-
-    const formulario = document.getElementById("formEvento");
-
-    if (formulario) {
-        formulario.style.display = "block";
-    }
-
-    if (tituloFormularioEvento) {
-        tituloFormularioEvento.textContent = "Editar Evento";
-    }
-
-    setValorCampo("eventoTipo", evento.tipo || "aula");
-    setValorCampo("eventoTitulo", evento.titulo || "");
-    setValorCampo("eventoHorarioInicio", formatarHorarioParaInput(evento.horario_inicio));
-    setValorCampo("eventoHorarioFim", formatarHorarioParaInput(evento.horario_fim));
-    setValorCampo("eventoDescricao", evento.descricao || "");
-    setValorCampo("eventoCursoAlvo", evento.curso_alvo || "todos");
-    setValorCampo("eventoLinkMaterial", evento.link_material || "");
-    setValorCampo("eventoLembreteMinutos", evento.lembrete_minutos || 10);
-    setValorCampo("eventoRepeticao", "nao_repete");
-    setValorCampo("eventoRepetirAte", "");
-
-    const mensagemEvento = document.getElementById("mensagemEvento");
-
-    if (mensagemEvento) {
-        mensagemEvento.textContent = "Editando evento selecionado.";
-    }
-
-    const botaoSalvar = formulario ? formulario.querySelector("button[type='submit']") : null;
-
-    if (botaoSalvar) {
-        botaoSalvar.textContent = "💾 Atualizar Evento";
-    }
-
-    rolarAteFormularioEventoSimples();
-}
-
-
-function abrirFormularioNovoEventoSimples() {
-    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas o administrador pode criar eventos.");
-        return;
-    }
-
-    if (!dataSelecionadaNoModal) {
-        alert("Selecione um dia no calendário antes de criar o evento.");
-        return;
-    }
-
-    eventoEmEdicaoId = null;
-
-    recolocarFormularioDepoisDoBotaoCriar();
-
-    limparFormularioEvento();
-
-    const formulario = document.getElementById("formEvento");
-
-    if (formulario) {
-        formulario.style.display = "block";
-    }
-
-    if (tituloFormularioEvento) {
-        tituloFormularioEvento.textContent = "Novo Evento";
-    }
-
-    const botaoSalvar = formulario ? formulario.querySelector("button[type='submit']") : null;
-
-    if (botaoSalvar) {
-        botaoSalvar.textContent = "💾 Salvar Evento";
-    }
-
-    rolarAteFormularioEventoSimples();
-}
-
-
-function recolocarFormularioDepoisDoBotaoCriar() {
-    const formulario = document.getElementById("formEvento");
-    const botaoCriar = document.getElementById("btnAbrirFormEvento");
-
-    if (!formulario || !botaoCriar) {
-        console.log("Não localizou formEvento ou btnAbrirFormEvento.");
-        return;
-    }
-
-    const modalFlutuanteAntigo = document.getElementById("modalEventoFlutuante");
-
-    if (modalFlutuanteAntigo) {
-        modalFlutuanteAntigo.remove();
-    }
-
-    const areaCorreta = botaoCriar.parentElement;
-
-    if (areaCorreta && formulario.parentElement !== areaCorreta) {
-        botaoCriar.insertAdjacentElement("afterend", formulario);
-        console.log("Formulário recolocado abaixo do botão criar evento.");
-    }
-}
-
-
-function rolarAteFormularioEventoSimples() {
-    const formulario = document.getElementById("formEvento");
-
-    if (!formulario) {
-        console.log("Formulário não encontrado para rolagem.");
-        return;
-    }
-
-    formulario.style.display = "block";
-
-    setTimeout(function () {
-        formulario.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-
-        formulario.classList.add("form-evento-destaque");
-
-        setTimeout(function () {
-            formulario.classList.remove("form-evento-destaque");
-        }, 2500);
-
-        const campoTitulo = document.getElementById("eventoTitulo");
-
-        if (campoTitulo) {
-            campoTitulo.focus();
-        }
-    }, 300);
-}
