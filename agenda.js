@@ -1848,6 +1848,134 @@ function tocarSomLembreteAgenda() {
     }
 }
 
+// =====================================================
+// PUSH NOTIFICATION - AGENDA PWA
+// Fase 2: notificação mesmo com app fechado
+// =====================================================
+
+const VAPID_PUBLIC_KEY = "BCRsdEr9PGw8gNfgmka1NZIovnJNQQBCls7u4t7jAjcovzqqUiJIiEk4el6X4myFDVo3smR-mtGubNb5w0Nyb7U";
+
+const btnAtivarPushAgenda = document.getElementById("btnAtivarPushAgenda");
+const mensagemPushAgenda = document.getElementById("mensagemPushAgenda");
+
+if (btnAtivarPushAgenda) {
+    btnAtivarPushAgenda.addEventListener("click", ativarPushAgenda);
+}
+
+async function ativarPushAgenda() {
+    if (!("serviceWorker" in navigator)) {
+        if (mensagemPushAgenda) {
+            mensagemPushAgenda.textContent = "Este navegador não suporta Service Worker.";
+        }
+        return;
+    }
+
+    if (!("PushManager" in window)) {
+        if (mensagemPushAgenda) {
+            mensagemPushAgenda.textContent = "Este navegador não suporta Push Notification.";
+        }
+        return;
+    }
+
+    if (!("Notification" in window)) {
+        if (mensagemPushAgenda) {
+            mensagemPushAgenda.textContent = "Este navegador não suporta notificações.";
+        }
+        return;
+    }
+
+    try {
+        if (mensagemPushAgenda) {
+            mensagemPushAgenda.textContent = "Solicitando permissão de notificação...";
+        }
+
+        const permissao = await Notification.requestPermission();
+
+        if (permissao !== "granted") {
+            if (mensagemPushAgenda) {
+                mensagemPushAgenda.textContent = "Permissão de notificação não foi concedida.";
+            }
+            return;
+        }
+
+        const registro = await navigator.serviceWorker.ready;
+
+        let inscricao = await registro.pushManager.getSubscription();
+
+        if (!inscricao) {
+            inscricao = await registro.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: converterBase64ParaUint8Array(VAPID_PUBLIC_KEY)
+            });
+        }
+
+        await salvarInscricaoPushNoSupabase(inscricao);
+
+        if (mensagemPushAgenda) {
+            mensagemPushAgenda.textContent = "✅ Notificações ativadas neste aparelho.";
+        }
+
+        if (btnAtivarPushAgenda) {
+            btnAtivarPushAgenda.textContent = "✅ Notificações ativadas";
+            btnAtivarPushAgenda.disabled = true;
+        }
+
+    } catch (erro) {
+        console.log("Erro ao ativar Push:", erro);
+
+        if (mensagemPushAgenda) {
+            mensagemPushAgenda.textContent = "Erro ao ativar notificações: " + erro.message;
+        }
+    }
+}
+
+async function salvarInscricaoPushNoSupabase(inscricao) {
+    const dados = inscricao.toJSON();
+
+    const endpoint = dados.endpoint;
+    const p256dh = dados.keys.p256dh;
+    const auth = dados.keys.auth;
+
+    const { error } = await banco
+        .from("push_subscriptions")
+        .upsert(
+            [
+                {
+                    endpoint: endpoint,
+                    p256dh: p256dh,
+                    auth: auth,
+                    user_agent: navigator.userAgent,
+                    ativo: true,
+                    atualizado_em: new Date().toISOString()
+                }
+            ],
+            {
+                onConflict: "endpoint"
+            }
+        );
+
+    if (error) {
+        console.log("Erro ao salvar inscrição push:", error);
+        throw new Error(error.message);
+    }
+}
+
+function converterBase64ParaUint8Array(base64String) {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+
+    return outputArray;
+}
+
 window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
 
 
