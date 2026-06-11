@@ -1,11 +1,29 @@
 const { createClient } = require("@supabase/supabase-js");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://pwomyoprbvoimqmikvev.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 const supabaseAdmin = createClient(
     SUPABASE_URL,
-    SUPABASE_SERVICE_ROLE_KEY
+    SUPABASE_SERVICE_ROLE_KEY,
+    {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false
+        }
+    }
+);
+
+const supabasePublico = createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+    {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false
+        }
+    }
 );
 
 exports.handler = async function (event) {
@@ -24,6 +42,15 @@ exports.handler = async function (event) {
     }
 
     try {
+        const autorizado = await verificarAdminAutorizado(event);
+
+        if (!autorizado.sucesso) {
+            return responder(401, {
+                sucesso: false,
+                mensagem: autorizado.mensagem
+            });
+        }
+
         const corpo = JSON.parse(event.body || "{}");
 
         const nome = limparTexto(corpo.nome);
@@ -50,6 +77,26 @@ exports.handler = async function (event) {
             return responder(400, {
                 sucesso: false,
                 mensagem: "A senha temporária precisa ter pelo menos 6 caracteres."
+            });
+        }
+
+        const { data: perfilExistente, error: erroBuscaPerfil } = await supabaseAdmin
+            .from("perfis")
+            .select("id, email")
+            .eq("email", email)
+            .maybeSingle();
+
+        if (erroBuscaPerfil) {
+            return responder(500, {
+                sucesso: false,
+                mensagem: "Erro ao verificar perfil existente: " + erroBuscaPerfil.message
+            });
+        }
+
+        if (perfilExistente) {
+            return responder(409, {
+                sucesso: false,
+                mensagem: "Já existe um aluno cadastrado com este e-mail."
             });
         }
 
@@ -130,6 +177,62 @@ exports.handler = async function (event) {
         });
     }
 };
+
+async function verificarAdminAutorizado(event) {
+    const authorization = event.headers.authorization || event.headers.Authorization || "";
+
+    if (!authorization.startsWith("Bearer ")) {
+        return {
+            sucesso: false,
+            mensagem: "Token administrativo não enviado."
+        };
+    }
+
+    const token = authorization.replace("Bearer ", "").trim();
+
+    if (!token) {
+        return {
+            sucesso: false,
+            mensagem: "Token administrativo vazio."
+        };
+    }
+
+    const { data: userData, error: erroUsuario } = await supabasePublico.auth.getUser(token);
+
+    if (erroUsuario || !userData || !userData.user) {
+        return {
+            sucesso: false,
+            mensagem: "Sessão administrativa inválida ou expirada."
+        };
+    }
+
+    const emailAdmin = userData.user.email;
+
+    const { data: admin, error: erroAdmin } = await supabaseAdmin
+        .from("admins")
+        .select("email")
+        .eq("email", emailAdmin)
+        .maybeSingle();
+
+    if (erroAdmin) {
+        return {
+            sucesso: false,
+            mensagem: "Erro ao verificar permissão administrativa: " + erroAdmin.message
+        };
+    }
+
+    if (!admin) {
+        return {
+            sucesso: false,
+            mensagem: "Usuário logado não tem permissão de administrador."
+        };
+    }
+
+    return {
+        sucesso: true,
+        email: emailAdmin
+    };
+}
 
 function responder(statusCode, dados) {
     return {
