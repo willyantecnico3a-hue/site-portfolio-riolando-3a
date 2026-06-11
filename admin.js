@@ -175,6 +175,10 @@ function carregarDadosIniciaisAdmin() {
     carregarAulasAdmin();
     carregarPortfoliosAdmin();
     carregarTurmasCadastradasAdmin();
+
+    if (typeof carregarSolicitacoesAjudaAdmin === "function") {
+        carregarSolicitacoesAjudaAdmin();
+    }
 }
 
 function configurarBotaoSairAdmin() {
@@ -537,9 +541,12 @@ function configurarMenuSobrepostoAdmin() {
                 carregarAulasAdmin();
             }
 
-            if (telaEscolhida === "telaPaeet") {
-                carregarAlunosPaeet();
-                carregarSolicitacoesAjudaAdmin();
+if (telaEscolhida === "telaPaeet") {
+    carregarAlunosPaeet();
+
+    if (typeof carregarSolicitacoesAjudaAdmin === "function") {
+        carregarSolicitacoesAjudaAdmin();
+    }
 }
 
             if (telaEscolhida === "telaPortfolios") {
@@ -2229,112 +2236,421 @@ if (btnCancelarAtendimentoPaeet) {
 // SOLICITAÇÕES DE AJUDA DOS ALUNOS
 // =====================================================
 
+// =====================================================
+// SOLICITAÇÕES DE AJUDA DOS ALUNOS
+// Integração com a Área do Aluno
+// Status válidos no banco:
+// enviado, em_analise, respondido, resolvido, arquivado
+// =====================================================
+
 const btnCarregarSolicitacoesAjuda = document.getElementById("btnCarregarSolicitacoesAjuda");
+const filtroStatusSolicitacoesAjuda = document.getElementById("filtroStatusSolicitacoesAjuda");
+const filtroTurmaSolicitacoesAjuda = document.getElementById("filtroTurmaSolicitacoesAjuda");
+const filtroNomeSolicitacoesAjuda = document.getElementById("filtroNomeSolicitacoesAjuda");
 
 if (btnCarregarSolicitacoesAjuda) {
     btnCarregarSolicitacoesAjuda.addEventListener("click", carregarSolicitacoesAjudaAdmin);
 }
 
+if (filtroStatusSolicitacoesAjuda) {
+    filtroStatusSolicitacoesAjuda.addEventListener("change", carregarSolicitacoesAjudaAdmin);
+}
+
+if (filtroTurmaSolicitacoesAjuda) {
+    filtroTurmaSolicitacoesAjuda.addEventListener("input", carregarSolicitacoesAjudaAdmin);
+}
+
+if (filtroNomeSolicitacoesAjuda) {
+    filtroNomeSolicitacoesAjuda.addEventListener("input", carregarSolicitacoesAjudaAdmin);
+}
+
+
 async function carregarSolicitacoesAjudaAdmin() {
     const lista = document.getElementById("listaSolicitacoesAjudaAdmin");
 
     if (!lista) {
+        console.log("Elemento listaSolicitacoesAjudaAdmin não encontrado no admin.html.");
         return;
     }
 
-    lista.innerHTML = "<p>Carregando solicitações de ajuda...</p>";
+    lista.innerHTML = "<p>Carregando solicitações de ajuda dos alunos...</p>";
 
-    const { data, error } = await banco
+    let consulta = banco
         .from("solicitacoes_ajuda")
         .select("*")
         .order("criado_em", { ascending: false });
 
+    if (filtroStatusSolicitacoesAjuda && filtroStatusSolicitacoesAjuda.value !== "todos") {
+        consulta = consulta.eq("status", filtroStatusSolicitacoesAjuda.value);
+    }
+
+    if (filtroTurmaSolicitacoesAjuda && filtroTurmaSolicitacoesAjuda.value.trim()) {
+        consulta = consulta.ilike("turma", `%${filtroTurmaSolicitacoesAjuda.value.trim()}%`);
+    }
+
+    if (filtroNomeSolicitacoesAjuda && filtroNomeSolicitacoesAjuda.value.trim()) {
+        consulta = consulta.ilike("nome_aluno", `%${filtroNomeSolicitacoesAjuda.value.trim()}%`);
+    }
+
+    const { data, error } = await consulta;
+
     if (error) {
-        lista.innerHTML = `<p>Erro ao carregar solicitações: ${error.message}</p>`;
-        console.log("Erro solicitações ajuda:", error);
+        lista.innerHTML = `
+            <p class="mensagem-erro-admin">
+                Erro ao carregar solicitações: ${escaparHTML(error.message)}
+            </p>
+        `;
+
+        console.log("Erro ao carregar solicitações de ajuda:", error);
         return;
     }
 
     if (!data || data.length === 0) {
-        lista.innerHTML = "<p>Nenhuma solicitação de ajuda encontrada.</p>";
+        lista.innerHTML = `
+            <div class="card-vazio-admin">
+                <h4>📭 Nenhuma solicitação encontrada</h4>
+                <p>Quando os alunos enviarem pedidos de ajuda, eles aparecerão aqui.</p>
+            </div>
+        `;
         return;
     }
 
-    lista.innerHTML = "";
+    const resumo = montarResumoSolicitacoesAjuda(data);
+
+    lista.innerHTML = `
+        <div class="resumo-solicitacoes-ajuda-admin">
+            <div>
+                <strong>${resumo.total}</strong>
+                <span>Total</span>
+            </div>
+
+            <div>
+                <strong>${resumo.enviado}</strong>
+                <span>Enviados</span>
+            </div>
+
+            <div>
+                <strong>${resumo.em_analise}</strong>
+                <span>Em análise</span>
+            </div>
+
+            <div>
+                <strong>${resumo.respondido}</strong>
+                <span>Respondidos</span>
+            </div>
+
+            <div>
+                <strong>${resumo.resolvido}</strong>
+                <span>Resolvidos</span>
+            </div>
+        </div>
+    `;
 
     data.forEach(function (pedido) {
-        lista.innerHTML += `
-            <div class="card-solicitacao-ajuda status-${pedido.status || "aguardando"}">
-
-                <div class="topo-card-aluno-paeet">
-                    <h4>${escaparHTML(pedido.nome_aluno || "Aluno sem nome")}</h4>
-
-                    <span class="selo-paeet">
-                        ${nomeStatusSolicitacaoAjuda(pedido.status)}
-                    </span>
-                </div>
-
-                <p><strong>Turma:</strong> ${escaparHTML(pedido.turma || "Não informada")}</p>
-                <p><strong>Curso:</strong> ${escaparHTML(pedido.curso || "Não informado")}</p>
-                <p><strong>Disciplina:</strong> ${escaparHTML(pedido.disciplina || "Não informada")}</p>
-                <p><strong>Dificuldade:</strong> ${escaparHTML(pedido.dificuldade || "Não informada")}</p>
-
-                <p><strong>Mensagem do aluno:</strong></p>
-                <p class="texto-solicitacao-ajuda">${escaparHTML(pedido.mensagem || "Sem mensagem")}</p>
-
-                <p><strong>Contato:</strong> ${escaparHTML(pedido.contato || "Não informado")}</p>
-
-                <p><strong>Enviado em:</strong> ${new Date(pedido.criado_em).toLocaleString("pt-BR")}</p>
-
-                <div class="acoes-paeet">
-                    <button type="button" onclick="marcarSolicitacaoAjuda('${pedido.id}', 'em_atendimento')">
-                        🟡 Marcar em atendimento
-                    </button>
-
-                    <button type="button" onclick="marcarSolicitacaoAjuda('${pedido.id}', 'resolvido')">
-                        ✅ Marcar resolvido
-                    </button>
-
-                    <button type="button" onclick="transformarSolicitacaoEmAcompanhamento('${pedido.id}')">
-                        🧭 Criar acompanhamento PAEET
-                    </button>
-
-                    <button type="button" onclick="excluirSolicitacaoAjuda('${pedido.id}')">
-                        🗑️ Excluir
-                    </button>
-                </div>
-
-            </div>
-        `;
+        lista.innerHTML += montarCardSolicitacaoAjudaAdmin(pedido);
     });
 }
 
-function nomeStatusSolicitacaoAjuda(status) {
-    const nomes = {
-        aguardando: "🔵 Aguardando",
-        em_atendimento: "🟡 Em atendimento",
-        resolvido: "✅ Resolvido"
-    };
 
-    return nomes[status] || "🔵 Aguardando";
+function montarResumoSolicitacoesAjuda(lista) {
+    return {
+        total: lista.length,
+        enviado: lista.filter(item => item.status === "enviado").length,
+        em_analise: lista.filter(item => item.status === "em_analise").length,
+        respondido: lista.filter(item => item.status === "respondido").length,
+        resolvido: lista.filter(item => item.status === "resolvido").length,
+        arquivado: lista.filter(item => item.status === "arquivado").length
+    };
 }
 
+
+function montarCardSolicitacaoAjudaAdmin(pedido) {
+    const status = pedido.status || "enviado";
+    const idSeguro = escaparAtributo(pedido.id);
+
+    return `
+        <div class="card-solicitacao-ajuda status-${escaparAtributo(status)}">
+
+            <div class="topo-card-aluno-paeet">
+
+                <div>
+                    <h4>${escaparHTML(pedido.nome_aluno || "Aluno sem nome")}</h4>
+
+                    <p class="subinfo-solicitacao-ajuda">
+                        ${escaparHTML(pedido.email_aluno || "E-mail não informado")}
+                    </p>
+                </div>
+
+                <span class="selo-paeet status-ajuda-${escaparAtributo(status)}">
+                    ${nomeStatusSolicitacaoAjuda(status)}
+                </span>
+
+            </div>
+
+
+            <div class="grid-info-solicitacao-ajuda">
+
+                <p>
+                    <strong>Turma:</strong>
+                    ${escaparHTML(pedido.turma || "Não informada")}
+                </p>
+
+                <p>
+                    <strong>Curso:</strong>
+                    ${formatarCursoSolicitacaoAjuda(pedido.curso)}
+                </p>
+
+                <p>
+                    <strong>Tipo de ajuda:</strong>
+                    ${formatarTipoAjudaAdmin(pedido.tipo_ajuda)}
+                </p>
+
+                <p>
+                    <strong>Enviado em:</strong>
+                    ${formatarDataHoraAdminCompleta(pedido.criado_em)}
+                </p>
+
+            </div>
+
+
+            <div class="bloco-solicitacao-ajuda-admin">
+
+                <strong>Mensagem do aluno:</strong>
+
+                <p class="texto-solicitacao-ajuda">
+                    ${escaparHTML(pedido.mensagem || "Sem mensagem")}
+                </p>
+
+            </div>
+
+
+            <div class="bloco-resposta-ajuda-admin">
+
+                <label for="respostaAjuda_${idSeguro}">
+                    Resposta / orientação do professor
+                </label>
+
+                <textarea
+                    id="respostaAjuda_${idSeguro}"
+                    class="textarea-resposta-ajuda-admin"
+                    placeholder="Digite a devolutiva para o aluno..."
+                >${escaparHTML(pedido.resposta_professor || "")}</textarea>
+
+                ${
+                    pedido.respondido_em
+                        ? `
+                            <p class="data-resposta-ajuda-admin">
+                                Última resposta em ${formatarDataHoraAdminCompleta(pedido.respondido_em)}
+                            </p>
+                        `
+                        : ""
+                }
+
+            </div>
+
+
+            <div class="acoes-paeet acoes-solicitacao-ajuda">
+
+                <button type="button" onclick="marcarSolicitacaoAjuda('${idSeguro}', 'em_analise')">
+                    🔵 Em análise
+                </button>
+
+                <button type="button" onclick="responderSolicitacaoAjuda('${idSeguro}')">
+                    🟢 Responder aluno
+                </button>
+
+                <button type="button" onclick="marcarSolicitacaoAjuda('${idSeguro}', 'resolvido')">
+                    ✅ Resolvido
+                </button>
+
+                <button type="button" onclick="transformarSolicitacaoEmAcompanhamento('${idSeguro}')">
+                    🧭 Criar acompanhamento PAEET
+                </button>
+
+                <button type="button" onclick="marcarSolicitacaoAjuda('${idSeguro}', 'arquivado')">
+                    📦 Arquivar
+                </button>
+
+                <button type="button" onclick="excluirSolicitacaoAjuda('${idSeguro}')" class="btn-excluir-solicitacao">
+                    🗑️ Excluir
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+function nomeStatusSolicitacaoAjuda(status) {
+    const nomes = {
+        enviado: "🟡 Enviado",
+        em_analise: "🔵 Em análise",
+        respondido: "🟢 Respondido",
+        resolvido: "✅ Resolvido",
+        arquivado: "⚪ Arquivado"
+    };
+
+    return nomes[status] || "🟡 Enviado";
+}
+
+
+function formatarTipoAjudaAdmin(tipo) {
+    const nomes = {
+        duvida_atividade: "Dúvida em atividade",
+        dificuldade_projeto: "Dificuldade em projeto",
+        organizacao_estudos: "Organização dos estudos",
+        apoio_paeet: "Apoio PAEET",
+        problema_acesso: "Problema de acesso ao sistema",
+        outro: "Outro assunto"
+    };
+
+    return nomes[tipo] || tipo || "Não informado";
+}
+
+
+function formatarCursoSolicitacaoAjuda(curso) {
+    const nomes = {
+        todos: "Todos",
+        desenvolvimento_sistemas: "Desenvolvimento de Sistemas",
+        vendas: "Vendas",
+        substituicoes: "Substituições",
+        apoio_pedagogico: "Apoio Pedagógico",
+        outro: "Outro"
+    };
+
+    return escaparHTML(nomes[curso] || curso || "Não informado");
+}
+
+
+function formatarDataHoraAdminCompleta(dataTexto) {
+    if (!dataTexto) {
+        return "Não informado";
+    }
+
+    const data = new Date(dataTexto);
+
+    if (isNaN(data.getTime())) {
+        return "Não informado";
+    }
+
+    return data.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }) + " às " + data.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+}
+
+
 async function marcarSolicitacaoAjuda(idPedido, novoStatus) {
+    const statusValidos = [
+        "enviado",
+        "em_analise",
+        "respondido",
+        "resolvido",
+        "arquivado"
+    ];
+
+    if (!statusValidos.includes(novoStatus)) {
+        alert("Status inválido: " + novoStatus);
+        return;
+    }
+
+    const confirmar = confirm(
+        "Deseja alterar o status deste chamado para: " +
+        nomeStatusSolicitacaoAjuda(novoStatus) +
+        "?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const dadosAtualizacao = {
+        status: novoStatus,
+        atualizado_em: new Date().toISOString()
+    };
+
+    if (novoStatus === "respondido" || novoStatus === "resolvido") {
+        dadosAtualizacao.respondido_em = new Date().toISOString();
+    }
+
     const { error } = await banco
         .from("solicitacoes_ajuda")
-        .update({ status: novoStatus })
+        .update(dadosAtualizacao)
         .eq("id", idPedido);
 
     if (error) {
         alert("Erro ao atualizar solicitação: " + error.message);
+        console.log("Erro ao atualizar solicitação:", error);
         return;
     }
 
     await carregarSolicitacoesAjudaAdmin();
 }
 
+
+async function responderSolicitacaoAjuda(idPedido) {
+    const campoResposta = document.getElementById("respostaAjuda_" + idPedido);
+
+    if (!campoResposta) {
+        alert("Campo de resposta não encontrado.");
+        return;
+    }
+
+    const resposta = campoResposta.value.trim();
+
+    if (!resposta) {
+        alert("Digite uma resposta para o aluno antes de salvar.");
+        campoResposta.focus();
+        return;
+    }
+
+    const { data: userData } = await banco.auth.getUser();
+
+    const emailAdmin =
+        userData &&
+        userData.user &&
+        userData.user.email
+            ? userData.user.email
+            : "Professor/Admin";
+
+    const confirmar = confirm("Deseja enviar esta resposta para o aluno?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("solicitacoes_ajuda")
+        .update({
+            resposta_professor: resposta,
+            respondido_por: emailAdmin,
+            respondido_em: new Date().toISOString(),
+            atualizado_em: new Date().toISOString(),
+            status: "respondido"
+        })
+        .eq("id", idPedido);
+
+    if (error) {
+        alert("Erro ao salvar resposta: " + error.message);
+        console.log("Erro ao responder solicitação:", error);
+        return;
+    }
+
+    alert("Resposta enviada com sucesso! O aluno verá a devolutiva na Área do Aluno.");
+
+    await carregarSolicitacoesAjudaAdmin();
+}
+
+
 async function excluirSolicitacaoAjuda(idPedido) {
-    const confirmar = confirm("Deseja excluir esta solicitação de ajuda?");
+    const confirmar = confirm(
+        "Deseja excluir esta solicitação de ajuda?\n\nEssa ação removerá o chamado da área do aluno."
+    );
 
     if (!confirmar) {
         return;
@@ -2347,12 +2663,15 @@ async function excluirSolicitacaoAjuda(idPedido) {
 
     if (error) {
         alert("Erro ao excluir solicitação: " + error.message);
+        console.log("Erro ao excluir solicitação:", error);
         return;
     }
 
     alert("Solicitação excluída com sucesso!");
+
     await carregarSolicitacoesAjudaAdmin();
 }
+
 
 async function transformarSolicitacaoEmAcompanhamento(idPedido) {
     const { data, error } = await banco
@@ -2363,6 +2682,7 @@ async function transformarSolicitacaoEmAcompanhamento(idPedido) {
 
     if (error || !data) {
         alert("Erro ao carregar solicitação.");
+        console.log("Erro ao transformar solicitação:", error);
         return;
     }
 
@@ -2370,9 +2690,21 @@ async function transformarSolicitacaoEmAcompanhamento(idPedido) {
     preencherCampoSeExistir("paeetTurmaAluno", data.turma || "");
     preencherCampoSeExistir("paeetCursoAluno", data.curso || "");
     preencherCampoSeExistir("paeetSituacaoAluno", "amarelo");
-    preencherCampoSeExistir("paeetDificuldadeAluno", data.dificuldade || "");
+    preencherCampoSeExistir("paeetDificuldadeAluno", formatarTipoAjudaAdmin(data.tipo_ajuda));
     preencherCampoSeExistir("paeetObservacaoAluno", data.mensagem || "");
-    preencherCampoSeExistir("paeetProximoPassoAluno", "Realizar atendimento individual e registrar orientação.");
+    preencherCampoSeExistir("paeetProximoPassoAluno", "Realizar atendimento individual, registrar orientação e acompanhar a evolução do estudante.");
+
+    const { error: erroStatus } = await banco
+        .from("solicitacoes_ajuda")
+        .update({
+            status: "em_analise",
+            atualizado_em: new Date().toISOString()
+        })
+        .eq("id", idPedido);
+
+    if (erroStatus) {
+        console.log("Erro ao marcar solicitação como em análise:", erroStatus);
+    }
 
     const campoNome = document.getElementById("paeetNomeAluno");
 
@@ -2384,8 +2716,17 @@ async function transformarSolicitacaoEmAcompanhamento(idPedido) {
     }
 
     alert("Dados enviados para o formulário de acompanhamento PAEET. Revise e clique em salvar.");
+
+    await carregarSolicitacoesAjudaAdmin();
 }
 
+
+// Expor funções usadas nos botões HTML gerados dinamicamente
+window.carregarSolicitacoesAjudaAdmin = carregarSolicitacoesAjudaAdmin;
+window.marcarSolicitacaoAjuda = marcarSolicitacaoAjuda;
+window.responderSolicitacaoAjuda = responderSolicitacaoAjuda;
+window.excluirSolicitacaoAjuda = excluirSolicitacaoAjuda;
+window.transformarSolicitacaoEmAcompanhamento = transformarSolicitacaoEmAcompanhamento;
 
 // =====================================================
 // SALVAR OU ATUALIZAR ALUNO EM ACOMPANHAMENTO
