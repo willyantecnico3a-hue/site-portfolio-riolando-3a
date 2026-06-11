@@ -200,6 +200,25 @@ function renderizarDadosAluno() {
 async function salvarNovaSenhaAluno(event) {
     event.preventDefault();
 
+    limparMensagem();
+
+    const { data: sessaoAtual, error: erroSessao } = await banco.auth.getSession();
+
+    if (erroSessao || !sessaoAtual || !sessaoAtual.session) {
+        console.log("Sessão ausente ao tentar trocar senha:", erroSessao);
+
+        mostrarMensagem(
+            "Sua sessão expirou. Faça login novamente com a senha temporária.",
+            "erro"
+        );
+
+        setTimeout(function () {
+            window.location.href = "login-aluno.html";
+        }, 2000);
+
+        return;
+    }
+
     if (!usuarioLogado || !perfilAluno) {
         mostrarMensagem("Faça login novamente para alterar sua senha.", "erro");
         return;
@@ -207,8 +226,6 @@ async function salvarNovaSenhaAluno(event) {
 
     const novaSenha = novaSenhaAluno.value.trim();
     const confirmarSenha = confirmarNovaSenhaAluno.value.trim();
-
-    limparMensagem();
 
     if (!novaSenha || !confirmarSenha) {
         mostrarMensagem("Preencha os dois campos de senha.", "erro");
@@ -237,17 +254,18 @@ async function salvarNovaSenhaAluno(event) {
 
     mostrarMensagem("Atualizando sua senha, aguarde...", "info");
 
-    const { error: erroSenha } = await banco.auth.updateUser({
+    const { data: dadosAtualizacao, error: erroSenha } = await banco.auth.updateUser({
         password: novaSenha
     });
 
     if (erroSenha) {
-        console.log("Erro ao atualizar senha:", erroSenha);
+        console.log("Erro real ao atualizar senha:", erroSenha);
+        console.log("Dados retornados:", dadosAtualizacao);
 
         bloquearBotaoSalvar(false);
 
         mostrarMensagem(
-            "Não foi possível atualizar sua senha. Tente novamente.",
+            "Erro ao atualizar senha: " + erroSenha.message,
             "erro"
         );
 
@@ -267,7 +285,7 @@ async function salvarNovaSenhaAluno(event) {
         bloquearBotaoSalvar(false);
 
         mostrarMensagem(
-            "Sua senha foi alterada, mas houve erro ao liberar o acesso. Procure o professor.",
+            "Sua senha foi alterada, mas houve erro ao liberar o acesso: " + erroPerfil.message,
             "erro"
         );
 
@@ -283,7 +301,6 @@ async function salvarNovaSenhaAluno(event) {
         window.location.href = "aluno.html";
     }, 1500);
 }
-
 
 /* =====================================================
    9. SAIR
