@@ -29,12 +29,14 @@ let perfilAluno = null;
 
 const formPrimeiroAcesso = document.getElementById("formPrimeiroAcesso");
 
+const senhaAtualAluno = document.getElementById("senhaAtualAluno");
 const novaSenhaAluno = document.getElementById("novaSenhaAluno");
 const confirmarNovaSenhaAluno = document.getElementById("confirmarNovaSenhaAluno");
 
 const btnSalvarNovaSenha = document.getElementById("btnSalvarNovaSenha");
 const btnSairPrimeiroAcesso = document.getElementById("btnSairPrimeiroAcesso");
 
+const btnMostrarSenhaAtual = document.getElementById("btnMostrarSenhaAtual");
 const btnMostrarNovaSenha = document.getElementById("btnMostrarNovaSenha");
 const btnMostrarConfirmarSenha = document.getElementById("btnMostrarConfirmarSenha");
 
@@ -157,6 +159,12 @@ function configurarEventosPrimeiroAcesso() {
         btnSairPrimeiroAcesso.addEventListener("click", sairPrimeiroAcesso);
     }
 
+    if (btnMostrarSenhaAtual) {
+        btnMostrarSenhaAtual.addEventListener("click", function () {
+            alternarSenha(senhaAtualAluno, btnMostrarSenhaAtual);
+        });
+    }
+
     if (btnMostrarNovaSenha) {
         btnMostrarNovaSenha.addEventListener("click", function () {
             alternarSenha(novaSenhaAluno, btnMostrarNovaSenha);
@@ -224,11 +232,17 @@ async function salvarNovaSenhaAluno(event) {
         return;
     }
 
+    const senhaAtual = senhaAtualAluno.value.trim();
     const novaSenha = novaSenhaAluno.value.trim();
     const confirmarSenha = confirmarNovaSenhaAluno.value.trim();
 
+    if (!senhaAtual) {
+        mostrarMensagem("Digite a senha temporária atual usada no login.", "erro");
+        return;
+    }
+
     if (!novaSenha || !confirmarSenha) {
-        mostrarMensagem("Preencha os dois campos de senha.", "erro");
+        mostrarMensagem("Preencha a nova senha e a confirmação.", "erro");
         return;
     }
 
@@ -239,6 +253,11 @@ async function salvarNovaSenhaAluno(event) {
 
     if (novaSenha !== confirmarSenha) {
         mostrarMensagem("As senhas digitadas não são iguais.", "erro");
+        return;
+    }
+
+    if (senhaAtual === novaSenha) {
+        mostrarMensagem("A nova senha precisa ser diferente da senha temporária.", "erro");
         return;
     }
 
@@ -255,6 +274,7 @@ async function salvarNovaSenhaAluno(event) {
     mostrarMensagem("Atualizando sua senha, aguarde...", "info");
 
     const { data: dadosAtualizacao, error: erroSenha } = await banco.auth.updateUser({
+        current_password: senhaAtual,
         password: novaSenha
     });
 
@@ -263,6 +283,18 @@ async function salvarNovaSenhaAluno(event) {
         console.log("Dados retornados:", dadosAtualizacao);
 
         bloquearBotaoSalvar(false);
+
+        if (
+            erroSenha.message.includes("Current password") ||
+            erroSenha.message.includes("current password") ||
+            erroSenha.message.includes("invalid")
+        ) {
+            mostrarMensagem(
+                "A senha atual temporária está incorreta. Digite a mesma senha usada no login.",
+                "erro"
+            );
+            return;
+        }
 
         mostrarMensagem(
             "Erro ao atualizar senha: " + erroSenha.message,
@@ -301,6 +333,7 @@ async function salvarNovaSenhaAluno(event) {
         window.location.href = "aluno.html";
     }, 1500);
 }
+
 
 /* =====================================================
    9. SAIR
