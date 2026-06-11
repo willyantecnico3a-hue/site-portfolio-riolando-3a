@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Primeiro Acesso - Área do Aluno</title>
+
+    <link rel="stylesheet" href="aluno.css?v=20260610-03">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+
+    <meta name="theme-color" content="#0f766e">
+
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-title" content="Primeiro Acesso">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <main class="pagina-login-aluno">
+
+        <section class="card-login-aluno">
+
+            <div class="topo-login-aluno">
+
+                <div class="icone-login-aluno">
+                    🔐
+                </div>
+
+                <p class="etiqueta-sistema">
+                    Riolando Conecta Técnico
+                </p>
+
+                <h1>
+                    Primeiro Acesso
+                </h1>
+
+                <p id="textoPrimeiroAcesso">
+                    Para sua segurança, crie uma nova senha antes de acessar a Área do Aluno.
+                </p>
+
+            </div>
+
+
+            <div id="boxDadosAlunoPrimeiroAcesso" class="aviso-primeiro-acesso">
+
+                <h2>
+                    Dados do aluno
+                </h2>
+
+                <p id="dadosAlunoPrimeiroAcesso">
+                    Carregando seus dados...
+                </p>
+
+            </div>
+
+
+            <form id="formPrimeiroAcesso" class="form-login-aluno">
+
+                <label for="novaSenhaAluno">
+                    Nova senha
+                </label>
+
+                <div class="campo-senha-aluno">
+
+                    <input
+                        type="password"
+                        id="novaSenhaAluno"
+                        placeholder="Digite sua nova senha"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <button type="button" id="btnMostrarNovaSenha" class="btn-mostrar-senha">
+                        👁️
+                    </button>
+
+                </div>
+
+
+                <label for="confirmarNovaSenhaAluno">
+                    Confirmar nova senha
+                </label>
+
+                <div class="campo-senha-aluno">
+
+                    <input
+                        type="password"
+                        id="confirmarNovaSenhaAluno"
+                        placeholder="Confirme sua nova senha"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <button type="button" id="btnMostrarConfirmarSenha" class="btn-mostrar-senha">
+                        👁️
+                    </button>
+
+                </div>
+
+
+                <div class="aviso-primeiro-acesso">
+
+                    <h2>
+                        Regras para a nova senha
+                    </h2>
+
+                    <p>
+                        Use pelo menos 6 caracteres. Evite senhas muito simples como 123456, nome próprio ou data de nascimento.
+                    </p>
+
+                </div>
+
+
+                <button type="submit" id="btnSalvarNovaSenha" class="btn-principal-aluno">
+                    Salvar nova senha
+                </button>
+
+                <p id="mensagemPrimeiroAcesso" class="mensagem-login-aluno"></p>
+
+            </form>
+
+
+            <div class="area-ajuda-login">
+
+                <button type="button" id="btnSairPrimeiroAcesso" class="btn-secundario-aluno">
+                    Sair e voltar ao login
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="primeiro-acesso.js?v=20260610-03"></script>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .then(function () {
+                        console.log("Service Worker registrado com sucesso.");
+                    })
+                    .catch(function (erro) {
+                        console.log("Erro ao registrar Service Worker:", erro);
+                    });
+            });
+        }
+    </script>
+
+</body>
+</html>
