@@ -7,7 +7,7 @@
 
     <title>Primeiro Acesso - Área do Aluno</title>
 
-    <link rel="stylesheet" href="aluno.css?v=20260610-03">
+    <link rel="stylesheet" href="aluno.css?v=20260610-04">
 
     <link rel="manifest" href="/manifest.json">
 
@@ -45,7 +45,7 @@
                 </h1>
 
                 <p id="textoPrimeiroAcesso">
-                    Para sua segurança, crie uma nova senha antes de acessar a Área do Aluno.
+                    Para sua segurança, confirme a senha temporária usada no login e crie uma nova senha pessoal antes de acessar a Área do Aluno.
                 </p>
 
             </div>
@@ -65,6 +65,27 @@
 
 
             <form id="formPrimeiroAcesso" class="form-login-aluno">
+
+                <label for="senhaAtualAluno">
+                    Senha atual temporária
+                </label>
+
+                <div class="campo-senha-aluno">
+
+                    <input
+                        type="password"
+                        id="senhaAtualAluno"
+                        placeholder="Digite a senha temporária usada no login"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button type="button" id="btnMostrarSenhaAtual" class="btn-mostrar-senha">
+                        👁️
+                    </button>
+
+                </div>
+
 
                 <label for="novaSenhaAluno">
                     Nova senha
@@ -115,7 +136,7 @@
                     </h2>
 
                     <p>
-                        Use pelo menos 6 caracteres. Evite senhas muito simples como 123456, nome próprio ou data de nascimento.
+                        Use pelo menos 6 caracteres. A nova senha precisa ser diferente da senha temporária. Evite senhas simples como 123456, nome próprio ou data de nascimento.
                     </p>
 
                 </div>
@@ -143,7 +164,7 @@
     </main>
 
 
-    <script src="primeiro-acesso.js?v=20260610-03"></script>
+    <script src="primeiro-acesso.js?v=20260610-04"></script>
 
     <script>
         if ("serviceWorker" in navigator) {
