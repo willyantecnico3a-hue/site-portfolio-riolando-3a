@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Área do Aluno - Riolando Conecta Técnico</title>
+
+    <link rel="stylesheet" href="aluno.css?v=20260610-02">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+
+    <meta name="theme-color" content="#0f766e">
+
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-title" content="Área do Aluno">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <main class="pagina-aluno">
+
+        <div class="container-aluno">
+
+            <!-- TOPO DA ÁREA DO ALUNO -->
+            <section class="topo-area-aluno">
+
+                <div class="topo-area-aluno-conteudo">
+
+                    <div>
+                        <p class="etiqueta-area-aluno">
+                            Riolando Conecta Técnico
+                        </p>
+
+                        <h1 id="tituloBoasVindasAluno">
+                            Área do Aluno
+                        </h1>
+
+                        <p id="subtituloPerfilAluno">
+                            Carregando seus dados...
+                        </p>
+                    </div>
+
+                    <div class="acoes-topo-aluno">
+
+                        <a href="index.html" class="btn-topo-aluno secundario">
+                            🏠 Início
+                        </a>
+
+                        <button type="button" id="btnSairAluno" class="btn-topo-aluno">
+                            🚪 Sair
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- CARDS DE RESUMO -->
+            <section class="grade-cards-aluno">
+
+                <article class="card-aluno">
+
+                    <h2>
+                        📋 Meus Chamados
+                    </h2>
+
+                    <p id="totalChamadosAluno">
+                        Carregando...
+                    </p>
+
+                </article>
+
+                <article class="card-aluno">
+
+                    <h2>
+                        🔵 Em análise
+                    </h2>
+
+                    <p id="totalEmAnaliseAluno">
+                        Carregando...
+                    </p>
+
+                </article>
+
+                <article class="card-aluno">
+
+                    <h2>
+                        🟢 Respondidos
+                    </h2>
+
+                    <p id="totalRespondidosAluno">
+                        Carregando...
+                    </p>
+
+                </article>
+
+            </section>
+
+
+            <!-- ABRIR NOVO CHAMADO -->
+            <section class="card-aluno area-novo-chamado">
+
+                <div class="cabecalho-card-aluno">
+
+                    <div>
+                        <h2>
+                            🙋 Preciso de Ajuda
+                        </h2>
+
+                        <p>
+                            Envie uma solicitação para o professor acompanhar sua dúvida, dificuldade ou necessidade de orientação.
+                        </p>
+                    </div>
+
+                    <button type="button" id="btnMostrarFormularioChamado" class="btn-principal-aluno pequeno">
+                        + Abrir chamado
+                    </button>
+
+                </div>
+
+
+                <form id="formNovoChamado" class="form-chamado-aluno" style="display:none;">
+
+                    <label for="tipoAjudaAluno">
+                        Tipo de ajuda
+                    </label>
+
+                    <select id="tipoAjudaAluno" required>
+                        <option value="">Selecione uma opção</option>
+                        <option value="duvida_atividade">Dúvida em atividade</option>
+                        <option value="dificuldade_projeto">Dificuldade em projeto</option>
+                        <option value="organizacao_estudos">Organização dos estudos</option>
+                        <option value="apoio_paeet">Apoio PAEET</option>
+                        <option value="problema_acesso">Problema de acesso ao sistema</option>
+                        <option value="outro">Outro assunto</option>
+                    </select>
+
+
+                    <label for="mensagemAjudaAluno">
+                        Descreva sua solicitação
+                    </label>
+
+                    <textarea
+                        id="mensagemAjudaAluno"
+                        placeholder="Explique com detalhes o que você precisa. Exemplo: Estou com dificuldade na atividade de HTML e CSS..."
+                        required
+                    ></textarea>
+
+
+                    <button type="submit" class="btn-principal-aluno">
+                        Enviar chamado
+                    </button>
+
+                    <p id="mensagemNovoChamado" class="mensagem-login-aluno"></p>
+
+                </form>
+
+            </section>
+
+
+            <!-- LISTA DE CHAMADOS -->
+            <section class="card-aluno area-lista-chamados">
+
+                <div class="cabecalho-card-aluno">
+
+                    <div>
+                        <h2>
+                            📋 Acompanhar meus chamados
+                        </h2>
+
+                        <p>
+                            Veja aqui o andamento das suas solicitações e as respostas do professor.
+                        </p>
+                    </div>
+
+                    <button type="button" id="btnAtualizarChamadosAluno" class="btn-secundario-card">
+                        🔄 Atualizar
+                    </button>
+
+                </div>
+
+
+                <div class="filtros-chamados-aluno">
+
+                    <button type="button" class="btn-filtro-chamado ativo" data-status="todos">
+                        Todos
+                    </button>
+
+                    <button type="button" class="btn-filtro-chamado" data-status="enviado">
+                        Enviados
+                    </button>
+
+                    <button type="button" class="btn-filtro-chamado" data-status="em_analise">
+                        Em análise
+                    </button>
+
+                    <button type="button" class="btn-filtro-chamado" data-status="respondido">
+                        Respondidos
+                    </button>
+
+                    <button type="button" class="btn-filtro-chamado" data-status="resolvido">
+                        Resolvidos
+                    </button>
+
+                </div>
+
+
+                <div id="listaChamadosAluno" class="lista-chamados-aluno">
+
+                    <p class="texto-carregando">
+                        Carregando seus chamados...
+                    </p>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <script src="aluno.js?v=20260610-02"></script>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .then(function () {
+                        console.log("Service Worker registrado com sucesso.");
+                    })
+                    .catch(function (erro) {
+                        console.log("Erro ao registrar Service Worker:", erro);
+                    });
+            });
+        }
+    </script>
+
+</body>
+</html>
