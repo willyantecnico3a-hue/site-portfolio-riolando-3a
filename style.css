@@ -1435,3 +1435,31 @@
         font-size: 15px;
     }
 }
+
+/* =====================================================
+   CARDS DA ÁREA DO ALUNO DENTRO DO MENU RÁPIDO
+===================================================== */
+
+.menu-rapido-aluno .card-menu-ajuda-aluno {
+    background-color: #ffffff;
+    border: 2px solid #cbd5e1;
+    border-left: 7px solid #0f766e;
+    border-radius: 22px;
+    color: #0f172a;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.menu-rapido-aluno .card-menu-ajuda-aluno:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
+    border-color: #0f766e;
+    background-color: #f0fdfa;
+}
+
+.menu-rapido-aluno .card-menu-ajuda-aluno strong {
+    color: #0f766e;
+}
+
+.menu-rapido-aluno .card-menu-ajuda-aluno small {
+    color: #334155;
+}
