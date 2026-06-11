@@ -63,6 +63,8 @@ async function iniciarAreaAluno() {
 
     await carregarChamadosAluno();
 
+    verificarAcaoInicialDaAreaAluno();
+
     console.log("Área do aluno carregada com sucesso.");
 }
 
@@ -556,4 +558,41 @@ function escaparHTML(texto) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+/* =====================================================
+   ABRIR FORMULÁRIO AUTOMATICAMENTE QUANDO VIER DA HOME
+===================================================== */
+
+function verificarAcaoInicialDaAreaAluno() {
+    const parametros = new URLSearchParams(window.location.search);
+
+    const abrirChamado = parametros.get("abrirChamado");
+
+    if (abrirChamado !== "1") {
+        return;
+    }
+
+    if (formNovoChamado) {
+        formNovoChamado.style.display = "block";
+    }
+
+    if (btnMostrarFormularioChamado) {
+        btnMostrarFormularioChamado.textContent = "Fechar formulário";
+    }
+
+    setTimeout(function () {
+        const areaNovoChamado = document.querySelector(".area-novo-chamado");
+
+        if (areaNovoChamado) {
+            areaNovoChamado.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        if (mensagemAjudaAluno) {
+            mensagemAjudaAluno.focus();
+        }
+    }, 400);
 }

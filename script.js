@@ -1246,6 +1246,72 @@ function limparCampoPublico(idCampo) {
     }
 }
 
+/* =====================================================
+   ÁREA DO ALUNO - BOTÕES DA SEÇÃO PRECISO DE AJUDA
+===================================================== */
+
+(function configurarBotoesAreaAlunoNaHome() {
+    const SUPABASE_URL_ALUNO_HOME = "https://pwomyoprbvoimqmikvev.supabase.co";
+    const SUPABASE_KEY_ALUNO_HOME = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
+
+    let bancoAlunoHome = null;
+
+    if (typeof supabase !== "undefined") {
+        bancoAlunoHome = supabase.createClient(
+            SUPABASE_URL_ALUNO_HOME,
+            SUPABASE_KEY_ALUNO_HOME
+        );
+    }
+
+    const btnAbrirAjudaAluno = document.getElementById("btnAbrirAjudaAluno");
+    const btnAcompanharChamadosAluno = document.getElementById("btnAcompanharChamadosAluno");
+    const btnAreaAluno = document.getElementById("btnAreaAluno");
+
+    if (btnAbrirAjudaAluno) {
+        btnAbrirAjudaAluno.addEventListener("click", function () {
+            irParaAreaAluno("abrirChamado");
+        });
+    }
+
+    if (btnAcompanharChamadosAluno) {
+        btnAcompanharChamadosAluno.addEventListener("click", function () {
+            irParaAreaAluno("chamados");
+        });
+    }
+
+    if (btnAreaAluno) {
+        btnAreaAluno.addEventListener("click", function () {
+            irParaAreaAluno("home");
+        });
+    }
+
+    async function irParaAreaAluno(acao) {
+        if (!bancoAlunoHome) {
+            window.location.href = "login-aluno.html";
+            return;
+        }
+
+        const { data, error } = await bancoAlunoHome.auth.getUser();
+
+        if (error || !data || !data.user) {
+            if (acao === "abrirChamado") {
+                window.location.href = "login-aluno.html?acao=abrirChamado";
+                return;
+            }
+
+            window.location.href = "login-aluno.html";
+            return;
+        }
+
+        if (acao === "abrirChamado") {
+            window.location.href = "aluno.html?abrirChamado=1";
+            return;
+        }
+
+        window.location.href = "aluno.html";
+    }
+})();
+
 
 // =====================================================
 // 24. EXPOR FUNÇÕES PARA USO NO HTML
