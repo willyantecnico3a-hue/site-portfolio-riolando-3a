@@ -1,22 +1,25 @@
+````html
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0f766e">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Riolando Técnico">
 
-    <!-- Garante que o painel funcione bem no celular, tablet e computador -->
+    <link rel="manifest" href="/manifest.json">
+
+    <meta name="theme-color" content="#0f766e">
+
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-title" content="Riolando Técnico">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Painel Administrativo</title>
 
-    <!-- CSS geral do site -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260610-08">
 
-    <!-- CSS específico do painel admin -->
     <style>
         /* =============================
            BASE DO PAINEL ADMIN
@@ -54,10 +57,12 @@
             border-radius: 10px;
             font-size: 16px;
             font-family: Arial, sans-serif;
+            box-sizing: border-box;
         }
 
         .painel-admin textarea {
             min-height: 100px;
+            resize: vertical;
         }
 
         .painel-admin button {
@@ -74,6 +79,28 @@
 
         .painel-admin button:hover {
             background-color: #2563eb;
+        }
+
+        .barra-login-admin {
+            margin-bottom: 18px;
+        }
+
+        .botao-voltar-inicio-login {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            text-decoration: none;
+            font-weight: bold;
+            border: 2px solid #cbd5e1;
+        }
+
+        .botao-voltar-inicio-login:hover {
+            background-color: #e0f2fe;
+            border-color: #1e40af;
         }
 
         /* =============================
@@ -303,12 +330,14 @@
             display: block;
         }
 
-        .barra-tela-admin {
+        .barra-tela-admin,
+        .topo-tela-admin {
             display: flex;
             justify-content: space-between;
             gap: 10px;
             margin-bottom: 18px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .btnVoltarMenuAdmin {
@@ -331,12 +360,22 @@
         ============================= */
 
         .card-admin-form,
-        .card-admin-lista {
+        .card-admin-lista,
+        .card-admin-paeet,
+        .card-publicado,
+        .card-aula-admin,
+        .card-portfolio-admin {
+            margin-top: 20px;
+            padding: 18px;
             background-color: #f8fafc;
             border-left: 5px solid #0f766e;
             border-radius: 14px;
-            padding: 18px;
-            margin: 20px 0;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+
+        .card-aula-admin,
+        .card-portfolio-admin {
+            background-color: white;
         }
 
         .linha-data-admin {
@@ -376,15 +415,295 @@
             border: 3px solid #1e40af;
         }
 
-        .card-publicado,
-        .card-aula-admin,
-        .card-portfolio-admin {
-            margin-top: 20px;
+        .barra-editor-aula {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0 15px 0;
+            padding: 12px;
+            background-color: #eef6ff;
+            border-radius: 14px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .barra-editor-aula button,
+        .barra-editor-aula select {
+            width: auto;
+            margin: 0;
+        }
+
+        .area-materiais-aula-admin {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 14px;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* =============================
+           PAEET
+        ============================= */
+
+        .resumo-paeet-admin {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin: 20px 0;
+        }
+
+        .card-resumo-paeet {
+            background-color: white;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            border-left: 6px solid #0f766e;
+        }
+
+        .card-resumo-paeet h3 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .card-resumo-paeet p {
+            margin: 6px 0 0 0;
+            color: #334155;
+            font-weight: bold;
+        }
+
+        .status-verde {
+            border-left-color: #16a34a;
+        }
+
+        .status-amarelo {
+            border-left-color: #f59e0b;
+        }
+
+        .status-vermelho {
+            border-left-color: #dc2626;
+        }
+
+        .status-total {
+            border-left-color: #1e40af;
+        }
+
+        .filtros-paeet-admin,
+        .filtros-solicitacoes-ajuda-admin {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            background-color: #f8fafc;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid #cbd5e1;
+            margin: 18px 0;
+        }
+
+        .filtros-paeet-admin h3 {
+            grid-column: 1 / -1;
+            margin: 0;
+        }
+
+        .cabecalho-lista-paeet,
+        .cabecalho-bloco-admin {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* =============================
+           SOLICITAÇÕES DE AJUDA DOS ALUNOS
+        ============================= */
+
+        .bloco-solicitacoes-ajuda-admin {
+            background: linear-gradient(135deg, #f0fdfa, #ffffff);
+            border-left: 6px solid #0f766e;
+        }
+
+        .lista-solicitacoes-ajuda-admin {
+            margin-top: 18px;
+        }
+
+        .resumo-solicitacoes-ajuda-admin {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .resumo-solicitacoes-ajuda-admin div {
+            background-color: white;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 3px 9px rgba(15, 23, 42, 0.08);
+        }
+
+        .resumo-solicitacoes-ajuda-admin strong {
+            display: block;
+            font-size: 26px;
+            color: #0f766e;
+        }
+
+        .resumo-solicitacoes-ajuda-admin span {
+            color: #475569;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .card-solicitacao-ajuda {
+            background-color: white;
+            border-radius: 18px;
+            padding: 18px;
+            margin: 18px 0;
+            border-left: 7px solid #f59e0b;
+            box-shadow: 0 5px 16px rgba(15, 23, 42, 0.12);
+        }
+
+        .card-solicitacao-ajuda.status-em_analise {
+            border-left-color: #2563eb;
+        }
+
+        .card-solicitacao-ajuda.status-respondido {
+            border-left-color: #16a34a;
+        }
+
+        .card-solicitacao-ajuda.status-resolvido {
+            border-left-color: #15803d;
+        }
+
+        .card-solicitacao-ajuda.status-arquivado {
+            border-left-color: #64748b;
+        }
+
+        .topo-card-aluno-paeet {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .topo-card-aluno-paeet h4 {
+            margin: 0;
+            color: #0f172a;
+            font-size: 20px;
+        }
+
+        .subinfo-solicitacao-ajuda {
+            margin: 5px 0 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .selo-paeet {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background-color: #fef3c7;
+            color: #92400e;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .status-ajuda-em_analise {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-ajuda-respondido {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-ajuda-resolvido {
+            background-color: #bbf7d0;
+            color: #166534;
+        }
+
+        .status-ajuda-arquivado {
+            background-color: #e2e8f0;
+            color: #334155;
+        }
+
+        .grid-info-solicitacao-ajuda {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px 16px;
+            padding: 12px;
+            background-color: #f8fafc;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            margin: 12px 0;
+        }
+
+        .grid-info-solicitacao-ajuda p {
+            margin: 4px 0;
+        }
+
+        .bloco-solicitacao-ajuda-admin,
+        .bloco-resposta-ajuda-admin {
+            background-color: #f8fafc;
+            border-radius: 14px;
+            padding: 14px;
+            margin-top: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .texto-solicitacao-ajuda {
+            background-color: white;
+            border-radius: 12px;
+            padding: 12px;
+            line-height: 1.6;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+        }
+
+        .textarea-resposta-ajuda-admin {
+            width: 100% !important;
+            min-height: 120px;
+            border-color: #0f766e !important;
+            background-color: white;
+        }
+
+        .data-resposta-ajuda-admin {
+            color: #166534;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .acoes-paeet,
+        .acoes-solicitacao-ajuda {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .acoes-solicitacao-ajuda button {
+            margin: 0;
+        }
+
+        .btn-excluir-solicitacao {
+            background-color: #dc2626 !important;
+        }
+
+        .card-vazio-admin,
+        .mensagem-erro-admin {
             padding: 18px;
             background-color: white;
-            border-left: 5px solid #0f766e;
-            border-radius: 12px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+            border-radius: 14px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .mensagem-erro-admin {
+            border-left: 6px solid #dc2626;
+            color: #991b1b;
+            font-weight: bold;
         }
 
         /* =============================
@@ -451,6 +770,19 @@
            RESPONSIVIDADE
         ============================= */
 
+        @media (max-width: 900px) {
+            .resumo-paeet-admin,
+            .resumo-solicitacoes-ajuda-admin {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .filtros-solicitacoes-ajuda-admin,
+            .filtros-paeet-admin,
+            .grid-info-solicitacao-ajuda {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 700px) {
             body {
                 padding: 8px;
@@ -487,8 +819,10 @@
                 padding: 16px;
             }
 
-            .barra-tela-admin {
+            .barra-tela-admin,
+            .topo-tela-admin {
                 flex-direction: column;
+                align-items: stretch;
             }
 
             .btnVoltarMenuAdmin,
@@ -512,11 +846,15 @@
                 align-items: stretch;
             }
 
-            .botoes-ia-admin {
+            .botoes-ia-admin,
+            .acoes-paeet,
+            .acoes-solicitacao-ajuda {
                 flex-direction: column;
             }
 
-            .botoes-ia-admin button {
+            .botoes-ia-admin button,
+            .acoes-paeet button,
+            .acoes-solicitacao-ajuda button {
                 width: 100%;
             }
 
@@ -539,6 +877,11 @@
             .perfil-admin-acoes button {
                 width: 100%;
             }
+
+            .resumo-paeet-admin,
+            .resumo-solicitacoes-ajuda-admin {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -550,20 +893,19 @@
     ============================== -->
     <section id="secaoLoginAdmin" class="painel-admin">
 
-    <!-- Botão para voltar ao site principal sem precisar fazer login -->
-    <div class="barra-login-admin">
-        <a href="index.html" class="botao-voltar-inicio-login">
-            🏠 Voltar para o Início do Site
-        </a>
-    </div>
+        <div class="barra-login-admin">
+            <a href="index.html" class="botao-voltar-inicio-login">
+                🏠 Voltar para o Início do Site
+            </a>
+        </div>
 
-    <h1>Painel Administrativo</h1>
+        <h1>Painel Administrativo</h1>
 
-    <p>
-        Área exclusiva para o professor gerenciar aulas, turmas, materiais e portfólios.
-    </p>
+        <p>
+            Área exclusiva para o professor gerenciar aulas, turmas, materiais, portfólios, acompanhamento PAEET e chamados dos alunos.
+        </p>
 
-    <h2>Login do Administrador</h2>
+        <h2>Login do Administrador</h2>
 
         <input type="email" id="emailAdmin" placeholder="E-mail do administrador">
 
@@ -574,6 +916,7 @@
         </button>
 
         <p id="mensagemLogin"></p>
+
     </section>
 
 
@@ -584,6 +927,7 @@
 
         <!-- TOPO MINIMALISTA DO ADMIN -->
         <div class="admin-topo-minimalista">
+
             <button id="btnAbrirMenuAdmin" class="botao-menu-admin" type="button">
                 ☰
             </button>
@@ -593,6 +937,7 @@
             <a href="index.html" class="botao-inicio-admin">
                 🏠 Início
             </a>
+
         </div>
 
 
@@ -600,15 +945,18 @@
         <section class="card-status-admin">
 
             <div class="perfil-admin-foto-area">
+
                 <img
                     id="fotoPerfilAdmin"
                     src="https://ui-avatars.com/api/?name=Willyan+Vieira&background=0f766e&color=ffffff"
                     alt="Foto de perfil do administrador"
                     class="foto-perfil-admin"
                 >
+
             </div>
 
             <div class="perfil-admin-info">
+
                 <span class="selo-login-ativo">
                     ✅ Login administrativo ativo
                 </span>
@@ -630,12 +978,15 @@
                 <p class="frase-motivacional-admin" id="frasePerfilAdmin">
                     “Educar é transformar oportunidades em caminhos possíveis.”
                 </p>
+
             </div>
 
             <div class="perfil-admin-acoes">
+
                 <button type="button" id="btnEditarPerfilAdmin">
                     ✏️ Editar Perfil
                 </button>
+
             </div>
 
         </section>
@@ -649,11 +1000,13 @@
         <nav id="menuLateralAdmin" class="menu-lateral-admin">
 
             <div class="menu-lateral-cabecalho">
+
                 <h3>Menu de Gestão</h3>
 
                 <button id="btnFecharMenuAdmin" class="botao-fechar-menu" type="button">
                     ✕
                 </button>
+
             </div>
 
             <button class="item-menu-admin" data-tela="telaAulas" type="button">
@@ -661,9 +1014,9 @@
                 <span>Planejamento, horários e desafios</span>
             </button>
 
-            <button class="item-menu-admin" data-tela="telaPaeet">
-                 🧭 Apoia Técnico / PAEET
-                <span>Acompanhamento dos estudantes</span>
+            <button class="item-menu-admin" data-tela="telaPaeet" type="button">
+                🧭 Apoia Técnico / PAEET
+                <span>Acompanhamento dos estudantes e chamados</span>
             </button>
 
             <button class="item-menu-admin" data-tela="telaAssistenteIA" type="button">
@@ -705,6 +1058,7 @@
         <section id="telaAulas" class="tela-admin-sobreposta">
 
             <div class="barra-tela-admin">
+
                 <button class="btnVoltarMenuAdmin" type="button">
                     ← Voltar
                 </button>
@@ -712,6 +1066,7 @@
                 <a href="index.html" class="botao-inicio-admin">
                     🏠 Início do Site
                 </a>
+
             </div>
 
             <h2>📚 Aulas</h2>
@@ -722,130 +1077,112 @@
 
             <div class="card-admin-form">
 
-                <h3>Cadastrar Aula</h3>
+                <h3>Cadastrar ou editar aula</h3>
 
-                <label>Turma</label>
+                <label for="adminTurmaAula">Turma</label>
                 <select id="adminTurmaAula">
                     <option value="">Selecione uma turma</option>
                 </select>
 
-                <label>Disciplina</label>
+                <label for="adminDisciplinaAula">Disciplina</label>
                 <select id="adminDisciplinaAula">
                     <option value="">Selecione uma disciplina</option>
                 </select>
 
-                <label>Título da aula</label>
+                <label for="adminTituloAula">Título da aula</label>
                 <input type="text" id="adminTituloAula" placeholder="Ex: Introdução ao Front-End">
 
-                <label>Subtítulo</label>
+                <label for="adminSubtituloAula">Subtítulo</label>
                 <input type="text" id="adminSubtituloAula" placeholder="Ex: HTML, CSS e JavaScript">
 
-                <label>Descrição da aula</label>
-                <textarea id="adminDescricaoAula" placeholder="Descreva a aula"></textarea>
-                <!-- FERRAMENTAS SIMPLES PARA APOIAR A ESCRITA -->
-<div class="barra-editor-aula">
-    <button type="button" onclick="inserirMarcacaoTexto('adminDescricaoAula', '**', '**')">
-        Negrito
-    </button>
+                <label for="adminDescricaoAula">Descrição da aula</label>
+                <textarea id="adminDescricaoAula" placeholder="Cole aqui a descrição da aula mantendo quebras de linha, códigos e orientações"></textarea>
 
-    <button type="button" onclick="inserirMarcacaoTexto('adminDescricaoAula', '```\n', '\n```')">
-        Código
-    </button>
+                <div class="barra-editor-aula">
 
-    <button type="button" onclick="aumentarFonteCampo('adminDescricaoAula')">
-        A+
-    </button>
+                    <button type="button" onclick="inserirMarcacaoTexto('adminDescricaoAula', '**', '**')">
+                        Negrito
+                    </button>
 
-    <button type="button" onclick="diminuirFonteCampo('adminDescricaoAula')">
-        A-
-    </button>
+                    <button type="button" onclick="inserirMarcacaoTexto('adminDescricaoAula', '```\n', '\n```')">
+                        Código
+                    </button>
 
-    <select onchange="trocarFonteCampo('adminDescricaoAula', this.value)">
-        <option value="Arial">Arial</option>
-        <option value="Verdana">Verdana</option>
-        <option value='Consolas, "Courier New", monospace'>Fonte de código</option>
-        <option value="Georgia">Georgia</option>
-    </select>
-</div>
+                    <button type="button" onclick="aumentarFonteCampo('adminDescricaoAula')">
+                        A+
+                    </button>
 
-<label for="adminDescricaoAula">Descrição da aula</label>
-<textarea id="adminDescricaoAula" placeholder="Cole aqui a descrição da aula mantendo quebras de linha, códigos e orientações"></textarea>
+                    <button type="button" onclick="diminuirFonteCampo('adminDescricaoAula')">
+                        A-
+                    </button>
 
-<label for="adminDesafioAula">Desafio prático</label>
-<textarea id="adminDesafioAula" placeholder="Cole aqui o desafio prático, atividade ou código para o aluno"></textarea>
+                    <select onchange="trocarFonteCampo('adminDescricaoAula', this.value)">
+                        <option value="Arial">Arial</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value='Consolas, "Courier New", monospace'>Fonte de código</option>
+                        <option value="Georgia">Georgia</option>
+                    </select>
 
+                </div>
 
-<h3>📎 Materiais da Aula</h3>
+                <label for="adminDesafioAula">Desafio prático</label>
+                <textarea id="adminDesafioAula" placeholder="Cole aqui o desafio prático, atividade ou código para o aluno"></textarea>
 
-<label for="adminPdfAula">Link do PDF da aula</label>
-<input type="url" id="adminPdfAula" placeholder="Cole aqui o link do PDF">
-
-<label for="arquivoPdfAula">Ou envie um PDF do computador</label>
-<input type="file" id="arquivoPdfAula" accept="application/pdf">
-
-<label for="adminVideoAula">Link do vídeo da aula</label>
-<input type="url" id="adminVideoAula" placeholder="Cole aqui o link do YouTube ou vídeo">
-
-<label for="adminAtividadeAula">Link da atividade / quiz / desafio</label>
-<input type="url" id="adminAtividadeAula" placeholder="Cole o link da atividade externa">
-
-<label for="adminMaterialExtraAula">Material complementar</label>
-<input type="url" id="adminMaterialExtraAula" placeholder="Link de apoio, slide, site ou documento">
-
-                <label>Data da aula</label>
+                <label for="adminDataAula">Data da aula</label>
                 <div class="linha-data-admin">
+
                     <input type="date" id="adminDataAula">
 
                     <button type="button" id="btnDataHoje">
                         📅 Hoje
                     </button>
+
                 </div>
 
                 <p id="mensagemDataAula"></p>
 
-                <label>Horário de início</label>
+                <label for="adminHorarioInicio">Horário de início</label>
                 <input type="time" id="adminHorarioInicio">
 
-                <label>Horário de fim</label>
+                <label for="adminHorarioFim">Horário de fim</label>
                 <input type="time" id="adminHorarioFim">
 
-                <label>Local da aula</label>
+                <label for="adminLocalAula">Local da aula</label>
                 <input type="text" id="adminLocalAula" placeholder="Ex: Laboratório de Informática">
-
-                <label>Desafio prático</label>
-                <textarea id="adminDesafioAula" placeholder="Descreva a atividade prática"></textarea>
 
                 <div class="area-materiais-aula-admin">
 
                     <h3>📎 Materiais da Aula</h3>
 
                     <p>
-                        Insira aqui os links dos materiais que devem aparecer para o aluno
-                        junto com a Aula do Dia.
+                        Insira os links dos materiais que devem aparecer para o aluno junto com a Aula do Dia.
                     </p>
 
-                    <label>Link do PDF da aula</label>
+                    <label for="adminPdfAula">Link do PDF da aula</label>
                     <input
                         type="url"
                         id="adminPdfAula"
                         placeholder="Cole aqui o link do PDF, slide ou apostila"
                     >
 
-                    <label>Link do vídeo da aula</label>
+                    <label for="arquivoPdfAula">Ou envie um PDF do computador</label>
+                    <input type="file" id="arquivoPdfAula" accept="application/pdf">
+
+                    <label for="adminVideoAula">Link do vídeo da aula</label>
                     <input
                         type="url"
                         id="adminVideoAula"
                         placeholder="Cole aqui o link do YouTube ou vídeo"
                     >
 
-                    <label>Link da atividade / quiz / desafio</label>
+                    <label for="adminAtividadeAula">Link da atividade / quiz / desafio</label>
                     <input
                         type="url"
                         id="adminAtividadeAula"
                         placeholder="Cole aqui o link da atividade, quiz ou formulário"
                     >
 
-                    <label>Material complementar</label>
+                    <label for="adminMaterialExtraAula">Material complementar</label>
                     <input
                         type="url"
                         id="adminMaterialExtraAula"
@@ -880,202 +1217,272 @@
 
         </section>
 
+
         <!-- =====================================================
-     TELA PAEET - APOIA TÉCNICO RIOLANDO
-====================================================== -->
-<section id="telaPaeet" class="tela-admin-sobreposta">
+             TELA PAEET - APOIA TÉCNICO RIOLANDO
+        ====================================================== -->
+        <section id="telaPaeet" class="tela-admin-sobreposta">
 
-    <div class="topo-tela-admin">
-        <h2>🧭 Apoia Técnico Riolando / PAEET</h2>
+            <div class="topo-tela-admin">
 
-        <button type="button" class="btnVoltarMenuAdmin">
-            ⬅ Voltar
-        </button>
-    </div>
+                <h2>🧭 Apoia Técnico Riolando / PAEET</h2>
 
-    <p>
-        Área para acompanhamento, acolhimento e orientação dos estudantes do Ensino Técnico.
-    </p>
+                <button type="button" class="btnVoltarMenuAdmin">
+                    ⬅ Voltar
+                </button>
 
-    <!-- RESUMO RÁPIDO -->
-    <section class="resumo-paeet-admin">
+            </div>
 
-        <div class="card-resumo-paeet status-verde">
-            <h3 id="totalVerdePaeet">0</h3>
-            <p>🟢 Normal</p>
-        </div>
-
-        <div class="card-resumo-paeet status-amarelo">
-            <h3 id="totalAmareloPaeet">0</h3>
-            <p>🟡 Atenção</p>
-        </div>
-
-        <div class="card-resumo-paeet status-vermelho">
-            <h3 id="totalVermelhoPaeet">0</h3>
-            <p>🔴 Intervenção</p>
-        </div>
-
-        <div class="card-resumo-paeet status-total">
-            <h3 id="totalAlunosPaeet">0</h3>
-            <p>Total acompanhados</p>
-        </div>
-
-    </section>
+            <p>
+                Área para acompanhamento, acolhimento, orientação dos estudantes do Ensino Técnico e devolutiva dos chamados enviados pela Área do Aluno.
+            </p>
 
 
-    <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
-    <section class="card-admin-paeet">
+            <!-- =====================================================
+                 SOLICITAÇÕES DE AJUDA DOS ALUNOS
+            ====================================================== -->
+            <section class="card-admin-paeet bloco-solicitacoes-ajuda-admin">
 
-        <h3>➕ Cadastrar aluno em acompanhamento</h3>
+                <div class="cabecalho-bloco-admin">
 
-        <label for="paeetNomeAluno">Nome do aluno</label>
-        <input type="text" id="paeetNomeAluno" placeholder="Nome completo do aluno">
+                    <div>
 
-        <label for="paeetTurmaAluno">Turma</label>
-        <input type="text" id="paeetTurmaAluno" placeholder="Ex: 3ºA">
+                        <h3>
+                            📨 Solicitações de Ajuda dos Alunos
+                        </h3>
 
-        <label for="paeetCursoAluno">Curso</label>
-        <input type="text" id="paeetCursoAluno" placeholder="Ex: Desenvolvimento de Sistemas">
+                        <p>
+                            Acompanhe os pedidos enviados pela Área do Aluno, responda dúvidas e transforme solicitações em acompanhamento PAEET quando necessário.
+                        </p>
 
-        <label for="paeetSituacaoAluno">Situação</label>
-        <select id="paeetSituacaoAluno">
-            <option value="verde">🟢 Acompanhamento normal</option>
-            <option value="amarelo">🟡 Atenção pedagógica</option>
-            <option value="vermelho">🔴 Necessita intervenção</option>
-        </select>
+                    </div>
 
-        <label for="paeetDificuldadeAluno">Dificuldade principal</label>
-        <textarea id="paeetDificuldadeAluno" placeholder="Ex: dificuldade em lógica, faltas, atividades atrasadas..."></textarea>
+                    <button type="button" id="btnCarregarSolicitacoesAjuda">
+                        🔄 Atualizar chamados
+                    </button>
 
-        <label for="paeetObservacaoAluno">Observação</label>
-        <textarea id="paeetObservacaoAluno" placeholder="Observações importantes sobre o acompanhamento"></textarea>
+                </div>
 
-        <label for="paeetProximoPassoAluno">Próximo passo / combinado</label>
-        <textarea id="paeetProximoPassoAluno" placeholder="Ex: revisar atividade, conversar novamente, acompanhar entrega..."></textarea>
+                <div class="filtros-solicitacoes-ajuda-admin">
 
-        <button type="button" id="btnSalvarAlunoPaeet">
-            💾 Salvar acompanhamento
-        </button>
+                    <div>
 
-        <p id="mensagemPaeetAluno"></p>
+                        <label for="filtroStatusSolicitacoesAjuda">
+                            Status
+                        </label>
 
-    </section>
+                        <select id="filtroStatusSolicitacoesAjuda">
+                            <option value="todos">Todos</option>
+                            <option value="enviado">Enviados</option>
+                            <option value="em_analise">Em análise</option>
+                            <option value="respondido">Respondidos</option>
+                            <option value="resolvido">Resolvidos</option>
+                            <option value="arquivado">Arquivados</option>
+                        </select>
 
+                    </div>
 
-    <!-- FILTROS -->
-    <section class="filtros-paeet-admin">
+                    <div>
 
-        <h3>🔎 Filtrar acompanhamentos</h3>
+                        <label for="filtroTurmaSolicitacoesAjuda">
+                            Filtrar por turma
+                        </label>
 
-        <input type="text" id="filtroPaeetNome" placeholder="Buscar por nome do aluno">
+                        <input
+                            type="text"
+                            id="filtroTurmaSolicitacoesAjuda"
+                            placeholder="Ex: 3ºA"
+                        >
 
-        <select id="filtroPaeetSituacao">
-            <option value="todos">Todas as situações</option>
-            <option value="verde">🟢 Normal</option>
-            <option value="amarelo">🟡 Atenção</option>
-            <option value="vermelho">🔴 Intervenção</option>
-        </select>
+                    </div>
 
-        <button type="button" id="btnFiltrarPaeet">
-            Filtrar
-        </button>
+                    <div>
 
-        <button type="button" id="btnLimparFiltroPaeet">
-            Limpar filtros
-        </button>
+                        <label for="filtroNomeSolicitacoesAjuda">
+                            Filtrar por aluno
+                        </label>
 
-    </section>
+                        <input
+                            type="text"
+                            id="filtroNomeSolicitacoesAjuda"
+                            placeholder="Digite o nome do aluno"
+                        >
 
+                    </div>
 
-    <!-- LISTA DE ALUNOS -->
-    <section class="card-admin-paeet">
+                </div>
 
-        <div class="cabecalho-lista-paeet">
-            <h3>📋 Alunos acompanhados</h3>
+                <div id="listaSolicitacoesAjudaAdmin" class="lista-solicitacoes-ajuda-admin">
 
-            <button type="button" id="btnCarregarAlunosPaeet">
-                🔄 Atualizar lista
-            </button>
-        </div>
+                    <p>
+                        Clique em “Atualizar chamados” para carregar as solicitações dos alunos.
+                    </p>
 
-        <div id="listaAlunosPaeet">
-            <p>Carregando acompanhamentos...</p>
-        </div>
+                </div>
 
-    </section>
-
-    <!-- SOLICITAÇÕES DE AJUDA DOS ALUNOS -->
-<section class="card-admin-paeet">
-
-    <div class="cabecalho-lista-paeet">
-        <h3>🙋 Solicitações de Ajuda dos Alunos</h3>
-
-        <button type="button" id="btnCarregarSolicitacoesAjuda">
-            🔄 Atualizar solicitações
-        </button>
-    </div>
-
-    <p>
-        Aqui aparecem os pedidos enviados pelos alunos pela área pública “Preciso de Ajuda”.
-    </p>
-
-    <div id="listaSolicitacoesAjudaAdmin">
-        <p>Nenhuma solicitação carregada ainda.</p>
-    </div>
-
-</section>
+            </section>
 
 
-    <!-- FORMULÁRIO DE ATENDIMENTO -->
-    <section class="card-admin-paeet" id="areaAtendimentoPaeet" style="display:none;">
+            <!-- RESUMO RÁPIDO -->
+            <section class="resumo-paeet-admin">
 
-        <h3>📝 Registrar atendimento PAEET</h3>
+                <div class="card-resumo-paeet status-verde">
+                    <h3 id="totalVerdePaeet">0</h3>
+                    <p>🟢 Normal</p>
+                </div>
 
-        <p id="alunoSelecionadoAtendimentoPaeet"></p>
+                <div class="card-resumo-paeet status-amarelo">
+                    <h3 id="totalAmareloPaeet">0</h3>
+                    <p>🟡 Atenção</p>
+                </div>
 
-        <label for="paeetDataAtendimento">Data do atendimento</label>
-        <input type="date" id="paeetDataAtendimento">
+                <div class="card-resumo-paeet status-vermelho">
+                    <h3 id="totalVermelhoPaeet">0</h3>
+                    <p>🔴 Intervenção</p>
+                </div>
 
-        <label for="paeetMotivoAtendimento">Motivo do atendimento</label>
-        <textarea id="paeetMotivoAtendimento" placeholder="Motivo do atendimento"></textarea>
+                <div class="card-resumo-paeet status-total">
+                    <h3 id="totalAlunosPaeet">0</h3>
+                    <p>Total acompanhados</p>
+                </div>
 
-        <label for="paeetOrientacaoAtendimento">Orientação realizada</label>
-        <textarea id="paeetOrientacaoAtendimento" placeholder="O que foi orientado ao estudante?"></textarea>
-
-        <label for="paeetCombinadoAtendimento">Combinado com o aluno</label>
-        <textarea id="paeetCombinadoAtendimento" placeholder="Qual combinado foi feito?"></textarea>
-
-        <label for="paeetProximoRetorno">Próximo retorno</label>
-        <input type="date" id="paeetProximoRetorno">
-
-        <label for="paeetProfessorResponsavel">Professor responsável</label>
-        <input type="text" id="paeetProfessorResponsavel" value="Willyan Vieira">
-
-        <button type="button" id="btnSalvarAtendimentoPaeet">
-            💾 Salvar atendimento
-        </button>
-
-        <button type="button" id="btnCancelarAtendimentoPaeet">
-            ❌ Cancelar
-        </button>
-
-        <p id="mensagemAtendimentoPaeet"></p>
-
-    </section>
+            </section>
 
 
-    <!-- HISTÓRICO -->
-    <section class="card-admin-paeet">
+            <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO -->
+            <section class="card-admin-paeet">
 
-        <h3>📚 Histórico de atendimentos</h3>
+                <h3>➕ Cadastrar aluno em acompanhamento</h3>
 
-        <div id="historicoAtendimentosPaeet">
-            <p>Selecione um aluno para ver o histórico.</p>
-        </div>
+                <label for="paeetNomeAluno">Nome do aluno</label>
+                <input type="text" id="paeetNomeAluno" placeholder="Nome completo do aluno">
 
-    </section>
+                <label for="paeetTurmaAluno">Turma</label>
+                <input type="text" id="paeetTurmaAluno" placeholder="Ex: 3ºA">
 
-</section>
+                <label for="paeetCursoAluno">Curso</label>
+                <input type="text" id="paeetCursoAluno" placeholder="Ex: Desenvolvimento de Sistemas">
+
+                <label for="paeetSituacaoAluno">Situação</label>
+                <select id="paeetSituacaoAluno">
+                    <option value="verde">🟢 Acompanhamento normal</option>
+                    <option value="amarelo">🟡 Atenção pedagógica</option>
+                    <option value="vermelho">🔴 Necessita intervenção</option>
+                </select>
+
+                <label for="paeetDificuldadeAluno">Dificuldade principal</label>
+                <textarea id="paeetDificuldadeAluno" placeholder="Ex: dificuldade em lógica, faltas, atividades atrasadas..."></textarea>
+
+                <label for="paeetObservacaoAluno">Observação</label>
+                <textarea id="paeetObservacaoAluno" placeholder="Observações importantes sobre o acompanhamento"></textarea>
+
+                <label for="paeetProximoPassoAluno">Próximo passo / combinado</label>
+                <textarea id="paeetProximoPassoAluno" placeholder="Ex: revisar atividade, conversar novamente, acompanhar entrega..."></textarea>
+
+                <button type="button" id="btnSalvarAlunoPaeet">
+                    💾 Salvar acompanhamento
+                </button>
+
+                <p id="mensagemPaeetAluno"></p>
+
+            </section>
+
+
+            <!-- FILTROS -->
+            <section class="filtros-paeet-admin">
+
+                <h3>🔎 Filtrar acompanhamentos</h3>
+
+                <input type="text" id="filtroPaeetNome" placeholder="Buscar por nome do aluno">
+
+                <select id="filtroPaeetSituacao">
+                    <option value="todos">Todas as situações</option>
+                    <option value="verde">🟢 Normal</option>
+                    <option value="amarelo">🟡 Atenção</option>
+                    <option value="vermelho">🔴 Intervenção</option>
+                </select>
+
+                <button type="button" id="btnFiltrarPaeet">
+                    Filtrar
+                </button>
+
+                <button type="button" id="btnLimparFiltroPaeet">
+                    Limpar filtros
+                </button>
+
+            </section>
+
+
+            <!-- LISTA DE ALUNOS -->
+            <section class="card-admin-paeet">
+
+                <div class="cabecalho-lista-paeet">
+
+                    <h3>📋 Alunos acompanhados</h3>
+
+                    <button type="button" id="btnCarregarAlunosPaeet">
+                        🔄 Atualizar lista
+                    </button>
+
+                </div>
+
+                <div id="listaAlunosPaeet">
+                    <p>Carregando acompanhamentos...</p>
+                </div>
+
+            </section>
+
+
+            <!-- FORMULÁRIO DE ATENDIMENTO -->
+            <section class="card-admin-paeet" id="areaAtendimentoPaeet" style="display:none;">
+
+                <h3>📝 Registrar atendimento PAEET</h3>
+
+                <p id="alunoSelecionadoAtendimentoPaeet"></p>
+
+                <label for="paeetDataAtendimento">Data do atendimento</label>
+                <input type="date" id="paeetDataAtendimento">
+
+                <label for="paeetMotivoAtendimento">Motivo do atendimento</label>
+                <textarea id="paeetMotivoAtendimento" placeholder="Motivo do atendimento"></textarea>
+
+                <label for="paeetOrientacaoAtendimento">Orientação realizada</label>
+                <textarea id="paeetOrientacaoAtendimento" placeholder="O que foi orientado ao estudante?"></textarea>
+
+                <label for="paeetCombinadoAtendimento">Combinado com o aluno</label>
+                <textarea id="paeetCombinadoAtendimento" placeholder="Qual combinado foi feito?"></textarea>
+
+                <label for="paeetProximoRetorno">Próximo retorno</label>
+                <input type="date" id="paeetProximoRetorno">
+
+                <label for="paeetProfessorResponsavel">Professor responsável</label>
+                <input type="text" id="paeetProfessorResponsavel" value="Willyan Vieira">
+
+                <button type="button" id="btnSalvarAtendimentoPaeet">
+                    💾 Salvar atendimento
+                </button>
+
+                <button type="button" id="btnCancelarAtendimentoPaeet">
+                    ❌ Cancelar
+                </button>
+
+                <p id="mensagemAtendimentoPaeet"></p>
+
+            </section>
+
+
+            <!-- HISTÓRICO -->
+            <section class="card-admin-paeet">
+
+                <h3>📚 Histórico de atendimentos</h3>
+
+                <div id="historicoAtendimentosPaeet">
+                    <p>Selecione um aluno para ver o histórico.</p>
+                </div>
+
+            </section>
+
+        </section>
 
 
         <!-- =============================
@@ -1084,6 +1491,7 @@
         <section id="telaAssistenteIA" class="tela-admin-sobreposta">
 
             <div class="barra-tela-admin">
+
                 <button class="btnVoltarMenuAdmin" type="button">
                     ← Voltar
                 </button>
@@ -1091,6 +1499,7 @@
                 <a href="index.html" class="botao-inicio-admin">
                     🏠 Início do Site
                 </a>
+
             </div>
 
             <h2>🤖 Assistente IA de Aulas</h2>
@@ -1109,20 +1518,13 @@
                 </p>
 
                 <label for="promptIA">Pedido principal</label>
-                <textarea
-                    id="promptIA"
-                    placeholder="Digite aqui seu pedido para a IA..."
-                    rows="6"
-                ></textarea>
+                <textarea id="promptIA" placeholder="Digite aqui seu pedido para a IA..." rows="6"></textarea>
 
                 <label for="contextoIA">Contexto opcional</label>
-                <textarea
-                    id="contextoIA"
-                    placeholder="Cole aqui texto base, orientação do AVA, tema da semana ou conteúdo de apoio..."
-                    rows="5"
-                ></textarea>
+                <textarea id="contextoIA" placeholder="Cole aqui texto base, orientação do AVA, tema da semana ou conteúdo de apoio..." rows="5"></textarea>
 
                 <div class="botoes-ia-admin">
+
                     <button type="button" onclick="gerarConteudoIA('aula')">
                         📚 Gerar Aula
                     </button>
@@ -1138,6 +1540,7 @@
                     <button type="button" onclick="gerarConteudoIA('rubrica')">
                         ✅ Gerar Rubrica
                     </button>
+
                 </div>
 
                 <p id="mensagemIA"></p>
@@ -1153,6 +1556,7 @@
                 </div>
 
                 <div class="botoes-ia-admin">
+
                     <button type="button" onclick="copiarResultadoIA()">
                         📋 Copiar Texto
                     </button>
@@ -1160,6 +1564,7 @@
                     <button type="button" onclick="enviarResultadoParaAula()">
                         📚 Usar como base da Aula
                     </button>
+
                 </div>
 
             </div>
@@ -1173,6 +1578,7 @@
         <section id="telaPortfolios" class="tela-admin-sobreposta">
 
             <div class="barra-tela-admin">
+
                 <button class="btnVoltarMenuAdmin" type="button">
                     ← Voltar
                 </button>
@@ -1180,6 +1586,7 @@
                 <a href="index.html" class="botao-inicio-admin">
                     🏠 Início do Site
                 </a>
+
             </div>
 
             <h2>🧑‍💻 Portfólios</h2>
@@ -1192,18 +1599,11 @@
 
                 <h3>Filtros</h3>
 
-                <label>Nome do aluno</label>
-                <input
-                    type="text"
-                    id="filtroNomePortfolio"
-                    placeholder="Digite parte do nome do aluno"
-                >
+                <label for="filtroNomePortfolio">Nome do aluno</label>
+                <input type="text" id="filtroNomePortfolio" placeholder="Digite parte do nome do aluno">
 
-                <label>Data aproximada de envio</label>
-                <input
-                    type="date"
-                    id="filtroDataPortfolio"
-                >
+                <label for="filtroDataPortfolio">Data aproximada de envio</label>
+                <input type="date" id="filtroDataPortfolio">
 
                 <button id="btnFiltrarPortfolios" type="button">
                     🔎 Filtrar Portfólios
@@ -1240,6 +1640,7 @@
         <section id="telaGerenciarSite" class="tela-admin-sobreposta">
 
             <div class="barra-tela-admin">
+
                 <button class="btnVoltarMenuAdmin" type="button">
                     ← Voltar
                 </button>
@@ -1247,6 +1648,7 @@
                 <a href="index.html" class="botao-inicio-admin">
                     🏠 Início do Site
                 </a>
+
             </div>
 
             <h2>⚙️ Gerenciar Site</h2>
@@ -1254,63 +1656,58 @@
             <p>
                 Área reservada para cadastrar turmas, disciplinas e configurações estruturais do portal.
             </p>
+
             <hr>
 
-<section class="area-editar-turmas-admin">
+            <section class="area-editar-turmas-admin card-admin-lista">
 
-    <h3>📚 Turmas Cadastradas</h3>
+                <h3>📚 Turmas Cadastradas</h3>
 
-    <p>
-        Edite nome, curso, descrição, foto ou mídia das turmas já cadastradas.
-    </p>
+                <p>
+                    Edite nome, curso, descrição, foto ou mídia das turmas já cadastradas.
+                </p>
 
-    <button type="button" id="btnCarregarTurmasCadastradas" class="btn-admin-secundario">
-        🔄 Carregar Turmas Cadastradas
-    </button>
+                <button type="button" id="btnCarregarTurmasCadastradas">
+                    🔄 Carregar Turmas Cadastradas
+                </button>
 
-    <div id="listaTurmasCadastradasAdmin" class="lista-turmas-admin">
-        <p>Clique em carregar para visualizar as turmas cadastradas.</p>
-    </div>
+                <div id="listaTurmasCadastradasAdmin" class="lista-turmas-admin">
+                    <p>Clique em carregar para visualizar as turmas cadastradas.</p>
+                </div>
 
-</section>
+            </section>
 
             <div class="card-admin-form">
 
                 <h3>Cadastrar Nova Turma</h3>
 
-                <label>Nome da turma</label>
+                <label for="novaTurmaNome">Nome da turma</label>
                 <input type="text" id="novaTurmaNome" placeholder="Ex: 3ºA">
 
-                <label>Curso</label>
+                <label for="novaTurmaCurso">Curso</label>
                 <input type="text" id="novaTurmaCurso" placeholder="Ex: Desenvolvimento de Sistemas">
 
-                <label>Descrição da turma</label>
+                <label for="novaTurmaDescricao">Descrição da turma</label>
                 <textarea id="novaTurmaDescricao" placeholder="Ex: Turma do curso técnico de Desenvolvimento de Sistemas"></textarea>
 
-                <label>Foto ou mídia da turma</label>
+                <label for="arquivoTurmaFoto">Foto ou mídia da turma</label>
 
                 <div class="upload-box-admin">
-                    <input
-                        type="file"
-                        id="arquivoTurmaFoto"
-                        accept="image/*,video/mp4,application/pdf"
-                    >
+
+                    <input type="file" id="arquivoTurmaFoto" accept="image/*,video/mp4,application/pdf">
 
                     <p class="texto-ajuda">
                         Você pode escolher uma imagem, PDF ou vídeo MP4 do computador/celular.
                     </p>
 
-                    <input
-                        type="text"
-                        id="novaTurmaFoto"
-                        placeholder="Ou cole aqui um link de imagem, YouTube, PDF ou MP4"
-                    >
+                    <input type="text" id="novaTurmaFoto" placeholder="Ou cole aqui um link de imagem, YouTube, PDF ou MP4">
 
                     <button type="button" id="btnPreviewTurmaMidia">
                         👁️ Pré-visualizar mídia
                     </button>
 
                     <div id="previewTurmaMidia" class="preview-midia"></div>
+
                 </div>
 
                 <button id="btnCadastrarTurma" type="button">
@@ -1325,13 +1722,13 @@
 
                 <h3>Cadastrar Nova Disciplina</h3>
 
-                <label>Nome da disciplina</label>
+                <label for="novaDisciplinaNome">Nome da disciplina</label>
                 <input type="text" id="novaDisciplinaNome" placeholder="Ex: Front-End">
 
-                <label>Curso relacionado</label>
+                <label for="novaDisciplinaCurso">Curso relacionado</label>
                 <input type="text" id="novaDisciplinaCurso" placeholder="Ex: Desenvolvimento de Sistemas">
 
-                <label>Descrição da disciplina</label>
+                <label for="novaDisciplinaDescricao">Descrição da disciplina</label>
                 <textarea id="novaDisciplinaDescricao" placeholder="Explique brevemente a disciplina"></textarea>
 
                 <button id="btnCadastrarDisciplina" type="button">
@@ -1351,6 +1748,7 @@
         <section id="telaEditarPerfilAdmin" class="tela-admin-sobreposta">
 
             <div class="barra-tela-admin">
+
                 <button class="btnVoltarMenuAdmin" type="button">
                     ← Voltar
                 </button>
@@ -1358,6 +1756,7 @@
                 <a href="index.html" class="botao-inicio-admin">
                     🏠 Início do Site
                 </a>
+
             </div>
 
             <h2>👤 Editar Perfil Administrativo</h2>
@@ -1368,43 +1767,24 @@
 
             <div class="card-admin-form">
 
-                <label>Foto de perfil</label>
-                <input
-                    type="file"
-                    id="inputFotoPerfilAdmin"
-                    accept="image/*"
-                >
+                <label for="inputFotoPerfilAdmin">Foto de perfil</label>
+                <input type="file" id="inputFotoPerfilAdmin" accept="image/*">
 
                 <p class="texto-ajuda">
                     Escolha uma foto pequena do computador ou celular.
                 </p>
 
-                <label>Nome e função</label>
-                <input
-                    type="text"
-                    id="inputNomePerfilAdmin"
-                    placeholder="Ex: Professor e PAEET Willyan Vieira"
-                >
+                <label for="inputNomePerfilAdmin">Nome e função</label>
+                <input type="text" id="inputNomePerfilAdmin" placeholder="Ex: Professor e PAEET Willyan Vieira">
 
-                <label>E-mail administrativo</label>
-                <input
-                    type="email"
-                    id="inputEmailPerfilAdmin"
-                    placeholder="Ex: willyancruz@prof.educacao.sp.gov.br"
-                >
+                <label for="inputEmailPerfilAdmin">E-mail administrativo</label>
+                <input type="email" id="inputEmailPerfilAdmin" placeholder="Ex: willyancruz@prof.educacao.sp.gov.br">
 
-                <label>Nome da escola</label>
-                <input
-                    type="text"
-                    id="inputEscolaPerfilAdmin"
-                    placeholder="Ex: PEI Prof. Riolando Canno"
-                >
+                <label for="inputEscolaPerfilAdmin">Nome da escola</label>
+                <input type="text" id="inputEscolaPerfilAdmin" placeholder="Ex: PEI Prof. Riolando Canno">
 
-                <label>Frase motivacional</label>
-                <textarea
-                    id="inputFrasePerfilAdmin"
-                    placeholder="Digite uma frase motivacional para aparecer no painel"
-                ></textarea>
+                <label for="inputFrasePerfilAdmin">Frase motivacional</label>
+                <textarea id="inputFrasePerfilAdmin" placeholder="Digite uma frase motivacional para aparecer no painel"></textarea>
 
                 <button type="button" id="btnSalvarPerfilAdmin">
                     💾 Salvar Perfil
@@ -1423,20 +1803,22 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Arquivo com as funções do painel administrativo -->
-    <script src="admin.js"></script>
+    <script src="admin.js?v=20260610-08"></script>
+
     <script>
-    if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function () {
-            navigator.serviceWorker.register("/service-worker.js")
-                .then(function () {
-                    console.log("Service Worker registrado com sucesso.");
-                })
-                .catch(function (erro) {
-                    console.log("Erro ao registrar Service Worker:", erro);
-                });
-        });
-    }
-</script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .then(function () {
+                        console.log("Service Worker registrado com sucesso.");
+                    })
+                    .catch(function (erro) {
+                        console.log("Erro ao registrar Service Worker:", erro);
+                    });
+            });
+        }
+    </script>
 
 </body>
 </html>
+````
