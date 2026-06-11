@@ -1086,3 +1086,266 @@
         width: 100%;
     }
 }
+
+/* =====================================================
+   PAINEL ADMIN - CHAMADOS DOS ALUNOS / APOIO PAEET
+===================================================== */
+
+.bloco-solicitacoes-ajuda-admin {
+    background: linear-gradient(135deg, #f0fdfa, #ffffff);
+    border-left: 6px solid #0f766e;
+}
+
+.lista-solicitacoes-ajuda-admin {
+    margin-top: 18px;
+}
+
+.resumo-solicitacoes-ajuda-admin {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.resumo-solicitacoes-ajuda-admin div {
+    background-color: white;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 3px 9px rgba(15, 23, 42, 0.08);
+}
+
+.resumo-solicitacoes-ajuda-admin strong {
+    display: block;
+    font-size: 26px;
+    color: #0f766e;
+}
+
+.resumo-solicitacoes-ajuda-admin span {
+    color: #475569;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.card-solicitacao-ajuda {
+    background-color: white;
+    border-radius: 18px;
+    padding: 18px;
+    margin: 18px 0;
+    border-left: 7px solid #f59e0b;
+    box-shadow: 0 5px 16px rgba(15, 23, 42, 0.12);
+}
+
+.card-solicitacao-ajuda.status-enviado {
+    border-left-color: #f59e0b;
+}
+
+.card-solicitacao-ajuda.status-em_analise {
+    border-left-color: #2563eb;
+}
+
+.card-solicitacao-ajuda.status-respondido {
+    border-left-color: #16a34a;
+}
+
+.card-solicitacao-ajuda.status-resolvido {
+    border-left-color: #15803d;
+}
+
+.card-solicitacao-ajuda.status-arquivado {
+    border-left-color: #64748b;
+}
+
+.topo-card-aluno-paeet {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.topo-card-aluno-paeet h4 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 20px;
+}
+
+.subinfo-solicitacao-ajuda {
+    margin: 5px 0 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.selo-paeet {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background-color: #fef3c7;
+    color: #92400e;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.status-ajuda-enviado {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-ajuda-em_analise {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-ajuda-respondido {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-ajuda-resolvido {
+    background-color: #bbf7d0;
+    color: #166534;
+}
+
+.status-ajuda-arquivado {
+    background-color: #e2e8f0;
+    color: #334155;
+}
+
+.grid-info-solicitacao-ajuda {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 16px;
+    padding: 12px;
+    background-color: #f8fafc;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    margin: 12px 0;
+}
+
+.grid-info-solicitacao-ajuda p {
+    margin: 4px 0;
+}
+
+.bloco-solicitacao-ajuda-admin,
+.bloco-resposta-ajuda-admin {
+    background-color: #f8fafc;
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.texto-solicitacao-ajuda {
+    background-color: white;
+    border-radius: 12px;
+    padding: 12px;
+    line-height: 1.6;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+}
+
+.textarea-resposta-ajuda-admin {
+    width: 100% !important;
+    min-height: 120px;
+    border: 2px solid #0f766e !important;
+    background-color: white;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+.data-resposta-ajuda-admin {
+    color: #166534;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.acoes-solicitacao-ajuda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.acoes-solicitacao-ajuda button {
+    margin: 0;
+}
+
+.btn-excluir-solicitacao {
+    background-color: #dc2626 !important;
+}
+
+.btn-excluir-solicitacao:hover {
+    background-color: #b91c1c !important;
+}
+
+.card-vazio-admin,
+.mensagem-erro-admin {
+    padding: 18px;
+    background-color: white;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+}
+
+.mensagem-erro-admin {
+    border-left: 6px solid #dc2626;
+    color: #991b1b;
+    font-weight: bold;
+}
+
+.filtros-solicitacoes-ajuda-admin {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    background-color: #f8fafc;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #cbd5e1;
+    margin: 18px 0;
+}
+
+.filtros-solicitacoes-ajuda-admin label {
+    font-weight: bold;
+    color: #0f172a;
+}
+
+.filtros-solicitacoes-ajuda-admin input,
+.filtros-solicitacoes-ajuda-admin select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Responsividade dos chamados no admin */
+@media (max-width: 900px) {
+    .resumo-solicitacoes-ajuda-admin {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .filtros-solicitacoes-ajuda-admin,
+    .grid-info-solicitacao-ajuda {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .resumo-solicitacoes-ajuda-admin {
+        grid-template-columns: 1fr;
+    }
+
+    .acoes-solicitacao-ajuda {
+        flex-direction: column;
+    }
+
+    .acoes-solicitacao-ajuda button {
+        width: 100%;
+    }
+
+    .card-solicitacao-ajuda {
+        padding: 14px;
+    }
+}
