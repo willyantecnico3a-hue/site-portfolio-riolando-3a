@@ -1349,3 +1349,89 @@
         padding: 14px;
     }
 }
+
+/* =========================
+   GRID DE CARDS DA HOME
+========================= */
+.grid-cards-home {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+    align-items: stretch;
+}
+
+/* =========================
+   CARD PADRÃO
+========================= */
+.card-home {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    text-decoration: none;
+    background: #ffffff;
+    border: 2px solid #cbd5e1;
+    border-left: 7px solid #0f766e;
+    border-radius: 22px;
+    padding: 24px 22px;
+    min-height: 145px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+    transition: all 0.25s ease;
+    color: #0f172a;
+}
+
+.card-home:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.14);
+    border-color: #94a3b8;
+}
+
+/* Card com destaque, se quiser deixar agenda diferente */
+.card-home-destaque {
+    background: #e6f7f5;
+    border-color: #0f766e;
+}
+
+/* Ícone do card */
+.icone-card-home {
+    font-size: 34px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* Texto interno */
+.conteudo-card-home h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #0f766e;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.conteudo-card-home p {
+    margin: 0;
+    font-size: 16px;
+    color: #334155;
+    line-height: 1.45;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .grid-cards-home {
+        grid-template-columns: 1fr;
+    }
+
+    .card-home {
+        min-height: auto;
+        padding: 20px 18px;
+    }
+
+    .conteudo-card-home h3 {
+        font-size: 18px;
+    }
+
+    .conteudo-card-home p {
+        font-size: 15px;
+    }
+}
