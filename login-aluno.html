@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login do Aluno - Riolando Conecta Técnico</title>
+
+    <link rel="stylesheet" href="aluno.css?v=20260610-01">
+
+    <link rel="manifest" href="/manifest.json">
+
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+
+    <meta name="theme-color" content="#0f766e">
+
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <meta name="apple-mobile-web-app-title" content="Área do Aluno">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+    <main class="pagina-login-aluno">
+
+        <section class="card-login-aluno">
+
+            <div class="topo-login-aluno">
+
+                <div class="icone-login-aluno">
+                    👨‍🎓
+                </div>
+
+                <p class="etiqueta-sistema">
+                    Riolando Conecta Técnico
+                </p>
+
+                <h1>
+                    Área do Aluno
+                </h1>
+
+                <p>
+                    Acesse sua área para acompanhar seus chamados de ajuda, orientações do professor e devolutivas do apoio pedagógico.
+                </p>
+
+            </div>
+
+
+            <form id="formLoginAluno" class="form-login-aluno">
+
+                <label for="emailAluno">
+                    E-mail institucional
+                </label>
+
+                <input
+                    type="email"
+                    id="emailAluno"
+                    placeholder="Digite seu e-mail de aluno"
+                    autocomplete="email"
+                    required
+                >
+
+
+                <label for="senhaAluno">
+                    Senha
+                </label>
+
+                <div class="campo-senha-aluno">
+
+                    <input
+                        type="password"
+                        id="senhaAluno"
+                        placeholder="Digite sua senha"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button type="button" id="btnMostrarSenhaAluno" class="btn-mostrar-senha">
+                        👁️
+                    </button>
+
+                </div>
+
+
+                <button type="submit" id="btnEntrarAluno" class="btn-principal-aluno">
+                    Entrar na Área do Aluno
+                </button>
+
+                <p id="mensagemLoginAluno" class="mensagem-login-aluno"></p>
+
+            </form>
+
+
+            <div class="area-ajuda-login">
+
+                <button type="button" id="btnEsqueciSenhaAluno" class="btn-secundario-aluno">
+                    Esqueci minha senha
+                </button>
+
+                <a href="index.html" class="link-voltar-site">
+                    ← Voltar para o site
+                </a>
+
+            </div>
+
+
+            <div class="aviso-primeiro-acesso">
+
+                <h2>
+                    Primeiro acesso
+                </h2>
+
+                <p>
+                    No primeiro acesso, utilize a senha temporária informada pelo professor. Depois disso, o sistema solicitará a criação de uma nova senha.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="login-aluno.js?v=20260610-01"></script>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .then(function () {
+                        console.log("Service Worker registrado com sucesso.");
+                    })
+                    .catch(function (erro) {
+                        console.log("Erro ao registrar Service Worker:", erro);
+                    });
+            });
+        }
+    </script>
+
+</body>
+</html>

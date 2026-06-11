@@ -1,0 +1,401 @@
+/* =====================================================
+   ÁREA DO ALUNO - RIOLANDO CONECTA TÉCNICO
+===================================================== */
+
+:root {
+    --cor-primaria: #0f766e;
+    --cor-primaria-escura: #115e59;
+    --cor-secundaria: #0f172a;
+    --cor-fundo: #f1f5f9;
+    --cor-card: #ffffff;
+    --cor-texto: #1e293b;
+    --cor-texto-suave: #64748b;
+    --cor-borda: #dbe4ee;
+    --cor-erro: #dc2626;
+    --cor-sucesso: #15803d;
+    --cor-info: #0369a1;
+    --sombra-card: 0 20px 50px rgba(15, 23, 42, 0.16);
+    --raio-card: 28px;
+}
+
+
+/* =====================================================
+   BASE
+===================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--cor-texto);
+    background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 35%),
+        linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+
+/* =====================================================
+   LOGIN DO ALUNO
+===================================================== */
+
+.pagina-login-aluno {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+}
+
+.card-login-aluno {
+    width: 100%;
+    max-width: 480px;
+    background: var(--cor-card);
+    border-radius: var(--raio-card);
+    padding: 34px;
+    box-shadow: var(--sombra-card);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.topo-login-aluno {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.icone-login-aluno {
+    width: 86px;
+    height: 86px;
+    margin: 0 auto 16px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    box-shadow: 0 14px 30px rgba(15, 118, 110, 0.35);
+}
+
+.etiqueta-sistema {
+    display: inline-block;
+    margin: 0 0 10px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cor-primaria-escura);
+    background: #ccfbf1;
+}
+
+.topo-login-aluno h1 {
+    margin: 0 0 12px;
+    color: var(--cor-secundaria);
+    font-size: 2rem;
+}
+
+.topo-login-aluno p {
+    margin: 0;
+    color: var(--cor-texto-suave);
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   FORMULÁRIO
+===================================================== */
+
+.form-login-aluno {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-login-aluno label {
+    font-weight: 700;
+    color: var(--cor-secundaria);
+    margin-top: 8px;
+}
+
+.form-login-aluno input {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 16px;
+    border: 1px solid var(--cor-borda);
+    padding: 0 16px;
+    font-size: 1rem;
+    outline: none;
+    background: #f8fafc;
+    color: var(--cor-texto);
+    transition: 0.2s ease;
+}
+
+.form-login-aluno input:focus {
+    border-color: var(--cor-primaria);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.campo-senha-aluno {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.campo-senha-aluno input {
+    padding-right: 58px;
+}
+
+.btn-mostrar-senha {
+    position: absolute;
+    right: 8px;
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 14px;
+    background: #e2e8f0;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.2s ease;
+}
+
+.btn-mostrar-senha:hover {
+    background: #cbd5e1;
+}
+
+.btn-principal-aluno {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 16px;
+    border: none;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(15, 118, 110, 0.28);
+    transition: 0.2s ease;
+}
+
+.btn-principal-aluno:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(15, 118, 110, 0.35);
+}
+
+.btn-principal-aluno:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* =====================================================
+   MENSAGENS
+===================================================== */
+
+.mensagem-login-aluno {
+    min-height: 24px;
+    margin: 10px 0 0;
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.mensagem-login-aluno.erro {
+    color: var(--cor-erro);
+}
+
+.mensagem-login-aluno.sucesso {
+    color: var(--cor-sucesso);
+}
+
+.mensagem-login-aluno.info {
+    color: var(--cor-info);
+}
+
+
+/* =====================================================
+   ÁREA DE AJUDA
+===================================================== */
+
+.area-ajuda-login {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-secundario-aluno {
+    border: none;
+    background: transparent;
+    color: var(--cor-primaria-escura);
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.btn-secundario-aluno:hover {
+    text-decoration: underline;
+}
+
+.link-voltar-site {
+    color: var(--cor-texto-suave);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.link-voltar-site:hover {
+    color: var(--cor-primaria-escura);
+}
+
+
+/* =====================================================
+   AVISO PRIMEIRO ACESSO
+===================================================== */
+
+.aviso-primeiro-acesso {
+    margin-top: 26px;
+    padding: 18px;
+    border-radius: 20px;
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+}
+
+.aviso-primeiro-acesso h2 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: var(--cor-primaria-escura);
+}
+
+.aviso-primeiro-acesso p {
+    margin: 0;
+    color: #334155;
+    line-height: 1.55;
+    font-size: 0.95rem;
+}
+
+
+/* =====================================================
+   COMPONENTES FUTUROS DA ÁREA DO ALUNO
+   Já deixei preparado para aluno.html
+===================================================== */
+
+.pagina-aluno {
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.container-aluno {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.topo-area-aluno {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: #ffffff;
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 18px 40px rgba(15, 118, 110, 0.25);
+    margin-bottom: 24px;
+}
+
+.topo-area-aluno h1 {
+    margin: 0 0 8px;
+}
+
+.topo-area-aluno p {
+    margin: 0;
+    opacity: 0.95;
+}
+
+.grade-cards-aluno {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.card-aluno {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+    border: 1px solid #e2e8f0;
+}
+
+.card-aluno h2 {
+    margin: 0 0 12px;
+    color: #0f172a;
+}
+
+.card-chamado-aluno {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 18px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    margin-bottom: 14px;
+}
+
+.status-chamado {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.status-enviado {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-em_analise {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-respondido {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-resolvido {
+    background: #ccfbf1;
+    color: #0f766e;
+}
+
+.status-arquivado {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 768px) {
+    .card-login-aluno {
+        padding: 26px 20px;
+        border-radius: 24px;
+    }
+
+    .topo-login-aluno h1 {
+        font-size: 1.7rem;
+    }
+
+    .grade-cards-aluno {
+        grid-template-columns: 1fr;
+    }
+
+    .pagina-aluno {
+        padding: 16px;
+    }
+}
