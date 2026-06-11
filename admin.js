@@ -3247,3 +3247,90 @@ configurarPerfilAdminEditavel();
 verificarSessaoAtual();
 
 console.log("Funções do painel admin carregadas com sucesso.");
+
+// =====================================================
+// ACESSO PÚBLICO POR TURMA NA TELA DE LOGIN DO ADMIN
+// =====================================================
+
+document.addEventListener("DOMContentLoaded", function () {
+    carregarTurmasPublicasNaTelaAdmin();
+    configurarAcessoTurmaPublicaAdmin();
+});
+
+async function carregarTurmasPublicasNaTelaAdmin() {
+    const select = document.getElementById("selectTurmaPublicaAdmin");
+    const mensagem = document.getElementById("mensagemTurmaPublicaAdmin");
+
+    if (!select) {
+        return;
+    }
+
+    select.innerHTML = `<option value="">Carregando turmas...</option>`;
+
+    const { data, error } = await banco
+        .from("turmas")
+        .select("id, nome_turma, curso")
+        .eq("ativo", true)
+        .order("nome_turma", { ascending: true });
+
+    if (error) {
+        console.log("Erro ao carregar turmas públicas:", error);
+
+        select.innerHTML = `<option value="">Erro ao carregar turmas</option>`;
+
+        if (mensagem) {
+            mensagem.textContent = "Não foi possível carregar as turmas. Verifique a política pública no Supabase.";
+        }
+
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        select.innerHTML = `<option value="">Nenhuma turma ativa encontrada</option>`;
+
+        if (mensagem) {
+            mensagem.textContent = "Nenhuma turma ativa foi cadastrada ainda.";
+        }
+
+        return;
+    }
+
+    select.innerHTML = `<option value="">Selecione sua turma</option>`;
+
+    data.forEach(function (turma) {
+        select.innerHTML += `
+            <option value="${turma.id}">
+                ${escaparHTML(turma.nome_turma || "Turma")} - ${escaparHTML(turma.curso || "Curso")}
+            </option>
+        `;
+    });
+
+    if (mensagem) {
+        mensagem.textContent = "Selecione a turma para acessar os materiais.";
+    }
+}
+
+function configurarAcessoTurmaPublicaAdmin() {
+    const btn = document.getElementById("btnEntrarTurmaPublica");
+    const select = document.getElementById("selectTurmaPublicaAdmin");
+    const mensagem = document.getElementById("mensagemTurmaPublicaAdmin");
+
+    if (!btn || !select) {
+        return;
+    }
+
+    btn.addEventListener("click", function () {
+        const turmaId = select.value;
+
+        if (!turmaId) {
+            if (mensagem) {
+                mensagem.textContent = "Selecione uma turma antes de continuar.";
+            }
+
+            select.focus();
+            return;
+        }
+
+        window.location.href = "index.html?turma=" + encodeURIComponent(turmaId);
+    });
+}

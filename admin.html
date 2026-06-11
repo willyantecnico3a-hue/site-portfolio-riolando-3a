@@ -1,4 +1,4 @@
-````html
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -883,6 +883,172 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* =============================
+   LOGIN ADMIN MODERNO + ACESSO PÚBLICO ÀS TURMAS
+============================= */
+
+.login-admin-moderno {
+    background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 32%),
+        linear-gradient(135deg, #ffffff, #f8fafc);
+    border: 1px solid #dbeafe;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+}
+
+.topo-login-admin-publico {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.topo-login-admin-publico h1 {
+    margin: 10px 0 8px 0;
+    font-size: 34px;
+    color: #0f766e;
+}
+
+.topo-login-admin-publico p {
+    margin: 0;
+    max-width: 680px;
+    color: #334155;
+    line-height: 1.6;
+}
+
+.selo-admin-publico,
+.selo-turma-publico {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background-color: #ccfbf1;
+    color: #115e59;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.grade-login-admin {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    gap: 22px;
+    align-items: stretch;
+}
+
+.card-login-admin-professor,
+.card-acesso-turma-publico {
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+}
+
+.card-login-admin-professor {
+    background-color: #ffffff;
+    border: 1px solid #dbeafe;
+    border-left: 7px solid #1e40af;
+}
+
+.card-acesso-turma-publico {
+    background: linear-gradient(135deg, #ecfdf5, #ffffff);
+    border: 1px solid #99f6e4;
+    border-left: 7px solid #0f766e;
+}
+
+.card-login-admin-professor h2,
+.card-acesso-turma-publico h2 {
+    margin-top: 0;
+    color: #0f766e;
+}
+
+.card-login-admin-professor p,
+.card-acesso-turma-publico p {
+    color: #475569;
+    line-height: 1.6;
+}
+
+.card-login-admin-professor label,
+.card-acesso-turma-publico label {
+    display: block;
+    margin-top: 14px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.card-login-admin-professor input,
+.card-acesso-turma-publico select {
+    width: 100%;
+    background-color: #f8fafc;
+    border: 2px solid #cbd5e1;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 16px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.card-login-admin-professor input:focus,
+.card-acesso-turma-publico select:focus {
+    border-color: #0f766e;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.15);
+    background-color: #ffffff;
+}
+
+.btn-login-admin-destaque,
+.btn-acessar-turma-publica {
+    width: 100%;
+    margin-top: 18px !important;
+    padding: 15px 18px !important;
+    border-radius: 16px !important;
+    font-size: 16px !important;
+}
+
+.btn-login-admin-destaque {
+    background: linear-gradient(135deg, #1e40af, #2563eb) !important;
+}
+
+.btn-acessar-turma-publica {
+    background: linear-gradient(135deg, #0f766e, #14b8a6) !important;
+}
+
+.link-area-aluno-publica {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background-color: #e2e8f0;
+    color: #0f172a;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.link-area-aluno-publica:hover {
+    background-color: #cbd5e1;
+}
+
+.mensagem-login-admin,
+.mensagem-turma-publica {
+    margin-top: 12px;
+    font-weight: 800;
+    color: #0f766e;
+}
+
+@media (max-width: 850px) {
+    .topo-login-admin-publico {
+        flex-direction: column;
+    }
+
+    .grade-login-admin {
+        grid-template-columns: 1fr;
+    }
+
+    .topo-login-admin-publico h1 {
+        font-size: 28px;
+    }
+}
     </style>
 </head>
 
@@ -891,7 +1057,7 @@
     <!-- =============================
          LOGIN DO ADMINISTRADOR
     ============================== -->
-    <section id="secaoLoginAdmin" class="painel-admin">
+    
 
         <div class="barra-login-admin">
             <a href="index.html" class="botao-voltar-inicio-login">
@@ -904,21 +1070,111 @@
         <p>
             Área exclusiva para o professor gerenciar aulas, turmas, materiais, portfólios, acompanhamento PAEET e chamados dos alunos.
         </p>
+<section id="secaoLoginAdmin" class="painel-admin login-admin-moderno">
 
-        <h2>Login do Administrador</h2>
+    <div class="topo-login-admin-publico">
 
-        <input type="email" id="emailAdmin" placeholder="E-mail do administrador">
+        <div>
+            <span class="selo-admin-publico">
+                🔐 Painel Administrativo
+            </span>
 
-        <input type="password" id="senhaAdmin" placeholder="Senha">
+            <h1>
+                Riolando Conecta Técnico
+            </h1>
 
-        <button id="btnLoginAdmin" type="button">
-            Entrar no Painel
-        </button>
+            <p>
+                Área de gestão do professor e acesso rápido dos estudantes às turmas do Ensino Técnico.
+            </p>
+        </div>
 
-        <p id="mensagemLogin"></p>
+        <a href="index.html" class="botao-voltar-inicio-login">
+            🏠 Voltar para o Início do Site
+        </a>
 
-    </section>
+    </div>
 
+
+    <div class="grade-login-admin">
+
+        <section class="card-login-admin-professor">
+
+            <h2>
+                Login do Administrador
+            </h2>
+
+            <p>
+                Acesso exclusivo para professor, gestão e responsáveis pelo gerenciamento do portal.
+            </p>
+
+            <label for="emailAdmin">
+                E-mail do administrador
+            </label>
+
+            <input
+                type="email"
+                id="emailAdmin"
+                placeholder="Digite seu e-mail administrativo"
+                autocomplete="email"
+            >
+
+            <label for="senhaAdmin">
+                Senha
+            </label>
+
+            <input
+                type="password"
+                id="senhaAdmin"
+                placeholder="Digite sua senha"
+                autocomplete="current-password"
+            >
+
+            <button id="btnLoginAdmin" type="button" class="btn-login-admin-destaque">
+                Entrar no Painel
+            </button>
+
+            <p id="mensagemLogin" class="mensagem-login-admin"></p>
+
+        </section>
+
+
+        <section class="card-acesso-turma-publico">
+
+            <span class="selo-turma-publico">
+                👨‍🎓 Acesso do estudante
+            </span>
+
+            <h2>
+                Escolha sua turma
+            </h2>
+
+            <p>
+                Esta área é pública. O aluno pode selecionar a turma para acessar aulas, materiais, portfólios e orientações do curso.
+            </p>
+
+            <label for="selectTurmaPublicaAdmin">
+                Turma
+            </label>
+
+            <select id="selectTurmaPublicaAdmin">
+                <option value="">Carregando turmas...</option>
+            </select>
+
+            <button type="button" id="btnEntrarTurmaPublica" class="btn-acessar-turma-publica">
+                Acessar turma
+            </button>
+
+            <a href="login-aluno.html" class="link-area-aluno-publica">
+                📋 Entrar na Área do Aluno / Meus Chamados
+            </a>
+
+            <p id="mensagemTurmaPublicaAdmin" class="mensagem-turma-publica"></p>
+
+        </section>
+
+    </div>
+
+</section>
 
     <!-- =============================
          ÁREA ADMINISTRATIVA
