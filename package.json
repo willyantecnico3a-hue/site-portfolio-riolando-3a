@@ -18,8 +18,9 @@
     "url": "https://github.com/willyantecnico3a-hue/site-portfolio-riolando-3a/issues"
   },
   "homepage": "https://github.com/willyantecnico3a-hue/site-portfolio-riolando-3a#readme",
-  "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+    "dependencies": {
+      "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.108.1",  
     "web-push": "^3.6.7"
   }
 }
