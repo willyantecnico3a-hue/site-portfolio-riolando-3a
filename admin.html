@@ -1049,6 +1049,317 @@
         font-size: 28px;
     }
 }
+
+/* =====================================================
+   TEMA EDUCACIONAL PAEET ADMINISTRATIVO
+   Melhoria visual do painel logado
+===================================================== */
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.22), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.16), transparent 30%),
+        linear-gradient(135deg, #e0f2fe 0%, #ecfdf5 48%, #f8fafc 100%);
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #0f172a;
+}
+
+/* Remove aparência muito simples do topo externo */
+body > h1,
+body > p {
+    max-width: 1180px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body > h1 {
+    margin-top: 26px;
+    margin-bottom: 8px;
+    font-size: 32px;
+    color: #0f766e;
+    letter-spacing: -0.5px;
+}
+
+body > p {
+    color: #334155;
+    font-size: 16px;
+}
+
+/* Container principal do admin */
+#areaAdmin.painel-admin {
+    max-width: 1180px;
+    margin: 26px auto;
+    padding: 28px;
+    border-radius: 28px;
+    background:
+        linear-gradient(135deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+    border: 1px solid rgba(15, 118, 110, 0.18);
+    box-shadow:
+        0 30px 80px rgba(15, 23, 42, 0.18),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+/* Topo do painel */
+.admin-topo-minimalista {
+    background:
+        linear-gradient(135deg, #0f766e, #0d9488);
+    border: none;
+    border-radius: 24px;
+    padding: 20px 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 45px rgba(15, 118, 110, 0.25);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-topo-minimalista::before {
+    content: "PAEET • Gestão Pedagógica • Ensino Técnico";
+    position: absolute;
+    right: 24px;
+    bottom: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.72);
+    letter-spacing: 0.8px;
+}
+
+.admin-topo-minimalista h2 {
+    color: white;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.4px;
+}
+
+.botao-menu-admin {
+    background-color: rgba(255,255,255,0.18) !important;
+    border: 1px solid rgba(255,255,255,0.35) !important;
+    box-shadow: 0 10px 22px rgba(15,23,42,0.18);
+}
+
+.botao-menu-admin:hover {
+    background-color: rgba(255,255,255,0.28) !important;
+    transform: translateY(-1px);
+}
+
+.botao-inicio-admin {
+    background-color: rgba(255,255,255,0.95);
+    color: #0f766e;
+    border: none;
+    border-radius: 16px;
+    padding: 13px 18px;
+    box-shadow: 0 10px 22px rgba(15,23,42,0.14);
+}
+
+.botao-inicio-admin:hover {
+    background-color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* Card de perfil do admin */
+.card-status-admin {
+    position: relative;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg, #ffffff 0%, #f0fdfa 52%, #ecfeff 100%);
+    border: 1px solid rgba(20, 184, 166, 0.28);
+    border-left: none;
+    border-radius: 28px;
+    padding: 28px;
+    min-height: 150px;
+    box-shadow:
+        0 22px 55px rgba(15, 23, 42, 0.14),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.card-status-admin::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 10px;
+    background: linear-gradient(180deg, #0f766e, #14b8a6, #2563eb);
+}
+
+.card-status-admin::after {
+    content: "Acompanhamento • Acolhimento • Orientação";
+    position: absolute;
+    top: 18px;
+    right: 24px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background-color: rgba(15, 118, 110, 0.09);
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+}
+
+/* Foto */
+.foto-perfil-admin {
+    width: 104px;
+    height: 104px;
+    border: 5px solid white;
+    outline: 4px solid #0f766e;
+    box-shadow: 0 14px 35px rgba(15, 118, 110, 0.28);
+}
+
+/* Informações do perfil */
+.selo-login-ativo {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #86efac;
+    padding: 8px 13px;
+    font-size: 13px;
+}
+
+.perfil-admin-info h2 {
+    margin-top: 10px;
+    font-size: 28px;
+    color: #0f766e;
+    letter-spacing: -0.4px;
+}
+
+.perfil-admin-info p {
+    font-size: 16px;
+    color: #0f172a;
+}
+
+.frase-motivacional-admin {
+    max-width: 760px;
+    margin-top: 14px !important;
+    padding: 14px 18px;
+    border-left: 5px solid #2563eb;
+    border-radius: 14px;
+    background-color: rgba(219, 234, 254, 0.75);
+    color: #1e40af !important;
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+/* Botão editar perfil */
+.perfil-admin-acoes button,
+#btnEditarPerfilAdmin {
+    background:
+        linear-gradient(135deg, #0f766e, #14b8a6) !important;
+    border-radius: 16px !important;
+    padding: 14px 20px !important;
+    box-shadow: 0 14px 28px rgba(15, 118, 110, 0.26);
+    transition: 0.2s ease;
+}
+
+.perfil-admin-acoes button:hover,
+#btnEditarPerfilAdmin:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 34px rgba(15, 118, 110, 0.34);
+}
+
+/* Menu lateral */
+.menu-lateral-admin {
+    background:
+        linear-gradient(180deg, #ffffff, #f8fafc);
+    border-right: 1px solid #ccfbf1;
+}
+
+.menu-lateral-cabecalho {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #dbeafe;
+}
+
+.menu-lateral-cabecalho h3 {
+    font-size: 22px;
+    color: #0f766e;
+}
+
+.item-menu-admin {
+    background-color: #ffffff !important;
+    border: 1px solid #dbeafe !important;
+    border-left: 6px solid #0f766e !important;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+    transition: 0.2s ease;
+}
+
+.item-menu-admin:hover {
+    transform: translateX(4px);
+    background-color: #ecfdf5 !important;
+    border-color: #99f6e4 !important;
+}
+
+.item-menu-admin span {
+    color: #64748b;
+}
+
+/* Telas internas */
+.tela-admin-sobreposta {
+    border: none;
+    border-radius: 28px;
+    background:
+        linear-gradient(135deg, #ffffff, #f8fafc);
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.13);
+}
+
+.tela-admin-sobreposta h2 {
+    font-size: 28px;
+    color: #0f766e;
+}
+
+/* Cards internos */
+.card-admin-form,
+.card-admin-lista,
+.card-admin-paeet {
+    background-color: #ffffff;
+    border-left: 7px solid #0f766e;
+    border-radius: 22px;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
+}
+
+/* Responsivo */
+@media (max-width: 800px) {
+    body > h1,
+    body > p {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    #areaAdmin.painel-admin {
+        padding: 16px;
+        margin: 12px auto;
+        border-radius: 22px;
+    }
+
+    .admin-topo-minimalista {
+        padding: 18px;
+    }
+
+    .admin-topo-minimalista::before {
+        display: none;
+    }
+
+    .admin-topo-minimalista h2 {
+        font-size: 22px;
+    }
+
+    .card-status-admin {
+        padding: 24px 18px;
+    }
+
+    .card-status-admin::after {
+        position: static;
+        display: inline-block;
+        margin-top: 12px;
+    }
+
+    .perfil-admin-info h2 {
+        font-size: 23px;
+    }
+
+    .foto-perfil-admin {
+        width: 88px;
+        height: 88px;
+    }
+}
     </style>
 </head>
 
@@ -1065,7 +1376,7 @@
             </a>
         </div>
 
-        <h1>Painel Administrativo</h1>
+        <h1>Painel Educacional PAEET</h1>
 
         <p>
             Área exclusiva para o professor gerenciar aulas, turmas, materiais, portfólios, acompanhamento PAEET e chamados dos alunos.
@@ -1188,7 +1499,7 @@
                 ☰
             </button>
 
-            <h2>Painel de Gestão</h2>
+            <h2>Gestão PAEET Administrativo</h2>
 
             <a href="index.html" class="botao-inicio-admin">
                 🏠 Início
@@ -2077,4 +2388,4 @@
 
 </body>
 </html>
-````
+
