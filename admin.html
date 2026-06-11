@@ -1586,6 +1586,11 @@ body > p {
                 <span>Acompanhamento dos estudantes e chamados</span>
             </button>
 
+            <button class="item-menu-admin" data-tela="telaGestaoAlunos" type="button">
+    👨‍🎓 Gestão de Alunos
+    <span>Cadastrar, importar e resetar acesso dos estudantes</span>
+</button>
+
             <button class="item-menu-admin" data-tela="telaAssistenteIA" type="button">
                 🤖 Assistente IA
                 <span>Gerar aulas, planos, materiais e rubricas</span>
@@ -2050,6 +2055,174 @@ body > p {
             </section>
 
         </section>
+
+
+
+        <!-- =============================
+     TELA GESTÃO DE ALUNOS
+============================== -->
+<section id="telaGestaoAlunos" class="tela-admin-sobreposta">
+
+    <div class="barra-tela-admin">
+
+        <button class="btnVoltarMenuAdmin" type="button">
+            ← Voltar
+        </button>
+
+        <a href="index.html" class="botao-inicio-admin">
+            🏠 Início do Site
+        </a>
+
+    </div>
+
+    <h2>👨‍🎓 Gestão de Alunos</h2>
+
+    <p>
+        Cadastre alunos, gere senha temporária, importe turmas por planilha CSV e gerencie o acesso à Área do Aluno.
+    </p>
+
+
+    <!-- CADASTRO MANUAL -->
+    <section class="card-admin-form">
+
+        <h3>➕ Cadastrar aluno manualmente</h3>
+
+        <label for="gestaoAlunoNome">Nome completo</label>
+        <input
+            type="text"
+            id="gestaoAlunoNome"
+            placeholder="Ex: Maria Silva Santos"
+        >
+
+        <label for="gestaoAlunoEmail">E-mail do aluno</label>
+        <input
+            type="email"
+            id="gestaoAlunoEmail"
+            placeholder="Ex: aluno@escola.com"
+        >
+
+        <label for="gestaoAlunoTurma">Turma</label>
+        <input
+            type="text"
+            id="gestaoAlunoTurma"
+            placeholder="Ex: 3ºA"
+        >
+
+        <label for="gestaoAlunoCurso">Curso</label>
+        <select id="gestaoAlunoCurso">
+            <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+            <option value="vendas">Vendas</option>
+            <option value="apoio_pedagogico">Apoio Pedagógico</option>
+            <option value="outro">Outro</option>
+        </select>
+
+        <label for="gestaoAlunoSenha">Senha temporária</label>
+        <input
+            type="text"
+            id="gestaoAlunoSenha"
+            placeholder="Ex: Riolando@2026"
+        >
+
+        <button type="button" id="btnGerarSenhaAlunoAdmin">
+            🔐 Gerar senha automática
+        </button>
+
+        <button type="button" id="btnCriarAlunoAdmin">
+            👨‍🎓 Criar aluno
+        </button>
+
+        <p id="mensagemGestaoAlunoAdmin"></p>
+
+    </section>
+
+
+    <!-- IMPORTAÇÃO CSV -->
+    <section class="card-admin-form">
+
+        <h3>📥 Importar alunos por CSV</h3>
+
+        <p class="texto-ajuda">
+            Use uma planilha CSV com as colunas:
+            <strong>nome,email,turma,curso,senha</strong>
+        </p>
+
+        <textarea
+            id="previewModeloCsvAlunos"
+            readonly
+            rows="4"
+        >nome,email,turma,curso,senha
+Aluno Teste,aluno.teste@aluno.com,3ºA,desenvolvimento_sistemas,Riolando@2026</textarea>
+
+        <label for="arquivoCsvAlunosAdmin">Selecionar arquivo CSV</label>
+        <input
+            type="file"
+            id="arquivoCsvAlunosAdmin"
+            accept=".csv,text/csv"
+        >
+
+        <button type="button" id="btnImportarCsvAlunosAdmin">
+            📤 Importar alunos
+        </button>
+
+        <div id="resultadoImportacaoAlunosAdmin" class="resultado-importacao-alunos-admin">
+            <p>Nenhum arquivo importado ainda.</p>
+        </div>
+
+    </section>
+
+
+    <!-- LISTAGEM -->
+    <section class="card-admin-lista">
+
+        <div class="cabecalho-lista-paeet">
+
+            <h3>📋 Alunos cadastrados</h3>
+
+            <button type="button" id="btnCarregarAlunosAdmin">
+                🔄 Atualizar lista
+            </button>
+
+        </div>
+
+        <div class="filtros-solicitacoes-ajuda-admin">
+
+            <div>
+                <label for="filtroAlunoAdminNome">Filtrar por nome</label>
+                <input
+                    type="text"
+                    id="filtroAlunoAdminNome"
+                    placeholder="Digite parte do nome"
+                >
+            </div>
+
+            <div>
+                <label for="filtroAlunoAdminTurma">Filtrar por turma</label>
+                <input
+                    type="text"
+                    id="filtroAlunoAdminTurma"
+                    placeholder="Ex: 3ºA"
+                >
+            </div>
+
+            <div>
+                <label for="filtroAlunoAdminStatus">Status</label>
+                <select id="filtroAlunoAdminStatus">
+                    <option value="todos">Todos</option>
+                    <option value="ativo">Ativos</option>
+                    <option value="inativo">Inativos</option>
+                    <option value="senha_temporaria">Senha temporária</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div id="listaAlunosAdmin">
+            <p>Clique em “Atualizar lista” para carregar os alunos.</p>
+        </div>
+
+    </section>
+
+</section>
 
 
         <!-- =============================

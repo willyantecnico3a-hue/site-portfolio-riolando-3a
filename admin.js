@@ -549,6 +549,12 @@ if (telaEscolhida === "telaPaeet") {
     }
 }
 
+if (telaEscolhida === "telaGestaoAlunos") {
+    if (typeof carregarAlunosGestaoAdmin === "function") {
+        carregarAlunosGestaoAdmin();
+    }
+}
+
             if (telaEscolhida === "telaPortfolios") {
                 carregarPortfoliosAdmin();
             }
@@ -3334,3 +3340,547 @@ function configurarAcessoTurmaPublicaAdmin() {
         window.location.href = "index.html?turma=" + encodeURIComponent(turmaId);
     });
 }
+
+
+// =====================================================
+// GESTÃO DE ALUNOS - CADASTRO, LISTAGEM, RESET E CSV
+// =====================================================
+
+const btnGerarSenhaAlunoAdmin = document.getElementById("btnGerarSenhaAlunoAdmin");
+const btnCriarAlunoAdmin = document.getElementById("btnCriarAlunoAdmin");
+const btnCarregarAlunosAdmin = document.getElementById("btnCarregarAlunosAdmin");
+const btnImportarCsvAlunosAdmin = document.getElementById("btnImportarCsvAlunosAdmin");
+
+const filtroAlunoAdminNome = document.getElementById("filtroAlunoAdminNome");
+const filtroAlunoAdminTurma = document.getElementById("filtroAlunoAdminTurma");
+const filtroAlunoAdminStatus = document.getElementById("filtroAlunoAdminStatus");
+
+if (btnGerarSenhaAlunoAdmin) {
+    btnGerarSenhaAlunoAdmin.addEventListener("click", function () {
+        const campoSenha = document.getElementById("gestaoAlunoSenha");
+
+        if (campoSenha) {
+            campoSenha.value = gerarSenhaTemporariaAluno();
+        }
+    });
+}
+
+if (btnCriarAlunoAdmin) {
+    btnCriarAlunoAdmin.addEventListener("click", criarAlunoManualAdmin);
+}
+
+if (btnCarregarAlunosAdmin) {
+    btnCarregarAlunosAdmin.addEventListener("click", carregarAlunosGestaoAdmin);
+}
+
+if (btnImportarCsvAlunosAdmin) {
+    btnImportarCsvAlunosAdmin.addEventListener("click", importarAlunosCsvAdmin);
+}
+
+if (filtroAlunoAdminNome) {
+    filtroAlunoAdminNome.addEventListener("input", carregarAlunosGestaoAdmin);
+}
+
+if (filtroAlunoAdminTurma) {
+    filtroAlunoAdminTurma.addEventListener("input", carregarAlunosGestaoAdmin);
+}
+
+if (filtroAlunoAdminStatus) {
+    filtroAlunoAdminStatus.addEventListener("change", carregarAlunosGestaoAdmin);
+}
+
+
+function gerarSenhaTemporariaAluno() {
+    const ano = new Date().getFullYear();
+
+    const numero = Math.floor(1000 + Math.random() * 9000);
+
+    return "Riolando@" + ano + numero;
+}
+
+
+async function obterTokenAdminAtual() {
+    const { data, error } = await banco.auth.getSession();
+
+    if (error || !data || !data.session) {
+        return "";
+    }
+
+    return data.session.access_token;
+}
+
+
+async function criarAlunoManualAdmin() {
+    const mensagem = document.getElementById("mensagemGestaoAlunoAdmin");
+
+    const nome = pegarValorCampo("gestaoAlunoNome");
+    const email = pegarValorCampo("gestaoAlunoEmail").toLowerCase();
+    const turma = pegarValorCampo("gestaoAlunoTurma");
+    const curso = pegarValorCampo("gestaoAlunoCurso") || "desenvolvimento_sistemas";
+    const senhaTemporaria = pegarValorCampo("gestaoAlunoSenha");
+
+    if (!nome || !email || !senhaTemporaria) {
+        if (mensagem) {
+            mensagem.textContent = "Preencha nome, e-mail e senha temporária.";
+        }
+        return;
+    }
+
+    if (!email.includes("@")) {
+        if (mensagem) {
+            mensagem.textContent = "Digite um e-mail válido.";
+        }
+        return;
+    }
+
+    if (senhaTemporaria.length < 6) {
+        if (mensagem) {
+            mensagem.textContent = "A senha temporária precisa ter pelo menos 6 caracteres.";
+        }
+        return;
+    }
+
+    if (mensagem) {
+        mensagem.textContent = "Criando aluno no Supabase Auth...";
+    }
+
+    const token = await obterTokenAdminAtual();
+
+    if (!token) {
+        if (mensagem) {
+            mensagem.textContent = "Sessão administrativa expirada. Faça login novamente.";
+        }
+        return;
+    }
+
+    try {
+        const resposta = await fetch("/.netlify/functions/criar-aluno", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                nome: nome,
+                email: email,
+                turma: turma,
+                curso: curso,
+                senhaTemporaria: senhaTemporaria
+            })
+        });
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            if (mensagem) {
+                mensagem.textContent = dados.mensagem || "Erro ao criar aluno.";
+            }
+            return;
+        }
+
+        if (mensagem) {
+            mensagem.textContent = "Aluno criado com sucesso! Senha temporária: " + senhaTemporaria;
+        }
+
+        limparCampoSeExistir("gestaoAlunoNome");
+        limparCampoSeExistir("gestaoAlunoEmail");
+        limparCampoSeExistir("gestaoAlunoTurma");
+        limparCampoSeExistir("gestaoAlunoSenha");
+
+        await carregarAlunosGestaoAdmin();
+
+    } catch (erro) {
+        console.log("Erro ao criar aluno:", erro);
+
+        if (mensagem) {
+            mensagem.textContent = "Erro de conexão ao criar aluno: " + erro.message;
+        }
+    }
+}
+
+
+async function carregarAlunosGestaoAdmin() {
+    const lista = document.getElementById("listaAlunosAdmin");
+
+    if (!lista) {
+        return;
+    }
+
+    lista.innerHTML = "<p>Carregando alunos cadastrados...</p>";
+
+    let consulta = banco
+        .from("perfis")
+        .select("*")
+        .eq("funcao", "aluno")
+        .order("nome", { ascending: true });
+
+    if (filtroAlunoAdminNome && filtroAlunoAdminNome.value.trim()) {
+        consulta = consulta.ilike("nome", "%" + filtroAlunoAdminNome.value.trim() + "%");
+    }
+
+    if (filtroAlunoAdminTurma && filtroAlunoAdminTurma.value.trim()) {
+        consulta = consulta.ilike("turma", "%" + filtroAlunoAdminTurma.value.trim() + "%");
+    }
+
+    if (filtroAlunoAdminStatus) {
+        if (filtroAlunoAdminStatus.value === "ativo") {
+            consulta = consulta.eq("ativo", true);
+        }
+
+        if (filtroAlunoAdminStatus.value === "inativo") {
+            consulta = consulta.eq("ativo", false);
+        }
+
+        if (filtroAlunoAdminStatus.value === "senha_temporaria") {
+            consulta = consulta.eq("senha_temporaria", true);
+        }
+    }
+
+    const { data, error } = await consulta;
+
+    if (error) {
+        lista.innerHTML = "<p>Erro ao carregar alunos: " + escaparHTML(error.message) + "</p>";
+        console.log("Erro ao carregar alunos:", error);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        lista.innerHTML = `
+            <div class="card-vazio-admin">
+                <h4>📭 Nenhum aluno encontrado</h4>
+                <p>Cadastre um aluno manualmente ou importe uma planilha CSV.</p>
+            </div>
+        `;
+        return;
+    }
+
+    lista.innerHTML = "";
+
+    data.forEach(function (aluno) {
+        lista.innerHTML += montarCardAlunoGestaoAdmin(aluno);
+    });
+}
+
+
+function montarCardAlunoGestaoAdmin(aluno) {
+    const statusAcesso = aluno.ativo ? "Ativo" : "Inativo";
+    const statusSenha = aluno.senha_temporaria ? "Senha temporária" : "Senha definitiva";
+
+    return `
+        <div class="card-solicitacao-ajuda">
+
+            <div class="topo-card-aluno-paeet">
+
+                <div>
+                    <h4>${escaparHTML(aluno.nome || "Aluno sem nome")}</h4>
+
+                    <p class="subinfo-solicitacao-ajuda">
+                        ${escaparHTML(aluno.email || "E-mail não informado")}
+                    </p>
+                </div>
+
+                <span class="selo-paeet">
+                    ${aluno.ativo ? "🟢 Ativo" : "🔴 Inativo"}
+                </span>
+
+            </div>
+
+            <div class="grid-info-solicitacao-ajuda">
+
+                <p>
+                    <strong>Turma:</strong>
+                    ${escaparHTML(aluno.turma || "Não informada")}
+                </p>
+
+                <p>
+                    <strong>Curso:</strong>
+                    ${formatarCursoGestaoAluno(aluno.curso)}
+                </p>
+
+                <p>
+                    <strong>Acesso:</strong>
+                    ${escaparHTML(statusAcesso)}
+                </p>
+
+                <p>
+                    <strong>Senha:</strong>
+                    ${escaparHTML(statusSenha)}
+                </p>
+
+            </div>
+
+            <div class="bloco-resposta-ajuda-admin">
+
+                <label for="novaSenhaAluno_${escaparAtributo(aluno.id)}">
+                    Nova senha temporária
+                </label>
+
+                <input
+                    type="text"
+                    id="novaSenhaAluno_${escaparAtributo(aluno.id)}"
+                    placeholder="Digite ou gere uma nova senha"
+                    value="${escaparAtributo(gerarSenhaTemporariaAluno())}"
+                >
+
+            </div>
+
+            <div class="acoes-paeet acoes-solicitacao-ajuda">
+
+                <button type="button" onclick="resetarSenhaAlunoAdmin('${escaparAtributo(aluno.id)}')">
+                    🔐 Resetar senha
+                </button>
+
+                <button type="button" onclick="alternarStatusAlunoAdmin('${escaparAtributo(aluno.id)}', ${aluno.ativo ? "false" : "true"})">
+                    ${aluno.ativo ? "🚫 Desativar" : "✅ Ativar"}
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+function formatarCursoGestaoAluno(curso) {
+    const nomes = {
+        desenvolvimento_sistemas: "Desenvolvimento de Sistemas",
+        vendas: "Vendas",
+        apoio_pedagogico: "Apoio Pedagógico",
+        outro: "Outro"
+    };
+
+    return nomes[curso] || curso || "Não informado";
+}
+
+
+async function resetarSenhaAlunoAdmin(alunoId) {
+    const campoSenha = document.getElementById("novaSenhaAluno_" + alunoId);
+
+    if (!campoSenha) {
+        alert("Campo de senha não encontrado.");
+        return;
+    }
+
+    const novaSenhaTemporaria = campoSenha.value.trim();
+
+    if (!novaSenhaTemporaria || novaSenhaTemporaria.length < 6) {
+        alert("Digite uma senha temporária com pelo menos 6 caracteres.");
+        campoSenha.focus();
+        return;
+    }
+
+    const confirmar = confirm("Deseja resetar a senha deste aluno?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const token = await obterTokenAdminAtual();
+
+    if (!token) {
+        alert("Sessão administrativa expirada. Faça login novamente.");
+        return;
+    }
+
+    try {
+        const resposta = await fetch("/.netlify/functions/resetar-senha-aluno", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            },
+            body: JSON.stringify({
+                alunoId: alunoId,
+                novaSenhaTemporaria: novaSenhaTemporaria
+            })
+        });
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok || !dados.sucesso) {
+            alert(dados.mensagem || "Erro ao resetar senha.");
+            return;
+        }
+
+        alert("Senha resetada com sucesso! Nova senha temporária: " + novaSenhaTemporaria);
+
+        await carregarAlunosGestaoAdmin();
+
+    } catch (erro) {
+        console.log("Erro ao resetar senha:", erro);
+        alert("Erro de conexão ao resetar senha: " + erro.message);
+    }
+}
+
+
+async function alternarStatusAlunoAdmin(alunoId, novoStatus) {
+    const confirmar = confirm(
+        novoStatus
+            ? "Deseja ativar o acesso deste aluno?"
+            : "Deseja desativar o acesso deste aluno?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("perfis")
+        .update({
+            ativo: novoStatus,
+            atualizado_em: new Date().toISOString()
+        })
+        .eq("id", alunoId);
+
+    if (error) {
+        alert("Erro ao alterar status: " + error.message);
+        console.log("Erro ao alterar status aluno:", error);
+        return;
+    }
+
+    alert("Status do aluno atualizado com sucesso!");
+
+    await carregarAlunosGestaoAdmin();
+}
+
+
+async function importarAlunosCsvAdmin() {
+    const input = document.getElementById("arquivoCsvAlunosAdmin");
+    const resultado = document.getElementById("resultadoImportacaoAlunosAdmin");
+
+    if (!input || !input.files || input.files.length === 0) {
+        if (resultado) {
+            resultado.innerHTML = "<p>Selecione um arquivo CSV antes de importar.</p>";
+        }
+        return;
+    }
+
+    const arquivo = input.files[0];
+
+    if (resultado) {
+        resultado.innerHTML = "<p>Lendo arquivo CSV...</p>";
+    }
+
+    const texto = await arquivo.text();
+
+    const alunos = converterCsvParaAlunos(texto);
+
+    if (!alunos || alunos.length === 0) {
+        if (resultado) {
+            resultado.innerHTML = "<p>Nenhum aluno válido encontrado no CSV.</p>";
+        }
+        return;
+    }
+
+    if (resultado) {
+        resultado.innerHTML = `<p>Importando ${alunos.length} aluno(s)...</p>`;
+    }
+
+    const token = await obterTokenAdminAtual();
+
+    if (!token) {
+        if (resultado) {
+            resultado.innerHTML = "<p>Sessão administrativa expirada. Faça login novamente.</p>";
+        }
+        return;
+    }
+
+    let sucessos = 0;
+    let erros = 0;
+    let linhasResultado = "";
+
+    for (const aluno of alunos) {
+        try {
+            const resposta = await fetch("/.netlify/functions/criar-aluno", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    nome: aluno.nome,
+                    email: aluno.email,
+                    turma: aluno.turma,
+                    curso: aluno.curso,
+                    senhaTemporaria: aluno.senha
+                })
+            });
+
+            const dados = await resposta.json();
+
+            if (!resposta.ok || !dados.sucesso) {
+                erros++;
+
+                linhasResultado += `
+                    <p>❌ ${escaparHTML(aluno.email)} — ${escaparHTML(dados.mensagem || "Erro ao importar.")}</p>
+                `;
+            } else {
+                sucessos++;
+
+                linhasResultado += `
+                    <p>✅ ${escaparHTML(aluno.email)} — importado com sucesso.</p>
+                `;
+            }
+
+        } catch (erro) {
+            erros++;
+
+            linhasResultado += `
+                <p>❌ ${escaparHTML(aluno.email)} — ${escaparHTML(erro.message)}</p>
+            `;
+        }
+    }
+
+    if (resultado) {
+        resultado.innerHTML = `
+            <h4>Resultado da importação</h4>
+            <p><strong>Sucessos:</strong> ${sucessos}</p>
+            <p><strong>Erros:</strong> ${erros}</p>
+            ${linhasResultado}
+        `;
+    }
+
+    await carregarAlunosGestaoAdmin();
+}
+
+
+function converterCsvParaAlunos(textoCsv) {
+    const linhas = textoCsv
+        .split(/\r?\n/)
+        .map(linha => linha.trim())
+        .filter(linha => linha.length > 0);
+
+    if (linhas.length <= 1) {
+        return [];
+    }
+
+    const alunos = [];
+
+    for (let i = 1; i < linhas.length; i++) {
+        const colunas = linhas[i].split(",").map(valor => valor.trim());
+
+        const nome = colunas[0] || "";
+        const email = (colunas[1] || "").toLowerCase();
+        const turma = colunas[2] || "";
+        const curso = colunas[3] || "desenvolvimento_sistemas";
+        const senha = colunas[4] || gerarSenhaTemporariaAluno();
+
+        if (nome && email && email.includes("@")) {
+            alunos.push({
+                nome: nome,
+                email: email,
+                turma: turma,
+                curso: curso,
+                senha: senha
+            });
+        }
+    }
+
+    return alunos;
+}
+
+
+// Expor funções para botões dinâmicos
+window.resetarSenhaAlunoAdmin = resetarSenhaAlunoAdmin;
+window.alternarStatusAlunoAdmin = alternarStatusAlunoAdmin;
+window.carregarAlunosGestaoAdmin = carregarAlunosGestaoAdmin;
