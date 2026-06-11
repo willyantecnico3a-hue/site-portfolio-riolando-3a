@@ -1026,3 +1026,63 @@
         width: 100%;
     }
 }
+
+/* =====================================================
+   BOTÕES DA ÁREA PRECISO DE AJUDA - HOME
+===================================================== */
+
+.acoes-ajuda-aluno {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 22px;
+}
+
+.btn-ajuda-aluno {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 22px;
+    background: #ffffff;
+    color: #0f766e;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+    transition: 0.2s ease;
+}
+
+.btn-ajuda-aluno:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+}
+
+.btn-ajuda-aluno.destaque {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: #ffffff;
+}
+
+.btn-ajuda-aluno.secundario {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.texto-feedback-ajuda {
+    margin-top: 14px;
+    color: #475569;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 700px) {
+    .acoes-ajuda-aluno {
+        flex-direction: column;
+    }
+
+    .btn-ajuda-aluno {
+        width: 100%;
+    }
+}

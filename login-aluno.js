@@ -212,9 +212,17 @@ async function buscarPerfilAluno(idUsuario) {
    8. REDIRECIONAR CONFORME PERFIL
 ===================================================== */
 
-function redirecionarAlunoConformePerfil(perfil) {
+    function redirecionarAlunoConformePerfil(perfil) {
+    const parametros = new URLSearchParams(window.location.search);
+    const acao = parametros.get("acao");
+
     if (perfil.senha_temporaria === true) {
         window.location.href = "primeiro-acesso.html";
+        return;
+    }
+
+    if (acao === "abrirChamado") {
+        window.location.href = "aluno.html?abrirChamado=1";
         return;
     }
 
