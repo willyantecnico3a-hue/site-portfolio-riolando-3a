@@ -2254,3 +2254,112 @@ body::after {
         font-size: 20px;
     }
 }
+
+```css
+/* =====================================================
+   ORGANIZADOR DE AULAS - FILTROS E RESUMO COM ROLAGEM
+===================================================== */
+
+.filtros-aulas-admin {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.filtros-aulas-admin select,
+.filtros-aulas-admin input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px;
+    border-radius: 12px;
+    border: 2px solid #cbd5e1;
+    font-size: 15px;
+    background-color: #ffffff;
+}
+
+.filtros-aulas-admin select:focus,
+.filtros-aulas-admin input:focus {
+    outline: none;
+    border-color: #0f766e;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+/* Campo resumo aproximadamente 3 vezes menor */
+.descricao-aula-organizada.descricao-aula-compacta {
+    max-height: 145px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #0f766e #e2e8f0;
+}
+
+.descricao-aula-organizada.descricao-aula-compacta::-webkit-scrollbar {
+    width: 8px;
+}
+
+.descricao-aula-organizada.descricao-aula-compacta::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.descricao-aula-organizada.descricao-aula-compacta::-webkit-scrollbar-thumb {
+    background: #0f766e;
+    border-radius: 999px;
+}
+
+/* Preserva quebra de linha, indentação e espaçamentos salvos */
+.texto-formatado-aula-admin {
+    margin: 10px 0 0;
+    padding: 12px;
+    max-height: 95px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #334155;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #dbeafe;
+}
+
+.texto-formatado-aula-admin::-webkit-scrollbar {
+    width: 8px;
+}
+
+.texto-formatado-aula-admin::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.texto-formatado-aula-admin::-webkit-scrollbar-thumb {
+    background: #1d4ed8;
+    border-radius: 999px;
+}
+
+/* Lista de dias com aula cadastrada */
+#filtroDataListaAulaAdmin {
+    border-color: #0f766e;
+    background-color: #ecfdf5;
+    font-weight: 700;
+}
+
+@media (max-width: 1000px) {
+    .filtros-aulas-admin {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .filtros-aulas-admin {
+        grid-template-columns: 1fr;
+    }
+
+    .descricao-aula-organizada.descricao-aula-compacta {
+        max-height: 170px;
+    }
+
+    .texto-formatado-aula-admin {
+        max-height: 120px;
+    }
+}
+```

@@ -1246,8 +1246,9 @@ async function editarAulaAdmin(idAula) {
 }
 
 
+```javascript
 // =====================================================
-// 9. LISTAR AULAS
+// 9. LISTAR AULAS - ORGANIZADOR DE AULAS
 // =====================================================
 
 const btnCarregarAulasAdmin = document.getElementById("btnCarregarAulasAdmin");
@@ -1260,9 +1261,13 @@ const btnFiltrarAulasAdmin = document.getElementById("btnFiltrarAulasAdmin");
 const btnLimparFiltrosAulasAdmin = document.getElementById("btnLimparFiltrosAulasAdmin");
 
 const filtroDataAulaAdmin = document.getElementById("filtroDataAulaAdmin");
+const filtroDataListaAulaAdmin = document.getElementById("filtroDataListaAulaAdmin");
 const filtroTextoAulaAdmin = document.getElementById("filtroTextoAulaAdmin");
 const filtroTurmaAulaAdmin = document.getElementById("filtroTurmaAulaAdmin");
+const filtroCursoAulaAdmin = document.getElementById("filtroCursoAulaAdmin");
 const filtroDisciplinaAulaAdmin = document.getElementById("filtroDisciplinaAulaAdmin");
+
+let opcoesOrganizadorAulasCarregadas = false;
 
 if (btnFiltrarAulasAdmin) {
     btnFiltrarAulasAdmin.addEventListener("click", carregarAulasAdmin);
@@ -1273,14 +1278,33 @@ if (btnLimparFiltrosAulasAdmin) {
         limparCampoSeExistir("filtroDataAulaAdmin");
         limparCampoSeExistir("filtroTextoAulaAdmin");
         limparCampoSeExistir("filtroTurmaAulaAdmin");
-        limparCampoSeExistir("filtroDisciplinaAulaAdmin");
+
+        preencherCampoSeExistir("filtroDataListaAulaAdmin", "");
+        preencherCampoSeExistir("filtroCursoAulaAdmin", "");
+        preencherCampoSeExistir("filtroDisciplinaAulaAdmin", "");
 
         carregarAulasAdmin();
     });
 }
 
 if (filtroDataAulaAdmin) {
-    filtroDataAulaAdmin.addEventListener("change", carregarAulasAdmin);
+    filtroDataAulaAdmin.addEventListener("change", function () {
+        if (filtroDataListaAulaAdmin) {
+            filtroDataListaAulaAdmin.value = filtroDataAulaAdmin.value || "";
+        }
+
+        carregarAulasAdmin();
+    });
+}
+
+if (filtroDataListaAulaAdmin) {
+    filtroDataListaAulaAdmin.addEventListener("change", function () {
+        if (filtroDataAulaAdmin) {
+            filtroDataAulaAdmin.value = filtroDataListaAulaAdmin.value || "";
+        }
+
+        carregarAulasAdmin();
+    });
 }
 
 if (filtroTextoAulaAdmin) {
@@ -1291,9 +1315,14 @@ if (filtroTurmaAulaAdmin) {
     filtroTurmaAulaAdmin.addEventListener("input", carregarAulasAdmin);
 }
 
-if (filtroDisciplinaAulaAdmin) {
-    filtroDisciplinaAulaAdmin.addEventListener("input", carregarAulasAdmin);
+if (filtroCursoAulaAdmin) {
+    filtroCursoAulaAdmin.addEventListener("change", carregarAulasAdmin);
 }
+
+if (filtroDisciplinaAulaAdmin) {
+    filtroDisciplinaAulaAdmin.addEventListener("change", carregarAulasAdmin);
+}
+
 
 async function carregarAulasAdmin() {
     const lista = document.getElementById("listaAulasAdmin");
@@ -1309,9 +1338,12 @@ async function carregarAulasAdmin() {
         resumo.innerHTML = "<p>Organizando aulas...</p>";
     }
 
+    await carregarOpcoesOrganizadorAulasAdmin();
+
     const filtroData = document.getElementById("filtroDataAulaAdmin");
     const filtroTexto = document.getElementById("filtroTextoAulaAdmin");
     const filtroTurma = document.getElementById("filtroTurmaAulaAdmin");
+    const filtroCurso = document.getElementById("filtroCursoAulaAdmin");
     const filtroDisciplina = document.getElementById("filtroDisciplinaAulaAdmin");
 
     let consulta = banco
@@ -1352,7 +1384,11 @@ async function carregarAulasAdmin() {
     const { data, error } = await consulta;
 
     if (error) {
-        lista.innerHTML = `<p>Erro ao carregar aulas: ${escaparHTML(error.message)}</p>`;
+        lista.innerHTML = `
+            <p class="mensagem-erro-admin">
+                Erro ao carregar aulas: ${escaparHTML(error.message)}
+            </p>
+        `;
 
         if (resumo) {
             resumo.innerHTML = "<p>Erro ao montar organizador de aulas.</p>";
@@ -1366,6 +1402,7 @@ async function carregarAulasAdmin() {
 
     const textoBuscado = filtroTexto ? filtroTexto.value.trim().toLowerCase() : "";
     const turmaBuscada = filtroTurma ? filtroTurma.value.trim().toLowerCase() : "";
+    const cursoBuscado = filtroCurso ? filtroCurso.value.trim().toLowerCase() : "";
     const disciplinaBuscada = filtroDisciplina ? filtroDisciplina.value.trim().toLowerCase() : "";
 
     if (textoBuscado) {
@@ -1384,22 +1421,35 @@ async function carregarAulasAdmin() {
 
     if (turmaBuscada) {
         aulas = aulas.filter(function (aula) {
-            const textoTurma = [
-                aula.turmas ? aula.turmas.nome_turma : "",
-                aula.turmas ? aula.turmas.curso : ""
-            ].join(" ").toLowerCase();
+            const nomeTurma = aula.turmas && aula.turmas.nome_turma
+                ? aula.turmas.nome_turma.toLowerCase()
+                : "";
 
-            return textoTurma.includes(turmaBuscada);
+            return nomeTurma.includes(turmaBuscada);
+        });
+    }
+
+    if (cursoBuscado) {
+        aulas = aulas.filter(function (aula) {
+            const curso = aula.turmas && aula.turmas.curso
+                ? aula.turmas.curso.toLowerCase()
+                : "";
+
+            return curso === cursoBuscado;
         });
     }
 
     if (disciplinaBuscada) {
         aulas = aulas.filter(function (aula) {
-            const textoDisciplina = aula.disciplinas
+            const disciplinaId = aula.disciplina_id
+                ? aula.disciplina_id.toString()
+                : "";
+
+            const disciplinaNome = aula.disciplinas && aula.disciplinas.nome_disciplina
                 ? aula.disciplinas.nome_disciplina.toLowerCase()
                 : "";
 
-            return textoDisciplina.includes(disciplinaBuscada);
+            return disciplinaId === disciplinaBuscada || disciplinaNome === disciplinaBuscada;
         });
     }
 
@@ -1431,6 +1481,304 @@ async function carregarAulasAdmin() {
     });
 }
 
+
+async function carregarOpcoesOrganizadorAulasAdmin() {
+    if (opcoesOrganizadorAulasCarregadas) {
+        return;
+    }
+
+    await Promise.all([
+        carregarCursosFiltroAulasAdmin(),
+        carregarDisciplinasFiltroAulasAdmin(),
+        carregarDatasFiltroAulasAdmin()
+    ]);
+
+    opcoesOrganizadorAulasCarregadas = true;
+}
+
+
+async function carregarCursosFiltroAulasAdmin() {
+    const selectCurso = document.getElementById("filtroCursoAulaAdmin");
+
+    if (!selectCurso) {
+        return;
+    }
+
+    const { data, error } = await banco
+        .from("turmas")
+        .select("curso")
+        .eq("ativo", true)
+        .order("curso", { ascending: true });
+
+    if (error) {
+        console.log("Erro ao carregar cursos para filtro:", error);
+        return;
+    }
+
+    const cursos = new Set();
+
+    (data || []).forEach(function (turma) {
+        if (turma.curso) {
+            cursos.add(turma.curso);
+        }
+    });
+
+    selectCurso.innerHTML = `<option value="">Todos os cursos</option>`;
+
+    Array.from(cursos).sort().forEach(function (curso) {
+        selectCurso.innerHTML += `
+            <option value="${escaparAtributo(curso.toLowerCase())}">
+                ${escaparHTML(formatarCursoOrganizadorAula(curso))}
+            </option>
+        `;
+    });
+}
+
+
+async function carregarDisciplinasFiltroAulasAdmin() {
+    const selectDisciplina = document.getElementById("filtroDisciplinaAulaAdmin");
+
+    if (!selectDisciplina) {
+        return;
+    }
+
+    const { data, error } = await banco
+        .from("disciplinas")
+        .select("id, nome_disciplina")
+        .eq("ativo", true)
+        .order("nome_disciplina", { ascending: true });
+
+    if (error) {
+        console.log("Erro ao carregar disciplinas para filtro:", error);
+        return;
+    }
+
+    selectDisciplina.innerHTML = `<option value="">Todas as disciplinas</option>`;
+
+    (data || []).forEach(function (disciplina) {
+        selectDisciplina.innerHTML += `
+            <option value="${disciplina.id}">
+                ${escaparHTML(disciplina.nome_disciplina || "Disciplina sem nome")}
+            </option>
+        `;
+    });
+}
+
+
+async function carregarDatasFiltroAulasAdmin() {
+    const selectData = document.getElementById("filtroDataListaAulaAdmin");
+
+    if (!selectData) {
+        return;
+    }
+
+    const { data, error } = await banco
+        .from("aulas")
+        .select("data_aula")
+        .not("data_aula", "is", null)
+        .order("data_aula", { ascending: false });
+
+    if (error) {
+        console.log("Erro ao carregar datas para filtro:", error);
+        return;
+    }
+
+    const datas = new Set();
+
+    (data || []).forEach(function (aula) {
+        if (aula.data_aula) {
+            datas.add(aula.data_aula);
+        }
+    });
+
+    selectData.innerHTML = `<option value="">Todas as datas</option>`;
+
+    Array.from(datas).sort().reverse().forEach(function (dataAula) {
+        selectData.innerHTML += `
+            <option value="${escaparAtributo(dataAula)}">
+                📌 ${formatarDataAdmin(dataAula)}
+            </option>
+        `;
+    });
+}
+
+
+function montarResumoOrganizadorAulas(aulas) {
+    const resumo = document.getElementById("resumoAulasAdmin");
+
+    if (!resumo) {
+        return;
+    }
+
+    const disciplinas = new Set();
+    const turmas = new Set();
+    const cursos = new Set();
+
+    aulas.forEach(function (aula) {
+        if (aula.disciplinas && aula.disciplinas.nome_disciplina) {
+            disciplinas.add(aula.disciplinas.nome_disciplina);
+        }
+
+        if (aula.turmas && aula.turmas.nome_turma) {
+            turmas.add(aula.turmas.nome_turma);
+        }
+
+        if (aula.turmas && aula.turmas.curso) {
+            cursos.add(aula.turmas.curso);
+        }
+    });
+
+    resumo.innerHTML = `
+        <div class="item-resumo-aula">
+            <strong>${aulas.length}</strong>
+            <span>Aulas encontradas</span>
+        </div>
+
+        <div class="item-resumo-aula">
+            <strong>${disciplinas.size}</strong>
+            <span>Disciplinas</span>
+        </div>
+
+        <div class="item-resumo-aula">
+            <strong>${turmas.size}</strong>
+            <span>Turmas</span>
+        </div>
+
+        <div class="item-resumo-aula">
+            <strong>${cursos.size}</strong>
+            <span>Cursos técnicos</span>
+        </div>
+    `;
+}
+
+
+function montarCardAulaOrganizadaAdmin(aula) {
+    const nomeTurma = aula.turmas ? aula.turmas.nome_turma : "Turma não informada";
+    const nomeCurso = aula.turmas ? aula.turmas.curso : "Curso não informado";
+    const nomeDisciplina = aula.disciplinas ? aula.disciplinas.nome_disciplina : "Disciplina não informada";
+
+    return `
+        <div class="card-aula-admin card-aula-organizada">
+
+            <div class="topo-aula-organizada">
+
+                <div>
+                    ${
+                        aula.aula_do_dia
+                        ? `<span class="badge-aula-dia-admin">⭐ Aula do Dia ativa</span>`
+                        : ""
+                    }
+
+                    <h3>${escaparHTML(aula.titulo_aula || "Aula sem título")}</h3>
+
+                    ${
+                        aula.subtitulo
+                        ? `<p class="subtitulo-aula-organizada">${escaparHTML(aula.subtitulo)}</p>`
+                        : ""
+                    }
+                </div>
+
+                <div class="data-aula-organizada">
+                    <strong>${formatarDataAdmin(aula.data_aula)}</strong>
+                    <span>${formatarHorarioAdmin(aula.horario_inicio)} às ${formatarHorarioAdmin(aula.horario_fim)}</span>
+                </div>
+
+            </div>
+
+
+            <div class="grade-info-aula-organizada">
+
+                <div>
+                    <span class="rotulo-info-aula">📘 Disciplina</span>
+                    <strong>${escaparHTML(nomeDisciplina)}</strong>
+                </div>
+
+                <div>
+                    <span class="rotulo-info-aula">🎓 Turma</span>
+                    <strong>${escaparHTML(nomeTurma)}</strong>
+                </div>
+
+                <div>
+                    <span class="rotulo-info-aula">🏫 Curso técnico</span>
+                    <strong>${escaparHTML(formatarCursoOrganizadorAula(nomeCurso))}</strong>
+                </div>
+
+                <div>
+                    <span class="rotulo-info-aula">📍 Local</span>
+                    <strong>${escaparHTML(aula.local_aula || "Não informado")}</strong>
+                </div>
+
+            </div>
+
+
+            ${
+                aula.descricao
+                ? `
+                    <div class="descricao-aula-organizada descricao-aula-compacta">
+                        <strong>Resumo da aula:</strong>
+
+                        <pre class="texto-formatado-aula-admin">${preservarFormatacaoTextoAdmin(aula.descricao)}</pre>
+                    </div>
+                `
+                : ""
+            }
+
+
+            <div class="materiais-card-admin materiais-aula-organizada">
+                ${aula.pdf_url ? `<span>📄 PDF</span>` : ""}
+                ${aula.video_url ? `<span>🎥 Vídeo</span>` : ""}
+                ${aula.atividade_url ? `<span>📝 Atividade</span>` : ""}
+                ${aula.material_extra_url ? `<span>🔗 Extra</span>` : ""}
+                ${aula.ativo ? `<span class="status-ativo-aula">✅ Ativa</span>` : `<span class="status-inativo-aula">🚫 Inativa</span>`}
+            </div>
+
+
+            <div class="acoes-card-aula-admin">
+
+                <button onclick="editarAulaAdmin('${aula.id}')" class="btn-editar-aula">
+                    ✏️ Editar Aula
+                </button>
+
+                <button onclick="ativarAulaDoDia('${aula.id}', '${aula.turma_id}')" class="btn-ativar-aula-dia">
+                    ⭐ Ativar como Aula do Dia
+                </button>
+
+                <button onclick="desativarAula('${aula.id}')" class="btn-desativar-aula">
+                    🚫 Desativar
+                </button>
+
+                <button onclick="excluirAula('${aula.id}')" class="btn-excluir-aula">
+                    🗑️ Excluir
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+function formatarCursoOrganizadorAula(curso) {
+    const nomes = {
+        desenvolvimento_sistemas: "Desenvolvimento de Sistemas",
+        vendas: "Vendas",
+        apoio_pedagogico: "Apoio Pedagógico",
+        substituicoes: "Substituições",
+        outro: "Outro"
+    };
+
+    return nomes[curso] || curso || "Não informado";
+}
+
+
+function preservarFormatacaoTextoAdmin(texto) {
+    if (!texto) {
+        return "";
+    }
+
+    return escaparHTML(texto);
+}
+```
 
 // =====================================================
 // 10. ATIVAR / DESATIVAR / EXCLUIR AULA
