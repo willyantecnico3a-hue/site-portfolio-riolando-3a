@@ -498,6 +498,7 @@ function fecharTodasAsTelasAdmin() {
 
     telas.forEach(function (tela) {
         tela.classList.remove("ativa");
+        tela.style.display = "none";
     });
 }
 
@@ -530,8 +531,9 @@ function configurarMenuSobrepostoAdmin() {
             const tela = document.getElementById(telaEscolhida);
 
             if (tela) {
-                tela.classList.add("ativa");
-            }
+    tela.style.display = "block";
+    tela.classList.add("ativa");
+}
 
             fecharMenuAdmin();
 
@@ -1832,7 +1834,7 @@ function preservarFormatacaoTextoAdmin(texto) {
 
     return escaparHTML(texto);
 }
-    
+
 // =====================================================
 // 10. ATIVAR / DESATIVAR / EXCLUIR AULA
 // =====================================================

@@ -2640,3 +2640,31 @@ body::after {
         max-height: 600px;
     }
 }
+
+/* =====================================================
+   CONTROLE DAS TELAS DO PAINEL ADMIN
+   Mostra somente a tela escolhida no menu
+===================================================== */
+
+.tela-admin-sobreposta {
+    display: none;
+    width: 100%;
+    margin-top: 24px;
+    animation: aparecerTelaAdmin 0.25s ease;
+}
+
+.tela-admin-sobreposta.ativa {
+    display: block;
+}
+
+@keyframes aparecerTelaAdmin {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
