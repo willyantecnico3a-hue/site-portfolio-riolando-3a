@@ -1323,11 +1323,16 @@ if (filtroDisciplinaAulaAdmin) {
 }
 
 
+// =====================================================
+// CARREGAR AULAS COM FILTROS
+// =====================================================
+
 async function carregarAulasAdmin() {
     const lista = document.getElementById("listaAulasAdmin");
     const resumo = document.getElementById("resumoAulasAdmin");
 
     if (!lista) {
+        console.log("Elemento listaAulasAdmin não encontrado.");
         return;
     }
 
@@ -1366,10 +1371,12 @@ async function carregarAulasAdmin() {
             aula_do_dia,
             ativo,
             turmas (
+                id,
                 nome_turma,
                 curso
             ),
             disciplinas (
+                id,
                 nome_disciplina
             )
         `)
@@ -1384,13 +1391,14 @@ async function carregarAulasAdmin() {
 
     if (error) {
         lista.innerHTML = `
-            <p class="mensagem-erro-admin">
-                Erro ao carregar aulas: ${escaparHTML(error.message)}
-            </p>
+            <div class="card-vazio-admin">
+                <h4>⚠️ Erro ao carregar aulas</h4>
+                <p>${escaparHTML(error.message)}</p>
+            </div>
         `;
 
         if (resumo) {
-            resumo.innerHTML = "<p>Erro ao montar organizador de aulas.</p>";
+            resumo.innerHTML = "<p>Erro ao buscar aulas no banco de dados.</p>";
         }
 
         console.log("Erro ao carregar aulas:", error);
@@ -1398,6 +1406,8 @@ async function carregarAulasAdmin() {
     }
 
     let aulas = data || [];
+
+    console.log("Aulas carregadas:", aulas);
 
     const textoBuscado = filtroTexto ? filtroTexto.value.trim().toLowerCase() : "";
     const turmaBuscada = filtroTurma ? filtroTurma.value.trim().toLowerCase() : "";
@@ -1462,9 +1472,7 @@ async function carregarAulasAdmin() {
 
         if (resumo) {
             resumo.innerHTML = `
-                <p>
-                    Nenhuma aula encontrada com os filtros selecionados.
-                </p>
+                <p>Nenhuma aula encontrada com os filtros selecionados.</p>
             `;
         }
 
@@ -1480,6 +1488,10 @@ async function carregarAulasAdmin() {
     });
 }
 
+
+// =====================================================
+// CARREGAR OPÇÕES DOS DROPDOWNS
+// =====================================================
 
 async function carregarOpcoesOrganizadorAulasAdmin() {
     if (opcoesOrganizadorAulasCarregadas) {
@@ -1500,17 +1512,22 @@ async function carregarCursosFiltroAulasAdmin() {
     const selectCurso = document.getElementById("filtroCursoAulaAdmin");
 
     if (!selectCurso) {
+        console.log("Elemento filtroCursoAulaAdmin não encontrado.");
         return;
     }
 
     const { data, error } = await banco
         .from("turmas")
-        .select("curso")
-        .eq("ativo", true)
+        .select("id, nome_turma, curso")
         .order("curso", { ascending: true });
 
     if (error) {
         console.log("Erro ao carregar cursos para filtro:", error);
+
+        selectCurso.innerHTML = `
+            <option value="">Erro ao carregar cursos</option>
+        `;
+
         return;
     }
 
@@ -1523,6 +1540,13 @@ async function carregarCursosFiltroAulasAdmin() {
     });
 
     selectCurso.innerHTML = `<option value="">Todos os cursos</option>`;
+
+    if (cursos.size === 0) {
+        selectCurso.innerHTML += `
+            <option value="">Nenhum curso encontrado</option>
+        `;
+        return;
+    }
 
     Array.from(cursos).sort().forEach(function (curso) {
         selectCurso.innerHTML += `
@@ -1538,23 +1562,35 @@ async function carregarDisciplinasFiltroAulasAdmin() {
     const selectDisciplina = document.getElementById("filtroDisciplinaAulaAdmin");
 
     if (!selectDisciplina) {
+        console.log("Elemento filtroDisciplinaAulaAdmin não encontrado.");
         return;
     }
 
     const { data, error } = await banco
         .from("disciplinas")
         .select("id, nome_disciplina")
-        .eq("ativo", true)
         .order("nome_disciplina", { ascending: true });
 
     if (error) {
         console.log("Erro ao carregar disciplinas para filtro:", error);
+
+        selectDisciplina.innerHTML = `
+            <option value="">Erro ao carregar disciplinas</option>
+        `;
+
         return;
     }
 
     selectDisciplina.innerHTML = `<option value="">Todas as disciplinas</option>`;
 
-    (data || []).forEach(function (disciplina) {
+    if (!data || data.length === 0) {
+        selectDisciplina.innerHTML += `
+            <option value="">Nenhuma disciplina encontrada</option>
+        `;
+        return;
+    }
+
+    data.forEach(function (disciplina) {
         selectDisciplina.innerHTML += `
             <option value="${disciplina.id}">
                 ${escaparHTML(disciplina.nome_disciplina || "Disciplina sem nome")}
@@ -1568,6 +1604,7 @@ async function carregarDatasFiltroAulasAdmin() {
     const selectData = document.getElementById("filtroDataListaAulaAdmin");
 
     if (!selectData) {
+        console.log("Elemento filtroDataListaAulaAdmin não encontrado.");
         return;
     }
 
@@ -1579,6 +1616,11 @@ async function carregarDatasFiltroAulasAdmin() {
 
     if (error) {
         console.log("Erro ao carregar datas para filtro:", error);
+
+        selectData.innerHTML = `
+            <option value="">Erro ao carregar datas</option>
+        `;
+
         return;
     }
 
@@ -1592,6 +1634,13 @@ async function carregarDatasFiltroAulasAdmin() {
 
     selectData.innerHTML = `<option value="">Todas as datas</option>`;
 
+    if (datas.size === 0) {
+        selectData.innerHTML += `
+            <option value="">Nenhuma data encontrada</option>
+        `;
+        return;
+    }
+
     Array.from(datas).sort().reverse().forEach(function (dataAula) {
         selectData.innerHTML += `
             <option value="${escaparAtributo(dataAula)}">
@@ -1601,6 +1650,10 @@ async function carregarDatasFiltroAulasAdmin() {
     });
 }
 
+
+// =====================================================
+// RESUMO E CARDS DAS AULAS
+// =====================================================
 
 function montarResumoOrganizadorAulas(aulas) {
     const resumo = document.getElementById("resumoAulasAdmin");
@@ -1760,6 +1813,8 @@ function montarCardAulaOrganizadaAdmin(aula) {
 function formatarCursoOrganizadorAula(curso) {
     const nomes = {
         desenvolvimento_sistemas: "Desenvolvimento de Sistemas",
+        desenvolvimento_de_sistemas: "Desenvolvimento de Sistemas",
+        Desenvolvimento_Sistemas: "Desenvolvimento de Sistemas",
         vendas: "Vendas",
         apoio_pedagogico: "Apoio Pedagógico",
         substituicoes: "Substituições",
@@ -1777,8 +1832,7 @@ function preservarFormatacaoTextoAdmin(texto) {
 
     return escaparHTML(texto);
 }
-
-
+    
 // =====================================================
 // 10. ATIVAR / DESATIVAR / EXCLUIR AULA
 // =====================================================
