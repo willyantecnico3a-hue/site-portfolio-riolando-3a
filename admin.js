@@ -1256,16 +1256,65 @@ if (btnCarregarAulasAdmin) {
     btnCarregarAulasAdmin.addEventListener("click", carregarAulasAdmin);
 }
 
+const btnFiltrarAulasAdmin = document.getElementById("btnFiltrarAulasAdmin");
+const btnLimparFiltrosAulasAdmin = document.getElementById("btnLimparFiltrosAulasAdmin");
+
+const filtroDataAulaAdmin = document.getElementById("filtroDataAulaAdmin");
+const filtroTextoAulaAdmin = document.getElementById("filtroTextoAulaAdmin");
+const filtroTurmaAulaAdmin = document.getElementById("filtroTurmaAulaAdmin");
+const filtroDisciplinaAulaAdmin = document.getElementById("filtroDisciplinaAulaAdmin");
+
+if (btnFiltrarAulasAdmin) {
+    btnFiltrarAulasAdmin.addEventListener("click", carregarAulasAdmin);
+}
+
+if (btnLimparFiltrosAulasAdmin) {
+    btnLimparFiltrosAulasAdmin.addEventListener("click", function () {
+        limparCampoSeExistir("filtroDataAulaAdmin");
+        limparCampoSeExistir("filtroTextoAulaAdmin");
+        limparCampoSeExistir("filtroTurmaAulaAdmin");
+        limparCampoSeExistir("filtroDisciplinaAulaAdmin");
+
+        carregarAulasAdmin();
+    });
+}
+
+if (filtroDataAulaAdmin) {
+    filtroDataAulaAdmin.addEventListener("change", carregarAulasAdmin);
+}
+
+if (filtroTextoAulaAdmin) {
+    filtroTextoAulaAdmin.addEventListener("input", carregarAulasAdmin);
+}
+
+if (filtroTurmaAulaAdmin) {
+    filtroTurmaAulaAdmin.addEventListener("input", carregarAulasAdmin);
+}
+
+if (filtroDisciplinaAulaAdmin) {
+    filtroDisciplinaAulaAdmin.addEventListener("input", carregarAulasAdmin);
+}
+
 async function carregarAulasAdmin() {
     const lista = document.getElementById("listaAulasAdmin");
+    const resumo = document.getElementById("resumoAulasAdmin");
 
     if (!lista) {
         return;
     }
 
-    lista.innerHTML = "<p>Carregando aulas...</p>";
+    lista.innerHTML = "<p>Carregando aulas cadastradas...</p>";
 
-    const { data, error } = await banco
+    if (resumo) {
+        resumo.innerHTML = "<p>Organizando aulas...</p>";
+    }
+
+    const filtroData = document.getElementById("filtroDataAulaAdmin");
+    const filtroTexto = document.getElementById("filtroTextoAulaAdmin");
+    const filtroTurma = document.getElementById("filtroTurmaAulaAdmin");
+    const filtroDisciplina = document.getElementById("filtroDisciplinaAulaAdmin");
+
+    let consulta = banco
         .from("aulas")
         .select(`
             id,
@@ -1296,68 +1345,89 @@ async function carregarAulasAdmin() {
         .order("data_aula", { ascending: false })
         .order("horario_inicio", { ascending: false });
 
+    if (filtroData && filtroData.value) {
+        consulta = consulta.eq("data_aula", filtroData.value);
+    }
+
+    const { data, error } = await consulta;
+
     if (error) {
-        lista.innerHTML = `<p>Erro ao carregar aulas: ${error.message}</p>`;
+        lista.innerHTML = `<p>Erro ao carregar aulas: ${escaparHTML(error.message)}</p>`;
+
+        if (resumo) {
+            resumo.innerHTML = "<p>Erro ao montar organizador de aulas.</p>";
+        }
+
         console.log("Erro ao carregar aulas:", error);
         return;
     }
 
-    if (!data || data.length === 0) {
-        lista.innerHTML = "<p>Nenhuma aula cadastrada ainda.</p>";
+    let aulas = data || [];
+
+    const textoBuscado = filtroTexto ? filtroTexto.value.trim().toLowerCase() : "";
+    const turmaBuscada = filtroTurma ? filtroTurma.value.trim().toLowerCase() : "";
+    const disciplinaBuscada = filtroDisciplina ? filtroDisciplina.value.trim().toLowerCase() : "";
+
+    if (textoBuscado) {
+        aulas = aulas.filter(function (aula) {
+            const texto = [
+                aula.titulo_aula,
+                aula.subtitulo,
+                aula.descricao,
+                aula.desafio_pratico,
+                aula.local_aula
+            ].join(" ").toLowerCase();
+
+            return texto.includes(textoBuscado);
+        });
+    }
+
+    if (turmaBuscada) {
+        aulas = aulas.filter(function (aula) {
+            const textoTurma = [
+                aula.turmas ? aula.turmas.nome_turma : "",
+                aula.turmas ? aula.turmas.curso : ""
+            ].join(" ").toLowerCase();
+
+            return textoTurma.includes(turmaBuscada);
+        });
+    }
+
+    if (disciplinaBuscada) {
+        aulas = aulas.filter(function (aula) {
+            const textoDisciplina = aula.disciplinas
+                ? aula.disciplinas.nome_disciplina.toLowerCase()
+                : "";
+
+            return textoDisciplina.includes(disciplinaBuscada);
+        });
+    }
+
+    if (!aulas || aulas.length === 0) {
+        lista.innerHTML = `
+            <div class="card-vazio-admin">
+                <h4>📭 Nenhuma aula encontrada</h4>
+                <p>Altere os filtros ou cadastre uma nova aula.</p>
+            </div>
+        `;
+
+        if (resumo) {
+            resumo.innerHTML = `
+                <p>
+                    Nenhuma aula encontrada com os filtros selecionados.
+                </p>
+            `;
+        }
+
         return;
     }
 
+    montarResumoOrganizadorAulas(aulas);
+
     lista.innerHTML = "";
 
-    data.forEach(function (aula) {
-        lista.innerHTML += `
-            <div class="card-aula-admin">
-
-                ${
-                    aula.aula_do_dia
-                    ? `<span class="badge-aula-dia-admin">⭐ Aula do Dia ativa</span>`
-                    : ""
-                }
-
-                <h3>${escaparHTML(aula.titulo_aula || "Aula sem título")}</h3>
-
-                <p><strong>Turma:</strong> ${aula.turmas ? escaparHTML(aula.turmas.nome_turma) : "Não informada"}</p>
-                <p><strong>Curso:</strong> ${aula.turmas ? escaparHTML(aula.turmas.curso) : "Não informado"}</p>
-                <p><strong>Disciplina:</strong> ${aula.disciplinas ? escaparHTML(aula.disciplinas.nome_disciplina) : "Não informada"}</p>
-                <p><strong>Data:</strong> ${formatarDataAdmin(aula.data_aula)}</p>
-                <p><strong>Horário:</strong> ${formatarHorarioAdmin(aula.horario_inicio)} às ${formatarHorarioAdmin(aula.horario_fim)}</p>
-                <p><strong>Local:</strong> ${escaparHTML(aula.local_aula || "Não informado")}</p>
-                <p><strong>Status:</strong> ${aula.ativo ? "Ativa" : "Inativa"}</p>
-
-                <div class="materiais-card-admin">
-                    ${aula.pdf_url ? `<span>📄 PDF</span>` : ""}
-                    ${aula.video_url ? `<span>🎥 Vídeo</span>` : ""}
-                    ${aula.atividade_url ? `<span>📝 Atividade</span>` : ""}
-                    ${aula.material_extra_url ? `<span>🔗 Extra</span>` : ""}
-                </div>
-
-                <div class="acoes-card-aula-admin">
-
-                    <button onclick="editarAulaAdmin('${aula.id}')" class="btn-editar-aula">
-                        ✏️ Editar Aula
-                    </button>
-
-                    <button onclick="ativarAulaDoDia('${aula.id}', '${aula.turma_id}')" class="btn-ativar-aula-dia">
-                        ⭐ Ativar como Aula do Dia
-                    </button>
-
-                    <button onclick="desativarAula('${aula.id}')" class="btn-desativar-aula">
-                        🚫 Desativar
-                    </button>
-
-                    <button onclick="excluirAula('${aula.id}')" class="btn-excluir-aula">
-                        🗑️ Excluir
-                    </button>
-
-                </div>
-
-            </div>
-        `;
+    aulas.forEach(function (aula) {
+        lista.innerHTML += montarCardAulaOrganizadaAdmin(aula);
     });
 }
 
@@ -1408,6 +1478,159 @@ async function ativarAulaDoDia(aulaId, turmaId) {
 
     alert("Aula ativada como Aula do Dia com sucesso!");
     carregarAulasAdmin();
+}
+
+function montarResumoOrganizadorAulas(aulas) {
+    const resumo = document.getElementById("resumoAulasAdmin");
+
+    if (!resumo) {
+        return;
+    }
+
+    const disciplinas = new Set();
+    const turmas = new Set();
+    const cursos = new Set();
+
+    aulas.forEach(function (aula) {
+        if (aula.disciplinas && aula.disciplinas.nome_disciplina) {
+            disciplinas.add(aula.disciplinas.nome_disciplina);
+        }
+
+        if (aula.turmas && aula.turmas.nome_turma) {
+            turmas.add(aula.turmas.nome_turma);
+        }
+
+        if (aula.turmas && aula.turmas.curso) {
+            cursos.add(aula.turmas.curso);
+        }
+    });
+
+    resumo.innerHTML = `
+        <div class="item-resumo-aula">
+            <strong>${aulas.length}</strong>
+            <span>Aulas encontradas</span>
+        </div>
+
+        <div class="item-resumo-aula">
+            <strong>${disciplinas.size}</strong>
+            <span>Disciplinas</span>
+        </div>
+
+        <div class="item-resumo-aula">
+            <strong>${turmas.size}</strong>
+            <span>Turmas</span>
+        </div>
+
+        <div class="item-resumo-aula">
+            <strong>${cursos.size}</strong>
+            <span>Cursos técnicos</span>
+        </div>
+    `;
+}
+
+
+function montarCardAulaOrganizadaAdmin(aula) {
+    const nomeTurma = aula.turmas ? aula.turmas.nome_turma : "Turma não informada";
+    const nomeCurso = aula.turmas ? aula.turmas.curso : "Curso não informado";
+    const nomeDisciplina = aula.disciplinas ? aula.disciplinas.nome_disciplina : "Disciplina não informada";
+
+    return `
+        <div class="card-aula-admin card-aula-organizada">
+
+            <div class="topo-aula-organizada">
+
+                <div>
+                    ${
+                        aula.aula_do_dia
+                        ? `<span class="badge-aula-dia-admin">⭐ Aula do Dia ativa</span>`
+                        : ""
+                    }
+
+                    <h3>${escaparHTML(aula.titulo_aula || "Aula sem título")}</h3>
+
+                    ${
+                        aula.subtitulo
+                        ? `<p class="subtitulo-aula-organizada">${escaparHTML(aula.subtitulo)}</p>`
+                        : ""
+                    }
+                </div>
+
+                <div class="data-aula-organizada">
+                    <strong>${formatarDataAdmin(aula.data_aula)}</strong>
+                    <span>${formatarHorarioAdmin(aula.horario_inicio)} às ${formatarHorarioAdmin(aula.horario_fim)}</span>
+                </div>
+
+            </div>
+
+
+            <div class="grade-info-aula-organizada">
+
+                <div>
+                    <span class="rotulo-info-aula">📘 Disciplina</span>
+                    <strong>${escaparHTML(nomeDisciplina)}</strong>
+                </div>
+
+                <div>
+                    <span class="rotulo-info-aula">🎓 Turma</span>
+                    <strong>${escaparHTML(nomeTurma)}</strong>
+                </div>
+
+                <div>
+                    <span class="rotulo-info-aula">🏫 Curso técnico</span>
+                    <strong>${escaparHTML(nomeCurso)}</strong>
+                </div>
+
+                <div>
+                    <span class="rotulo-info-aula">📍 Local</span>
+                    <strong>${escaparHTML(aula.local_aula || "Não informado")}</strong>
+                </div>
+
+            </div>
+
+
+            ${
+                aula.descricao
+                ? `
+                    <div class="descricao-aula-organizada">
+                        <strong>Resumo da aula:</strong>
+                        <p>${escaparHTML(aula.descricao)}</p>
+                    </div>
+                `
+                : ""
+            }
+
+
+            <div class="materiais-card-admin materiais-aula-organizada">
+                ${aula.pdf_url ? `<span>📄 PDF</span>` : ""}
+                ${aula.video_url ? `<span>🎥 Vídeo</span>` : ""}
+                ${aula.atividade_url ? `<span>📝 Atividade</span>` : ""}
+                ${aula.material_extra_url ? `<span>🔗 Extra</span>` : ""}
+                ${aula.ativo ? `<span class="status-ativo-aula">✅ Ativa</span>` : `<span class="status-inativo-aula">🚫 Inativa</span>`}
+            </div>
+
+
+            <div class="acoes-card-aula-admin">
+
+                <button onclick="editarAulaAdmin('${aula.id}')" class="btn-editar-aula">
+                    ✏️ Editar Aula
+                </button>
+
+                <button onclick="ativarAulaDoDia('${aula.id}', '${aula.turma_id}')" class="btn-ativar-aula-dia">
+                    ⭐ Ativar como Aula do Dia
+                </button>
+
+                <button onclick="desativarAula('${aula.id}')" class="btn-desativar-aula">
+                    🚫 Desativar
+                </button>
+
+                <button onclick="excluirAula('${aula.id}')" class="btn-excluir-aula">
+                    🗑️ Excluir
+                </button>
+
+            </div>
+
+        </div>
+    `;
 }
 
 async function desativarAula(id) {
