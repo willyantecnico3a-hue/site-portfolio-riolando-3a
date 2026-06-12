@@ -1246,7 +1246,6 @@ async function editarAulaAdmin(idAula) {
 }
 
 
-```javascript
 // =====================================================
 // 9. LISTAR AULAS - ORGANIZADOR DE AULAS
 // =====================================================
@@ -1778,7 +1777,7 @@ function preservarFormatacaoTextoAdmin(texto) {
 
     return escaparHTML(texto);
 }
-```
+
 
 // =====================================================
 // 10. ATIVAR / DESATIVAR / EXCLUIR AULA
@@ -1828,158 +1827,6 @@ async function ativarAulaDoDia(aulaId, turmaId) {
     carregarAulasAdmin();
 }
 
-function montarResumoOrganizadorAulas(aulas) {
-    const resumo = document.getElementById("resumoAulasAdmin");
-
-    if (!resumo) {
-        return;
-    }
-
-    const disciplinas = new Set();
-    const turmas = new Set();
-    const cursos = new Set();
-
-    aulas.forEach(function (aula) {
-        if (aula.disciplinas && aula.disciplinas.nome_disciplina) {
-            disciplinas.add(aula.disciplinas.nome_disciplina);
-        }
-
-        if (aula.turmas && aula.turmas.nome_turma) {
-            turmas.add(aula.turmas.nome_turma);
-        }
-
-        if (aula.turmas && aula.turmas.curso) {
-            cursos.add(aula.turmas.curso);
-        }
-    });
-
-    resumo.innerHTML = `
-        <div class="item-resumo-aula">
-            <strong>${aulas.length}</strong>
-            <span>Aulas encontradas</span>
-        </div>
-
-        <div class="item-resumo-aula">
-            <strong>${disciplinas.size}</strong>
-            <span>Disciplinas</span>
-        </div>
-
-        <div class="item-resumo-aula">
-            <strong>${turmas.size}</strong>
-            <span>Turmas</span>
-        </div>
-
-        <div class="item-resumo-aula">
-            <strong>${cursos.size}</strong>
-            <span>Cursos técnicos</span>
-        </div>
-    `;
-}
-
-
-function montarCardAulaOrganizadaAdmin(aula) {
-    const nomeTurma = aula.turmas ? aula.turmas.nome_turma : "Turma não informada";
-    const nomeCurso = aula.turmas ? aula.turmas.curso : "Curso não informado";
-    const nomeDisciplina = aula.disciplinas ? aula.disciplinas.nome_disciplina : "Disciplina não informada";
-
-    return `
-        <div class="card-aula-admin card-aula-organizada">
-
-            <div class="topo-aula-organizada">
-
-                <div>
-                    ${
-                        aula.aula_do_dia
-                        ? `<span class="badge-aula-dia-admin">⭐ Aula do Dia ativa</span>`
-                        : ""
-                    }
-
-                    <h3>${escaparHTML(aula.titulo_aula || "Aula sem título")}</h3>
-
-                    ${
-                        aula.subtitulo
-                        ? `<p class="subtitulo-aula-organizada">${escaparHTML(aula.subtitulo)}</p>`
-                        : ""
-                    }
-                </div>
-
-                <div class="data-aula-organizada">
-                    <strong>${formatarDataAdmin(aula.data_aula)}</strong>
-                    <span>${formatarHorarioAdmin(aula.horario_inicio)} às ${formatarHorarioAdmin(aula.horario_fim)}</span>
-                </div>
-
-            </div>
-
-
-            <div class="grade-info-aula-organizada">
-
-                <div>
-                    <span class="rotulo-info-aula">📘 Disciplina</span>
-                    <strong>${escaparHTML(nomeDisciplina)}</strong>
-                </div>
-
-                <div>
-                    <span class="rotulo-info-aula">🎓 Turma</span>
-                    <strong>${escaparHTML(nomeTurma)}</strong>
-                </div>
-
-                <div>
-                    <span class="rotulo-info-aula">🏫 Curso técnico</span>
-                    <strong>${escaparHTML(nomeCurso)}</strong>
-                </div>
-
-                <div>
-                    <span class="rotulo-info-aula">📍 Local</span>
-                    <strong>${escaparHTML(aula.local_aula || "Não informado")}</strong>
-                </div>
-
-            </div>
-
-
-            ${
-                aula.descricao
-                ? `
-                    <div class="descricao-aula-organizada">
-                        <strong>Resumo da aula:</strong>
-                        <p>${escaparHTML(aula.descricao)}</p>
-                    </div>
-                `
-                : ""
-            }
-
-
-            <div class="materiais-card-admin materiais-aula-organizada">
-                ${aula.pdf_url ? `<span>📄 PDF</span>` : ""}
-                ${aula.video_url ? `<span>🎥 Vídeo</span>` : ""}
-                ${aula.atividade_url ? `<span>📝 Atividade</span>` : ""}
-                ${aula.material_extra_url ? `<span>🔗 Extra</span>` : ""}
-                ${aula.ativo ? `<span class="status-ativo-aula">✅ Ativa</span>` : `<span class="status-inativo-aula">🚫 Inativa</span>`}
-            </div>
-
-
-            <div class="acoes-card-aula-admin">
-
-                <button onclick="editarAulaAdmin('${aula.id}')" class="btn-editar-aula">
-                    ✏️ Editar Aula
-                </button>
-
-                <button onclick="ativarAulaDoDia('${aula.id}', '${aula.turma_id}')" class="btn-ativar-aula-dia">
-                    ⭐ Ativar como Aula do Dia
-                </button>
-
-                <button onclick="desativarAula('${aula.id}')" class="btn-desativar-aula">
-                    🚫 Desativar
-                </button>
-
-                <button onclick="excluirAula('${aula.id}')" class="btn-excluir-aula">
-                    🗑️ Excluir
-                </button>
-
-            </div>
-
-        </div>
-    `;
-}
 
 async function desativarAula(id) {
     const confirmar = confirm("Deseja desativar esta aula?");
@@ -2005,6 +1852,7 @@ async function desativarAula(id) {
     carregarAulasAdmin();
 }
 
+
 async function excluirAula(id) {
     const confirmar = confirm("Tem certeza que deseja excluir esta aula?");
 
@@ -2025,6 +1873,7 @@ async function excluirAula(id) {
     alert("Aula excluída com sucesso!");
     carregarAulasAdmin();
 }
+
 
 
 // =====================================================
