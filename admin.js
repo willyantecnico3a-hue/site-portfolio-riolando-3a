@@ -295,11 +295,23 @@ function abrirTelaEditarPerfilAdmin() {
 
     const telaEditarPerfil = document.getElementById("telaEditarPerfilAdmin");
 
-    if (telaEditarPerfil) {
-        telaEditarPerfil.classList.add("ativa");
+    if (!telaEditarPerfil) {
+        alert("Tela de edição de perfil não encontrada no admin.html.");
+        console.log("Erro: telaEditarPerfilAdmin não existe no HTML.");
+        return;
     }
 
+    telaEditarPerfil.style.display = "block";
+    telaEditarPerfil.classList.add("ativa");
+
     fecharMenuAdmin();
+
+    setTimeout(function () {
+        telaEditarPerfil.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }, 100);
 }
 
 async function enviarFotoPerfilAdminParaStorage(arquivo, userId) {
@@ -432,8 +444,12 @@ function configurarPerfilAdminEditavel() {
     const inputFotoPerfilAdmin = document.getElementById("inputFotoPerfilAdmin");
 
     if (btnEditarPerfilAdmin) {
-        btnEditarPerfilAdmin.addEventListener("click", abrirTelaEditarPerfilAdmin);
-    }
+    btnEditarPerfilAdmin.onclick = function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        abrirTelaEditarPerfilAdmin();
+    };
+}
 
     if (btnSalvarPerfilAdmin) {
         btnSalvarPerfilAdmin.addEventListener("click", salvarPerfilAdminEditavel);
@@ -530,7 +546,7 @@ function configurarMenuSobrepostoAdmin() {
 
             const tela = document.getElementById(telaEscolhida);
 
-            if (tela) {
+if (tela) {
     tela.style.display = "block";
     tela.classList.add("ativa");
 }
