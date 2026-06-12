@@ -2363,3 +2363,280 @@ body::after {
     }
 }
 ```
+
+
+/* =====================================================
+   ORGANIZADOR DE AULAS - CARDS COMPACTOS E FILTROS
+===================================================== */
+
+.filtros-aulas-admin {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+    padding: 18px;
+    border-radius: 18px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+}
+
+.filtros-aulas-admin label {
+    display: block;
+    margin-bottom: 8px;
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.filtros-aulas-admin select,
+.filtros-aulas-admin input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px;
+    border-radius: 12px;
+    border: 2px solid #cbd5e1;
+    font-size: 15px;
+    background-color: #ffffff;
+}
+
+.filtros-aulas-admin select:focus,
+.filtros-aulas-admin input:focus {
+    outline: none;
+    border-color: #0f766e;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+#filtroDataListaAulaAdmin {
+    border-color: #0f766e;
+    background-color: #ecfdf5;
+    font-weight: 700;
+}
+
+.resumo-aulas-admin {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.item-resumo-aula {
+    padding: 14px;
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.item-resumo-aula strong {
+    display: block;
+    color: #0f766e;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.item-resumo-aula span {
+    display: block;
+    margin-top: 8px;
+    color: #475569;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.lista-aulas-organizada-admin {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.card-aula-organizada {
+    max-height: 540px;
+    overflow-y: auto;
+    border-left: 7px solid #0f766e;
+    border-radius: 20px;
+    padding: 18px;
+    background: #ffffff;
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.1);
+    scrollbar-width: thin;
+    scrollbar-color: #0f766e #e2e8f0;
+}
+
+.card-aula-organizada::-webkit-scrollbar {
+    width: 8px;
+}
+
+.card-aula-organizada::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.card-aula-organizada::-webkit-scrollbar-thumb {
+    background: #0f766e;
+    border-radius: 999px;
+}
+
+.topo-aula-organizada {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.topo-aula-organizada h3 {
+    margin: 8px 0 4px 0;
+    color: #0f172a;
+    font-size: 20px;
+}
+
+.subtitulo-aula-organizada {
+    margin: 0;
+    color: #475569;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.data-aula-organizada {
+    min-width: 140px;
+    padding: 12px;
+    border-radius: 16px;
+    background: #ecfdf5;
+    border: 1px solid #99f6e4;
+    text-align: center;
+}
+
+.data-aula-organizada strong {
+    display: block;
+    color: #0f766e;
+    font-size: 16px;
+}
+
+.data-aula-organizada span {
+    display: block;
+    margin-top: 4px;
+    color: #334155;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.grade-info-aula-organizada {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 14px 0;
+}
+
+.grade-info-aula-organizada div {
+    padding: 11px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+}
+
+.rotulo-info-aula {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.grade-info-aula-organizada strong {
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.descricao-aula-organizada.descricao-aula-compacta {
+    max-height: 145px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border-left: 5px solid #1d4ed8;
+    scrollbar-width: thin;
+    scrollbar-color: #0f766e #e2e8f0;
+}
+
+.descricao-aula-organizada.descricao-aula-compacta strong {
+    color: #1d4ed8;
+}
+
+.texto-formatado-aula-admin {
+    margin: 10px 0 0;
+    padding: 12px;
+    max-height: 90px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #334155;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #dbeafe;
+}
+
+.materiais-aula-organizada {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.materiais-aula-organizada span {
+    display: inline-flex;
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: #e0f2fe;
+    color: #075985;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.status-ativo-aula {
+    background: #dcfce7 !important;
+    color: #166534 !important;
+}
+
+.status-inativo-aula {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.acoes-card-aula-admin {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.acoes-card-aula-admin button {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+@media (max-width: 1000px) {
+    .filtros-aulas-admin,
+    .resumo-aulas-admin {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .filtros-aulas-admin,
+    .resumo-aulas-admin,
+    .grade-info-aula-organizada,
+    .lista-aulas-organizada-admin {
+        grid-template-columns: 1fr;
+    }
+
+    .card-aula-organizada {
+        max-height: 600px;
+    }
+}
