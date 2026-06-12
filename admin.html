@@ -17,8 +17,7 @@
 
     <title>Painel Administrativo</title>
 
-    <link rel="stylesheet" href="style.css?v=20260610-08">
-
+<link rel="stylesheet" href="style.css?v=20260612-04">
     <style>
         /* =============================
            BASE DO PAINEL ADMIN
@@ -1762,100 +1761,102 @@ body > p {
 
                 </div>
 
+                ```html
                 <button id="btnSalvarAula" type="button">
                     💾 Salvar Aula
                 </button>
 
                 <p id="mensagemAulaAdmin"></p>
 
-            </section>
+            </div>
 
-                <div class="card-admin-lista organizador-aulas-admin">
+            <div class="card-admin-lista organizador-aulas-admin">
 
-    <div class="cabecalho-organizador-aulas">
-        <div>
-            <h3>🗂️ Organizador de Aulas Cadastradas</h3>
+                <div class="cabecalho-organizador-aulas">
+                    <div>
+                        <h3>🗂️ Organizador de Aulas Cadastradas</h3>
 
-            <p>
-                As aulas mais recentes aparecem primeiro. Use os filtros para localizar aulas por data,
-                curso técnico, disciplina, turma ou palavra-chave.
-            </p>
-        </div>
+                        <p>
+                            As aulas mais recentes aparecem primeiro. Use os filtros para localizar aulas por data,
+                            curso técnico, disciplina, turma ou palavra-chave.
+                        </p>
+                    </div>
 
-        <button id="btnCarregarAulasAdmin" type="button">
-            🔄 Atualizar Aulas
-        </button>
-    </div>
+                    <button id="btnCarregarAulasAdmin" type="button">
+                        🔄 Atualizar Aulas
+                    </button>
+                </div>
 
-    <div class="filtros-aulas-admin">
+                <div class="filtros-aulas-admin">
 
-        <div>
-            <label for="filtroDataAulaAdmin">Data da aula</label>
-            <input type="date" id="filtroDataAulaAdmin">
-        </div>
+                    <div>
+                        <label for="filtroDataAulaAdmin">Data da aula</label>
+                        <input type="date" id="filtroDataAulaAdmin">
+                    </div>
 
-        <div>
-            <label for="filtroDataListaAulaAdmin">Dias com aula cadastrada</label>
-            <select id="filtroDataListaAulaAdmin">
-                <option value="">Todas as datas</option>
-            </select>
-        </div>
+                    <div>
+                        <label for="filtroDataListaAulaAdmin">Dias com aula cadastrada</label>
+                        <select id="filtroDataListaAulaAdmin">
+                            <option value="">Todas as datas</option>
+                        </select>
+                    </div>
 
-        <div>
-            <label for="filtroCursoAulaAdmin">Curso técnico</label>
-            <select id="filtroCursoAulaAdmin">
-                <option value="">Todos os cursos</option>
-            </select>
-        </div>
+                    <div>
+                        <label for="filtroCursoAulaAdmin">Curso técnico</label>
+                        <select id="filtroCursoAulaAdmin">
+                            <option value="">Todos os cursos</option>
+                        </select>
+                    </div>
 
-        <div>
-            <label for="filtroDisciplinaAulaAdmin">Disciplina</label>
-            <select id="filtroDisciplinaAulaAdmin">
-                <option value="">Todas as disciplinas</option>
-            </select>
-        </div>
+                    <div>
+                        <label for="filtroDisciplinaAulaAdmin">Disciplina</label>
+                        <select id="filtroDisciplinaAulaAdmin">
+                            <option value="">Todas as disciplinas</option>
+                        </select>
+                    </div>
 
-        <div>
-            <label for="filtroTextoAulaAdmin">Buscar aula</label>
-            <input
-                type="text"
-                id="filtroTextoAulaAdmin"
-                placeholder="Título, tema ou palavra-chave"
-            >
-        </div>
+                    <div>
+                        <label for="filtroTextoAulaAdmin">Buscar aula</label>
+                        <input
+                            type="text"
+                            id="filtroTextoAulaAdmin"
+                            placeholder="Título, tema ou palavra-chave"
+                        >
+                    </div>
 
-        <div>
-            <label for="filtroTurmaAulaAdmin">Turma</label>
-            <input
-                type="text"
-                id="filtroTurmaAulaAdmin"
-                placeholder="Ex: 3ºA"
-            >
-        </div>
+                    <div>
+                        <label for="filtroTurmaAulaAdmin">Turma</label>
+                        <input
+                            type="text"
+                            id="filtroTurmaAulaAdmin"
+                            placeholder="Ex: 3ºA"
+                        >
+                    </div>
 
-    </div>
+                </div>
 
-    <div class="acoes-filtros-aulas-admin">
-        <button type="button" id="btnFiltrarAulasAdmin">
-            🔎 Filtrar aulas
-        </button>
+                <div class="acoes-filtros-aulas-admin">
+                    <button type="button" id="btnFiltrarAulasAdmin">
+                        🔎 Filtrar aulas
+                    </button>
 
-        <button type="button" id="btnLimparFiltrosAulasAdmin">
-            🧹 Limpar filtros
-        </button>
-    </div>
+                    <button type="button" id="btnLimparFiltrosAulasAdmin">
+                        🧹 Limpar filtros
+                    </button>
+                </div>
 
-    <div id="resumoAulasAdmin" class="resumo-aulas-admin">
-        <p>Use os filtros acima para organizar as aulas cadastradas.</p>
-    </div>
+                <div id="resumoAulasAdmin" class="resumo-aulas-admin">
+                    <p>Use os filtros acima para organizar as aulas cadastradas.</p>
+                </div>
 
-    <div id="listaAulasAdmin" class="lista-aulas-organizada-admin"></div>
+                <div id="listaAulasAdmin" class="lista-aulas-organizada-admin">
+                    <p>Clique em “Atualizar Aulas” para carregar as aulas cadastradas.</p>
+                </div>
 
-</div>
+            </div>
 
-</section>
-
-                
+        </section>
+```
 
             
         <!-- =====================================================
@@ -2611,7 +2612,7 @@ Aluno Teste,aluno.teste@aluno.com,3ºA,desenvolvimento_sistemas,Riolando@2026</t
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Arquivo com as funções do painel administrativo -->
-    <script src="admin.js?v=20260612-03"></script>
+    <script src="admin.js?v=20260612-04"></script>
 
     <script>
         if ("serviceWorker" in navigator) {
