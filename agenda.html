@@ -16,7 +16,308 @@
 
     <title>Agenda Pedagógica</title>
 
-    <link rel="stylesheet" href="agenda.css?v=20260610-01">
+    <link rel="stylesheet" href="agenda.css?v=20260612-PAEET-01">
+
+    <style>
+        /* =====================================================
+           DISPONIBILIDADE DO PROFESSOR PAEET
+        ===================================================== */
+
+        .disponibilidade-paeet {
+            background: linear-gradient(135deg, #ffffff, #f0fdfa);
+            border-left: 7px solid #0f766e;
+            border-radius: 24px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 16px 38px rgba(15, 23, 42, 0.12);
+        }
+
+        .topo-disponibilidade-paeet {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .selo-disponibilidade {
+            display: inline-flex;
+            padding: 7px 13px;
+            border-radius: 999px;
+            background: #ccfbf1;
+            color: #0f766e;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .topo-disponibilidade-paeet h2 {
+            margin: 10px 0 8px;
+            color: #0f766e;
+            font-size: 28px;
+        }
+
+        .topo-disponibilidade-paeet p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .configuracao-expediente-paeet {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 6px solid #1d4ed8;
+            border-radius: 20px;
+            padding: 18px;
+            margin: 18px 0;
+        }
+
+        .configuracao-expediente-paeet h3 {
+            margin-top: 0;
+            color: #1d4ed8;
+        }
+
+        .filtros-disponibilidade-paeet {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 18px;
+            margin: 18px 0;
+        }
+
+        .filtros-disponibilidade-paeet label {
+            display: block;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #0f172a;
+        }
+
+        .filtros-disponibilidade-paeet input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            font-size: 15px;
+        }
+
+        .filtros-disponibilidade-paeet input:focus {
+            outline: none;
+            border-color: #0f766e;
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+        }
+
+        .area-botao-expediente button,
+        #btnAtualizarDisponibilidadePaeet,
+        #btnSalvarExpedientePaeet {
+            border: none;
+            border-radius: 14px;
+            padding: 13px 16px;
+            background: #0f766e;
+            color: #ffffff;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .area-botao-expediente button:hover,
+        #btnAtualizarDisponibilidadePaeet:hover,
+        #btnSalvarExpedientePaeet:hover {
+            background: #0d9488;
+        }
+
+        .mensagem-expediente-paeet {
+            font-weight: 800;
+            color: #0f766e;
+        }
+
+        .resumo-status-rapido-paeet {
+            padding: 13px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            font-weight: 800;
+            color: #0f766e;
+        }
+
+        .status-disponibilidade-paeet {
+            margin: 18px 0;
+        }
+
+        .status-card-paeet {
+            padding: 18px;
+            border-radius: 18px;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10);
+        }
+
+        .status-card-paeet h3 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .status-card-paeet p {
+            margin: 0 0 8px;
+            line-height: 1.6;
+        }
+
+        .status-card-paeet small {
+            font-weight: 700;
+        }
+
+        .status-disponivel {
+            background: #dcfce7;
+            border-left: 6px solid #16a34a;
+            color: #14532d;
+        }
+
+        .status-indisponivel {
+            background: #fee2e2;
+            border-left: 6px solid #dc2626;
+            color: #7f1d1d;
+        }
+
+        .status-alerta-parcial {
+            background: #fef3c7;
+            border-left: 6px solid #f59e0b;
+            color: #78350f;
+        }
+
+        .lista-disponibilidade-paeet {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .card-horario-disponivel {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px;
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #bbf7d0;
+            border-left: 6px solid #16a34a;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.09);
+        }
+
+        .card-horario-disponivel h3 {
+            margin: 8px 0;
+            color: #0f766e;
+            font-size: 21px;
+        }
+
+        .card-horario-disponivel p {
+            margin: 0;
+            color: #334155;
+        }
+
+        .selo-horario-livre {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-weight: 900;
+            font-size: 12px;
+        }
+
+        .card-horario-disponivel button {
+            border: none;
+            border-radius: 12px;
+            padding: 11px 13px;
+            background: #0f766e;
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .card-sem-disponibilidade {
+            padding: 18px;
+            border-radius: 18px;
+            background: #fff7ed;
+            border-left: 6px solid #f97316;
+            color: #7c2d12;
+        }
+
+        .bloco-alertas-paeet {
+            margin: 18px 0;
+            padding: 18px;
+            background: #fff7ed;
+            border-left: 7px solid #f97316;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .bloco-alertas-paeet h3 {
+            margin-top: 0;
+            color: #c2410c;
+        }
+
+        .card-alerta-especial-paeet {
+            margin-top: 14px;
+            padding: 16px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #fed7aa;
+        }
+
+        .card-alerta-especial-paeet strong {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #ffedd5;
+            color: #9a3412;
+            font-size: 12px;
+        }
+
+        .card-alerta-especial-paeet h4 {
+            margin: 10px 0;
+            color: #7c2d12;
+        }
+
+        .descricao-alerta-paeet {
+            background: #fff7ed;
+            border-radius: 12px;
+            padding: 12px;
+            line-height: 1.6;
+            color: #7c2d12;
+        }
+
+        .dia-alerta-paeet {
+            border: 2px solid #f97316 !important;
+            background: #fff7ed !important;
+        }
+
+        .alerta-dia-paeet {
+            margin: 4px 0;
+            padding: 4px 6px;
+            border-radius: 8px;
+            background: #fed7aa;
+            color: #9a3412;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        @media (max-width: 800px) {
+            .filtros-disponibilidade-paeet,
+            .lista-disponibilidade-paeet {
+                grid-template-columns: 1fr;
+            }
+
+            .card-horario-disponivel {
+                flex-direction: column;
+            }
+
+            .card-horario-disponivel button {
+                width: 100%;
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -95,6 +396,94 @@
         </section>
 
 
+
+
+        <!-- =====================================================
+             DISPONIBILIDADE DO PROFESSOR PAEET
+        ====================================================== -->
+        <section class="card-agenda disponibilidade-paeet">
+
+            <div class="topo-disponibilidade-paeet">
+                <div>
+                    <span class="selo-disponibilidade">PAEET</span>
+
+                    <h2>🟢 Disponibilidade do Professor PAEET</h2>
+
+                    <p>
+                        Consulte os horários disponíveis do Professor/PAEET Willyan Vieira para atendimento a alunos,
+                        reuniões com gestão, alinhamentos pedagógicos, solicitações e demais demandas escolares.
+                    </p>
+                </div>
+
+                <button type="button" id="btnAtualizarDisponibilidadePaeet">
+                    🔄 Atualizar disponibilidade
+                </button>
+            </div>
+
+            <div id="areaConfiguracaoExpedientePaeet" class="configuracao-expediente-paeet" style="display:none;">
+
+                <h3>⚙️ Configuração do expediente PAEET</h3>
+
+                <p>
+                    Defina o horário base usado para calcular automaticamente os intervalos livres da agenda.
+                    O padrão inicial é das 12:30 às 21:30.
+                </p>
+
+                <div class="filtros-disponibilidade-paeet">
+
+                    <div>
+                        <label for="inicioExpedientePaeet">Início do expediente</label>
+                        <input type="time" id="inicioExpedientePaeet" value="12:30">
+                    </div>
+
+                    <div>
+                        <label for="fimExpedientePaeet">Fim do expediente</label>
+                        <input type="time" id="fimExpedientePaeet" value="21:30">
+                    </div>
+
+                    <div class="area-botao-expediente">
+                        <label>&nbsp;</label>
+
+                        <button type="button" id="btnSalvarExpedientePaeet">
+                            💾 Salvar expediente
+                        </button>
+                    </div>
+
+                </div>
+
+                <p id="mensagemExpedientePaeet" class="mensagem-expediente-paeet"></p>
+
+            </div>
+
+            <div class="filtros-disponibilidade-paeet">
+
+                <div>
+                    <label for="dataDisponibilidadePaeet">Consultar data</label>
+                    <input type="date" id="dataDisponibilidadePaeet">
+                </div>
+
+                <div>
+                    <label>Status geral</label>
+                    <div id="resumoStatusRapidoPaeet" class="resumo-status-rapido-paeet">
+                        Aguardando consulta...
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="statusDisponibilidadePaeet" class="status-disponibilidade-paeet">
+                <p>Selecione uma data para consultar a disponibilidade.</p>
+            </div>
+
+            <div id="alertasDisponibilidadePaeet" class="alertas-disponibilidade-paeet"></div>
+
+            <div id="listaDisponibilidadePaeet" class="lista-disponibilidade-paeet">
+                <p>Os horários livres aparecerão aqui.</p>
+            </div>
+
+        </section>
+
+
         <!-- FILTRO VISÍVEL PARA ADMIN -->
         <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
 
@@ -122,7 +511,15 @@
             <span class="tag-legenda tipo-multiplica">Multiplica</span>
             <span class="tag-legenda tipo-visita_tecnica">Visita Técnica</span>
             <span class="tag-legenda tipo-apoio_pedagogico">Apoio Pedagógico</span>
+            <span class="tag-legenda tipo-atendimento_aluno">Atendimento</span>
+            <span class="tag-legenda tipo-reuniao_gestao">Reunião gestão</span>
             <span class="tag-legenda tipo-ot">OT</span>
+            <span class="tag-legenda tipo-atestado_medico">Atestado</span>
+            <span class="tag-legenda tipo-tre">TRE</span>
+            <span class="tag-legenda tipo-ferias">Férias</span>
+            <span class="tag-legenda tipo-feriado_prolongado">Feriado prolongado</span>
+            <span class="tag-legenda tipo-recesso_escolar">Recesso</span>
+            <span class="tag-legenda tipo-ausencia">Ausência</span>
             <span class="tag-legenda tipo-outro">Outro</span>
         </section>
 
@@ -184,7 +581,25 @@
                 <option value="multiplica">Multiplica</option>
                 <option value="visita_tecnica">Visita Técnica</option>
                 <option value="apoio_pedagogico">Apoio Pedagógico</option>
-                <option value="ot">OT</option>
+                <option value="atendimento_aluno">Atendimento ao aluno</option>
+                <option value="reuniao_gestao">Reunião com gestão</option>
+                <option value="planejamento_paeet">Planejamento PAEET</option>
+                <option value="ot">OT - Orientação Técnica</option>
+                <option value="formacao_externa">Formação externa</option>
+                <option value="reuniao_externa">Reunião externa</option>
+                <option value="atestado_medico">Atestado médico</option>
+                <option value="tre">TRE / convocação eleitoral</option>
+                <option value="ferias">Férias</option>
+                <option value="feriado_prolongado">Feriado prolongado</option>
+                <option value="recesso_escolar">Recesso escolar</option>
+                <option value="ponto_facultativo">Ponto facultativo</option>
+                <option value="licenca_afastamento">Licença / afastamento</option>
+                <option value="abono">Abono</option>
+                <option value="convocacao_oficial">Convocação oficial</option>
+                <option value="conselho_classe">Conselho de classe</option>
+                <option value="atpc_htpc">ATPC / HTPC</option>
+                <option value="evento_escolar">Evento escolar</option>
+                <option value="ausencia">Ausência / fora da escola</option>
                 <option value="outro">Outro</option>
             </select>
 
@@ -304,29 +719,6 @@
 
     </div>
 
-    <div id="modalDia" class="modal-agenda">
-
-    <div class="modal-conteudo-agenda">
-
-        <div class="modal-topo">
-            <h2 id="modalTituloData"></h2>
-
-            <button id="btnFecharModal" type="button">
-                ✕
-            </button>
-        </div>
-
-        <div id="listaEventosDia"></div>
-
-        <button id="btnAbrirFormEvento" class="btn-criar-evento" type="button" style="display:none;">
-            + Criar evento neste dia
-        </button>
-
-    </div>
-
-</div>
-
-
     <!-- =====================================================
          MODAL CONFIRMAR EXCLUSÃO
     ====================================================== -->
@@ -368,7 +760,7 @@
     <!-- Supabase precisa carregar antes do agenda.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script src="agenda.js?v=20260610-01"></script>
+    <script src="agenda.js?v=20260612-PAEET-01"></script>
 
     <!-- Registro do Service Worker para o PWA -->
     <script>

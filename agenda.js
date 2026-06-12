@@ -76,9 +76,17 @@ async function iniciarAgenda() {
 
     configurarPermissoesDaTela();
 
+    await carregarConfiguracaoExpedientePaeet();
+
+    configurarDisponibilidadePaeet();
+
     await carregarEventosDoMes();
 
     renderizarCalendario();
+
+    preencherDataHojeDisponibilidadePaeet();
+
+    await carregarDisponibilidadePaeet();
 
     configurarArrasteTrocaMesNoCalendario();
 
@@ -182,6 +190,12 @@ function configurarPermissoesDaTela() {
 
     if (!usuarioEhAdmin && formEvento) {
         formEvento.style.display = "none";
+    }
+
+    const areaConfiguracaoExpedientePaeet = document.getElementById("areaConfiguracaoExpedientePaeet");
+
+    if (areaConfiguracaoExpedientePaeet) {
+        areaConfiguracaoExpedientePaeet.style.display = usuarioEhAdmin ? "block" : "none";
     }
 
     console.log(
@@ -329,9 +343,15 @@ function renderizarCalendario() {
                 return (a.horario_inicio || "").localeCompare(b.horario_inicio || "");
             });
 
+        const eventosEspeciaisDoDia = eventosDoDia.filter(eventoEspecialDeAlertaPaeet);
+
         const cardDia = document.createElement("div");
 
         cardDia.className = "dia-calendario dia-calendario-google";
+
+        if (eventosEspeciaisDoDia.length > 0) {
+            cardDia.classList.add("dia-alerta-paeet");
+        }
 
         if (dataISO === formatarDataISO(new Date())) {
             cardDia.classList.add("dia-hoje");
@@ -347,13 +367,23 @@ function renderizarCalendario() {
                 <span class="numero-dia-google">${dia}</span>
             </div>
 
+            ${
+                eventosEspeciaisDoDia.length > 0
+                ? `
+                    <div class="alerta-dia-paeet">
+                        ⚠️ PAEET em alerta
+                    </div>
+                `
+                : ""
+            }
+
             <div class="lista-eventos-google">
                 ${
                     eventosVisiveis.map(function (evento) {
                         return `
                             <div
                                 class="evento-google-resumo tipo-${normalizarTipo(evento.tipo)}"
-                                title="${escaparHTML(evento.titulo || "")}"
+                                title="${escaparHTML(evento.titulo || "")}" 
                             >
                                 <span class="hora-evento-google">
                                     ${formatarHorarioCurto(evento.horario_inicio)}
@@ -930,6 +960,8 @@ if (formEvento) {
 
         renderizarCalendario();
 
+        await carregarDisponibilidadePaeet();
+
         const eventosAtualizados = eventosCarregados.filter(function (evento) {
             return evento.data === dataParaReabrir;
         });
@@ -1269,6 +1301,8 @@ async function finalizarExclusaoEvento(mensagem) {
     await carregarEventosDoMes();
 
     renderizarCalendario();
+
+    await carregarDisponibilidadePaeet();
 }
 
 if (btnCancelarExclusao) {
@@ -1305,6 +1339,8 @@ async function mudarMes(direcao) {
     await carregarEventosDoMes();
 
     renderizarCalendario();
+
+    await carregarDisponibilidadePaeet();
 }
 
 
@@ -1567,7 +1603,28 @@ function nomeBonitoTipo(tipo) {
         multiplica: "Multiplica",
         visita_tecnica: "Visita Técnica",
         apoio_pedagogico: "Apoio Pedagógico",
-        ot: "OT",
+
+        atendimento_aluno: "Atendimento ao aluno",
+        reuniao_gestao: "Reunião com gestão",
+        planejamento_paeet: "Planejamento PAEET",
+
+        ot: "OT - Orientação Técnica",
+        formacao_externa: "Formação externa",
+        reuniao_externa: "Reunião externa",
+        atestado_medico: "Atestado médico",
+        tre: "TRE / convocação eleitoral",
+        ferias: "Férias",
+        feriado_prolongado: "Feriado prolongado",
+        recesso_escolar: "Recesso escolar",
+        ponto_facultativo: "Ponto facultativo",
+        licenca_afastamento: "Licença / afastamento",
+        abono: "Abono",
+        convocacao_oficial: "Convocação oficial",
+        conselho_classe: "Conselho de classe",
+        atpc_htpc: "ATPC / HTPC",
+        evento_escolar: "Evento escolar",
+        ausencia: "Ausência / fora da escola",
+
         outro: "Outro"
     };
 
@@ -2008,6 +2065,650 @@ function converterBase64ParaUint8Array(base64String) {
 }
 
 
+
+
+/* =====================================================
+   DISPONIBILIDADE DO PROFESSOR PAEET
+   Expediente padrão: 12:30 às 21:30
+===================================================== */
+
+let expedientePaeet = {
+    inicio: "12:30",
+    fim: "21:30"
+};
+
+const tiposEventoAlertaPaeet = [
+    "ot",
+    "formacao_externa",
+    "reuniao_externa",
+    "atestado_medico",
+    "tre",
+    "ferias",
+    "feriado_prolongado",
+    "recesso_escolar",
+    "ponto_facultativo",
+    "licenca_afastamento",
+    "abono",
+    "convocacao_oficial",
+    "conselho_classe",
+    "atpc_htpc",
+    "evento_escolar",
+    "ausencia"
+];
+
+const tiposEventoDiaInteiroPaeet = [
+    "ferias",
+    "feriado_prolongado",
+    "recesso_escolar",
+    "ponto_facultativo",
+    "licenca_afastamento"
+];
+
+function configurarDisponibilidadePaeet() {
+    const btnAtualizar = document.getElementById("btnAtualizarDisponibilidadePaeet");
+    const btnSalvarExpediente = document.getElementById("btnSalvarExpedientePaeet");
+    const campoData = document.getElementById("dataDisponibilidadePaeet");
+    const campoInicio = document.getElementById("inicioExpedientePaeet");
+    const campoFim = document.getElementById("fimExpedientePaeet");
+    const campoTipoEvento = document.getElementById("eventoTipo");
+
+    if (btnAtualizar) {
+        btnAtualizar.addEventListener("click", carregarDisponibilidadePaeet);
+    }
+
+    if (btnSalvarExpediente) {
+        btnSalvarExpediente.addEventListener("click", salvarConfiguracaoExpedientePaeet);
+    }
+
+    if (campoData) {
+        campoData.addEventListener("change", carregarDisponibilidadePaeet);
+    }
+
+    if (campoInicio) {
+        campoInicio.addEventListener("change", function () {
+            expedientePaeet.inicio = campoInicio.value || "12:30";
+            carregarDisponibilidadePaeet();
+        });
+    }
+
+    if (campoFim) {
+        campoFim.addEventListener("change", function () {
+            expedientePaeet.fim = campoFim.value || "21:30";
+            carregarDisponibilidadePaeet();
+        });
+    }
+
+    if (campoTipoEvento) {
+        campoTipoEvento.addEventListener("change", preencherHorarioEspecialSeNecessarioPaeet);
+    }
+}
+
+async function carregarConfiguracaoExpedientePaeet() {
+    const campoInicio = document.getElementById("inicioExpedientePaeet");
+    const campoFim = document.getElementById("fimExpedientePaeet");
+
+    expedientePaeet = {
+        inicio: "12:30",
+        fim: "21:30"
+    };
+
+    try {
+        const { data, error } = await banco
+            .from("site_settings")
+            .select("chave, valor")
+            .in("chave", ["paeet_expediente_inicio", "paeet_expediente_fim"]);
+
+        if (error) {
+            console.log("Não foi possível carregar expediente do Supabase. Usando padrão:", error);
+        }
+
+        (data || []).forEach(function (item) {
+            if (item.chave === "paeet_expediente_inicio" && item.valor) {
+                expedientePaeet.inicio = item.valor;
+            }
+
+            if (item.chave === "paeet_expediente_fim" && item.valor) {
+                expedientePaeet.fim = item.valor;
+            }
+        });
+    } catch (erro) {
+        console.log("Erro ao carregar expediente PAEET:", erro);
+    }
+
+    if (campoInicio) {
+        campoInicio.value = expedientePaeet.inicio;
+    }
+
+    if (campoFim) {
+        campoFim.value = expedientePaeet.fim;
+    }
+}
+
+async function salvarConfiguracaoExpedientePaeet() {
+    const mensagem = document.getElementById("mensagemExpedientePaeet");
+    const campoInicio = document.getElementById("inicioExpedientePaeet");
+    const campoFim = document.getElementById("fimExpedientePaeet");
+
+    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
+        alert("Apenas o administrador pode alterar o expediente.");
+        return;
+    }
+
+    const inicio = campoInicio ? campoInicio.value : "12:30";
+    const fim = campoFim ? campoFim.value : "21:30";
+
+    if (!inicio || !fim) {
+        if (mensagem) {
+            mensagem.textContent = "Informe o início e o fim do expediente.";
+        }
+        return;
+    }
+
+    if (converterHorarioParaMinutosPaeet(fim) <= converterHorarioParaMinutosPaeet(inicio)) {
+        if (mensagem) {
+            mensagem.textContent = "O fim do expediente precisa ser maior que o início.";
+        }
+        return;
+    }
+
+    expedientePaeet.inicio = inicio;
+    expedientePaeet.fim = fim;
+
+    if (mensagem) {
+        mensagem.textContent = "Salvando expediente...";
+    }
+
+    try {
+        const { error } = await banco
+            .from("site_settings")
+            .upsert(
+                [
+                    {
+                        chave: "paeet_expediente_inicio",
+                        valor: inicio,
+                        atualizado_em: new Date().toISOString()
+                    },
+                    {
+                        chave: "paeet_expediente_fim",
+                        valor: fim,
+                        atualizado_em: new Date().toISOString()
+                    }
+                ],
+                {
+                    onConflict: "chave"
+                }
+            );
+
+        if (error) {
+            console.log("Erro ao salvar expediente:", error);
+
+            if (mensagem) {
+                mensagem.textContent = "Erro ao salvar no Supabase. O horário foi aplicado apenas nesta tela.";
+            }
+        } else {
+            if (mensagem) {
+                mensagem.textContent = "Expediente PAEET salvo com sucesso!";
+            }
+        }
+    } catch (erro) {
+        console.log("Erro inesperado ao salvar expediente:", erro);
+
+        if (mensagem) {
+            mensagem.textContent = "Erro ao salvar expediente. O horário foi aplicado apenas nesta tela.";
+        }
+    }
+
+    await carregarDisponibilidadePaeet();
+}
+
+function preencherDataHojeDisponibilidadePaeet() {
+    const campoData = document.getElementById("dataDisponibilidadePaeet");
+
+    if (!campoData || campoData.value) {
+        return;
+    }
+
+    campoData.value = formatarDataISO(new Date());
+}
+
+async function carregarDisponibilidadePaeet() {
+    const campoData = document.getElementById("dataDisponibilidadePaeet");
+    const status = document.getElementById("statusDisponibilidadePaeet");
+    const lista = document.getElementById("listaDisponibilidadePaeet");
+    const alertas = document.getElementById("alertasDisponibilidadePaeet");
+    const resumoRapido = document.getElementById("resumoStatusRapidoPaeet");
+
+    if (!campoData || !status || !lista) {
+        return;
+    }
+
+    preencherDataHojeDisponibilidadePaeet();
+
+    const dataSelecionada = campoData.value;
+
+    if (!dataSelecionada) {
+        status.innerHTML = "<p>Selecione uma data para consultar a disponibilidade.</p>";
+        lista.innerHTML = "";
+        return;
+    }
+
+    status.innerHTML = "<p>Consultando agenda do professor...</p>";
+    lista.innerHTML = "<p>Calculando horários livres...</p>";
+
+    if (alertas) {
+        alertas.innerHTML = "";
+    }
+
+    const eventosDoDia = await buscarEventosDoDiaParaDisponibilidadePaeet(dataSelecionada);
+
+    const intervalosDisponiveis = calcularIntervalosDisponiveisPaeet({
+        inicioExpediente: expedientePaeet.inicio,
+        fimExpediente: expedientePaeet.fim,
+        eventos: eventosDoDia
+    });
+
+    const eventosEspeciais = eventosDoDia.filter(eventoEspecialDeAlertaPaeet);
+
+    montarStatusDisponibilidadePaeet({
+        dataSelecionada,
+        eventosDoDia,
+        eventosEspeciais,
+        intervalosDisponiveis,
+        inicioExpediente: expedientePaeet.inicio,
+        fimExpediente: expedientePaeet.fim
+    });
+
+    if (resumoRapido) {
+        resumoRapido.textContent = eventosEspeciais.length > 0
+            ? "⚠️ Atenção: há intercorrência especial nesta data."
+            : "🟢 Consulta atualizada.";
+    }
+}
+
+async function buscarEventosDoDiaParaDisponibilidadePaeet(dataSelecionada) {
+    const { data, error } = await banco
+        .from("eventos")
+        .select("*")
+        .eq("data", dataSelecionada)
+        .order("horario_inicio", { ascending: true });
+
+    if (error) {
+        console.log("Erro ao buscar eventos para disponibilidade:", error);
+        return [];
+    }
+
+    return data || [];
+}
+
+function calcularIntervalosDisponiveisPaeet(config) {
+    const inicioExpediente = config.inicioExpediente || "12:30";
+    const fimExpediente = config.fimExpediente || "21:30";
+    const eventos = config.eventos || [];
+
+    let intervalosLivres = [
+        {
+            inicio: inicioExpediente,
+            fim: fimExpediente
+        }
+    ];
+
+    const eventosValidos = eventos
+        .map(function (evento) {
+            return normalizarEventoParaBloqueioPaeet(evento, inicioExpediente, fimExpediente);
+        })
+        .filter(function (evento) {
+            return evento && evento.inicio && evento.fim;
+        })
+        .sort(function (a, b) {
+            return converterHorarioParaMinutosPaeet(a.inicio) - converterHorarioParaMinutosPaeet(b.inicio);
+        });
+
+    eventosValidos.forEach(function (evento) {
+        intervalosLivres = removerCompromissoDosIntervalosPaeet(intervalosLivres, evento);
+    });
+
+    return intervalosLivres.filter(function (intervalo) {
+        return converterHorarioParaMinutosPaeet(intervalo.fim) > converterHorarioParaMinutosPaeet(intervalo.inicio);
+    });
+}
+
+function normalizarEventoParaBloqueioPaeet(evento, inicioExpediente, fimExpediente) {
+    if (!evento) {
+        return null;
+    }
+
+    const tipoNormalizado = normalizarTipo(evento.tipo);
+    const especial = eventoEspecialDeAlertaPaeet(evento);
+
+    let inicio = evento.horario_inicio ? formatarHorarioCurto(evento.horario_inicio) : "";
+    let fim = evento.horario_fim ? formatarHorarioCurto(evento.horario_fim) : "";
+
+    if (tiposEventoDiaInteiroPaeet.includes(tipoNormalizado)) {
+        inicio = inicioExpediente;
+        fim = fimExpediente;
+    }
+
+    if (especial && !inicio) {
+        inicio = inicioExpediente;
+    }
+
+    if (especial && !fim) {
+        fim = fimExpediente;
+    }
+
+    if (!inicio || !fim) {
+        return null;
+    }
+
+    return {
+        inicio: inicio,
+        fim: fim,
+        titulo: evento.titulo || "Compromisso",
+        tipo: tipoNormalizado,
+        especial: especial
+    };
+}
+
+function removerCompromissoDosIntervalosPaeet(intervalos, evento) {
+    const resultado = [];
+
+    const inicioEvento = converterHorarioParaMinutosPaeet(evento.inicio);
+    const fimEvento = converterHorarioParaMinutosPaeet(evento.fim);
+
+    intervalos.forEach(function (intervalo) {
+        const inicioIntervalo = converterHorarioParaMinutosPaeet(intervalo.inicio);
+        const fimIntervalo = converterHorarioParaMinutosPaeet(intervalo.fim);
+
+        if (fimEvento <= inicioIntervalo || inicioEvento >= fimIntervalo) {
+            resultado.push(intervalo);
+            return;
+        }
+
+        if (inicioEvento > inicioIntervalo) {
+            resultado.push({
+                inicio: intervalo.inicio,
+                fim: evento.inicio
+            });
+        }
+
+        if (fimEvento < fimIntervalo) {
+            resultado.push({
+                inicio: evento.fim,
+                fim: intervalo.fim
+            });
+        }
+    });
+
+    return resultado;
+}
+
+function montarStatusDisponibilidadePaeet(dados) {
+    const status = document.getElementById("statusDisponibilidadePaeet");
+    const lista = document.getElementById("listaDisponibilidadePaeet");
+    const alertas = document.getElementById("alertasDisponibilidadePaeet");
+
+    if (!status || !lista) {
+        return;
+    }
+
+    const dataFormatada = formatarDataBR(dados.dataSelecionada);
+    const totalEventos = dados.eventosDoDia.length;
+    const totalIntervalos = dados.intervalosDisponiveis.length;
+
+    if (alertas) {
+        alertas.innerHTML = montarAlertasEventosEspeciaisPaeet(dados.eventosEspeciais);
+    }
+
+    if (totalIntervalos === 0) {
+        status.innerHTML = `
+            <div class="status-card-paeet status-indisponivel">
+                <h3>🔴 Professor indisponível</h3>
+                <p>
+                    Em ${dataFormatada}, não há intervalos livres entre
+                    ${dados.inicioExpediente} e ${dados.fimExpediente}.
+                </p>
+                <small>${totalEventos} compromisso(s) registrado(s) na agenda.</small>
+            </div>
+        `;
+
+        lista.innerHTML = `
+            <div class="card-sem-disponibilidade">
+                <p>
+                    Todos os horários do período informado estão ocupados.
+                    Para atendimento, reunião ou solicitação, escolha outra data ou aguarde nova disponibilidade.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    status.innerHTML = `
+        <div class="status-card-paeet ${dados.eventosEspeciais.length > 0 ? "status-alerta-parcial" : "status-disponivel"}">
+            <h3>${dados.eventosEspeciais.length > 0 ? "⚠️ Disponibilidade com alerta" : "🟢 Professor com disponibilidade"}</h3>
+            <p>
+                Em ${dataFormatada}, foram encontrados
+                <strong>${totalIntervalos}</strong> intervalo(s) livre(s)
+                entre ${dados.inicioExpediente} e ${dados.fimExpediente}.
+            </p>
+            <small>${totalEventos} compromisso(s) registrado(s) na agenda.</small>
+        </div>
+    `;
+
+    lista.innerHTML = "";
+
+    dados.intervalosDisponiveis.forEach(function (intervalo) {
+        const duracao = calcularDuracaoIntervaloPaeet(intervalo.inicio, intervalo.fim);
+
+        lista.innerHTML += `
+            <div class="card-horario-disponivel">
+                <div>
+                    <span class="selo-horario-livre">Horário livre</span>
+                    <h3>${intervalo.inicio} às ${intervalo.fim}</h3>
+                    <p>Duração disponível: <strong>${duracao}</strong></p>
+                </div>
+
+                ${
+                    perfilUsuario && perfilUsuario.funcao === "admin"
+                    ? `
+                        <button type="button" onclick="preencherNovoEventoComDisponibilidade('${dados.dataSelecionada}', '${intervalo.inicio}', '${intervalo.fim}')">
+                            ➕ Usar este horário
+                        </button>
+                    `
+                    : ""
+                }
+            </div>
+        `;
+    });
+}
+
+function montarAlertasEventosEspeciaisPaeet(eventosEspeciais) {
+    if (!eventosEspeciais || eventosEspeciais.length === 0) {
+        return "";
+    }
+
+    let html = `
+        <div class="bloco-alertas-paeet">
+            <h3>⚠️ Intercorrências especiais nesta data</h3>
+            <p>
+                Estes registros podem indicar ausência, indisponibilidade ou atendimento comprometido do Professor PAEET.
+            </p>
+    `;
+
+    eventosEspeciais.forEach(function (evento) {
+        html += `
+            <div class="card-alerta-especial-paeet">
+                <strong>${escaparHTML(nomeBonitoTipo(evento.tipo))}</strong>
+
+                <h4>${escaparHTML(evento.titulo || "Evento especial")}</h4>
+
+                <p>
+                    <strong>Horário:</strong>
+                    ${formatarHorarioCurto(evento.horario_inicio)}
+                    ${
+                        evento.horario_fim
+                        ? " às " + formatarHorarioCurto(evento.horario_fim)
+                        : ""
+                    }
+                </p>
+
+                <p>
+                    <strong>Justificativa / descrição:</strong>
+                </p>
+
+                <div class="descricao-alerta-paeet">
+                    ${formatarTextoEvento(evento.descricao || "Sem descrição informada.")}
+                </div>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    return html;
+}
+
+function preencherNovoEventoComDisponibilidade(data, inicio, fim) {
+    dataSelecionadaNoModal = data;
+
+    const eventosDoDia = eventosCarregados.filter(function (evento) {
+        return evento.data === data;
+    });
+
+    abrirModalDoDia(data, eventosDoDia);
+
+    recolocarFormularioNoModalDoDia();
+
+    if (formEvento) {
+        formEvento.style.display = "block";
+    }
+
+    limparFormularioEvento();
+
+    setValorCampo("eventoHorarioInicio", inicio);
+    setValorCampo("eventoHorarioFim", fim);
+
+    if (tituloFormularioEvento) {
+        tituloFormularioEvento.textContent = "Novo Evento";
+    }
+
+    rolarAteFormularioEvento();
+}
+
+function preencherHorarioEspecialSeNecessarioPaeet() {
+    const campoTipo = document.getElementById("eventoTipo");
+    const campoInicio = document.getElementById("eventoHorarioInicio");
+    const campoFim = document.getElementById("eventoHorarioFim");
+
+    if (!campoTipo || !campoInicio || !campoFim) {
+        return;
+    }
+
+    const tipo = normalizarTipo(campoTipo.value);
+
+    if (!tiposEventoAlertaPaeet.includes(tipo)) {
+        return;
+    }
+
+    if (!campoInicio.value) {
+        campoInicio.value = expedientePaeet.inicio || "12:30";
+    }
+
+    if (!campoFim.value && tiposEventoDiaInteiroPaeet.includes(tipo)) {
+        campoFim.value = expedientePaeet.fim || "21:30";
+    }
+}
+
+function eventoEspecialDeAlertaPaeet(evento) {
+    if (!evento) {
+        return false;
+    }
+
+    const tipo = normalizarTipo(evento.tipo);
+    const titulo = (evento.titulo || "").toLowerCase();
+    const descricao = (evento.descricao || "").toLowerCase();
+
+    if (tiposEventoAlertaPaeet.includes(tipo)) {
+        return true;
+    }
+
+    const texto = `${titulo} ${descricao}`;
+
+    const palavrasAlerta = [
+        "ot",
+        "orientação técnica",
+        "orientacao tecnica",
+        "atestado",
+        "atestado médico",
+        "atestado medico",
+        "tre",
+        "férias",
+        "ferias",
+        "feriado prolongado",
+        "recesso",
+        "recesso escolar",
+        "ponto facultativo",
+        "licença",
+        "licenca",
+        "afastamento",
+        "abono",
+        "convocação",
+        "convocacao",
+        "formação externa",
+        "formacao externa",
+        "reunião externa",
+        "reuniao externa",
+        "conselho de classe",
+        "atpc",
+        "htpc",
+        "evento escolar",
+        "fora da escola",
+        "ausência",
+        "ausencia"
+    ];
+
+    return palavrasAlerta.some(function (palavra) {
+        return texto.includes(palavra);
+    });
+}
+
+function converterHorarioParaMinutosPaeet(horario) {
+    if (!horario) {
+        return 0;
+    }
+
+    const partes = horario.toString().substring(0, 5).split(":");
+    const horas = Number(partes[0]) || 0;
+    const minutos = Number(partes[1]) || 0;
+
+    return horas * 60 + minutos;
+}
+
+function calcularDuracaoIntervaloPaeet(inicio, fim) {
+    const minutosInicio = converterHorarioParaMinutosPaeet(inicio);
+    const minutosFim = converterHorarioParaMinutosPaeet(fim);
+
+    const diferenca = minutosFim - minutosInicio;
+
+    if (diferenca <= 0) {
+        return "0 min";
+    }
+
+    const horas = Math.floor(diferenca / 60);
+    const minutos = diferenca % 60;
+
+    if (horas > 0 && minutos > 0) {
+        return `${horas}h ${minutos}min`;
+    }
+
+    if (horas > 0) {
+        return `${horas}h`;
+    }
+
+    return `${minutos}min`;
+}
+
+
 /* =====================================================
    30. EXPOR FUNÇÕES PARA O HTML
 ===================================================== */
@@ -2016,3 +2717,4 @@ window.abrirDetalheEvento = abrirDetalheEvento;
 window.prepararEdicaoEvento = prepararEdicaoEvento;
 window.excluirEvento = excluirEvento;
 window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
+window.preencherNovoEventoComDisponibilidade = preencherNovoEventoComDisponibilidade;
