@@ -1,0 +1,475 @@
+/* =====================================================
+   RELATÓRIOS E INDICADORES PAEET
+   Dashboard BI - Professor Willyan Vieira da Cruz
+===================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.20), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.16), transparent 28%),
+        linear-gradient(135deg, #e0f2fe, #ecfdf5, #f8fafc);
+    color: #0f172a;
+}
+
+/* =====================================================
+   TOPO
+===================================================== */
+
+.topo-relatorios {
+    max-width: 1250px;
+    margin: 26px auto 18px auto;
+    padding: 28px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #0f766e, #0d9488);
+    color: white;
+    box-shadow: 0 24px 60px rgba(15, 118, 110, 0.28);
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.selo-relatorio {
+    display: inline-flex;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    font-weight: 900;
+    font-size: 13px;
+}
+
+.topo-relatorios h1 {
+    margin: 14px 0 10px;
+    font-size: 36px;
+    letter-spacing: -0.6px;
+}
+
+.topo-relatorios p {
+    margin: 0;
+    max-width: 760px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.92);
+}
+
+.acoes-topo-relatorio {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-voltar-admin,
+.btn-voltar-agenda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 15px;
+    border-radius: 14px;
+    background: white;
+    color: #0f766e;
+    text-decoration: none;
+    font-weight: 900;
+    box-shadow: 0 10px 22px rgba(15,23,42,0.16);
+}
+
+.btn-voltar-agenda {
+    color: #1e40af;
+}
+
+/* =====================================================
+   CONTAINER
+===================================================== */
+
+.container-relatorios {
+    max-width: 1250px;
+    margin: 0 auto 40px auto;
+    padding: 0 16px 40px;
+}
+
+.bloqueio-relatorio {
+    padding: 28px;
+    border-radius: 24px;
+    background: #ffffff;
+    border-left: 7px solid #dc2626;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+.bloqueio-relatorio h2 {
+    color: #991b1b;
+}
+
+/* =====================================================
+   CABEÇALHO DO DOCUMENTO
+===================================================== */
+
+.cabecalho-documento-relatorio {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 24px;
+    border-left: 7px solid #0f766e;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.10);
+    margin-bottom: 22px;
+}
+
+.cabecalho-documento-relatorio h2 {
+    margin: 0 0 16px;
+    color: #0f766e;
+}
+
+.grade-cabecalho-documento {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.grade-cabecalho-documento p {
+    margin: 0;
+    padding: 12px;
+    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.grade-cabecalho-documento strong {
+    color: #0f172a;
+}
+
+/* =====================================================
+   FILTROS
+===================================================== */
+
+.card-filtros-relatorio {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 24px;
+    border-left: 7px solid #1e40af;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.10);
+    margin-bottom: 22px;
+}
+
+.card-filtros-relatorio h2 {
+    margin: 0 0 18px;
+    color: #1e40af;
+}
+
+.grade-filtros-relatorio {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.grade-filtros-relatorio label {
+    display: block;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.grade-filtros-relatorio select,
+.grade-filtros-relatorio input {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    border: 2px solid #cbd5e1;
+    background: #f8fafc;
+    font-size: 15px;
+}
+
+.grade-filtros-relatorio select:focus,
+.grade-filtros-relatorio input:focus {
+    outline: none;
+    border-color: #0f766e;
+    box-shadow: 0 0 0 4px rgba(15,118,110,0.12);
+    background: #ffffff;
+}
+
+.acoes-relatorio {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.acoes-relatorio button {
+    border: none;
+    border-radius: 15px;
+    padding: 14px 18px;
+    font-weight: 900;
+    cursor: pointer;
+    color: white;
+    background: #0f766e;
+    box-shadow: 0 10px 22px rgba(15, 118, 110, 0.22);
+}
+
+.acoes-relatorio button:hover {
+    background: #0d9488;
+    transform: translateY(-1px);
+}
+
+#btnBaixarCsvRelatorio {
+    background: #1e40af;
+}
+
+#btnBaixarPdfRelatorio {
+    background: #dc2626;
+}
+
+.mensagem-relatorio {
+    margin-top: 14px;
+    color: #0f766e;
+    font-weight: 900;
+}
+
+/* =====================================================
+   INDICADORES
+===================================================== */
+
+.grade-indicadores-relatorio {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card-indicador-relatorio {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 20px;
+    border-left: 7px solid #0f766e;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
+    min-height: 145px;
+}
+
+.card-indicador-relatorio span {
+    font-size: 28px;
+}
+
+.card-indicador-relatorio h3 {
+    margin: 12px 0 4px;
+    font-size: 34px;
+    color: #0f766e;
+    line-height: 1;
+}
+
+.card-indicador-relatorio p {
+    margin: 0;
+    color: #475569;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.card-indicador-relatorio.alerta {
+    border-left-color: #f97316;
+    background: #fff7ed;
+}
+
+.card-indicador-relatorio.alerta h3 {
+    color: #c2410c;
+}
+
+/* =====================================================
+   GRÁFICOS
+===================================================== */
+
+.area-graficos-relatorio {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 22px;
+}
+
+.card-grafico-relatorio {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.10);
+    border-left: 7px solid #1e40af;
+}
+
+.card-grafico-relatorio h2 {
+    margin: 0 0 18px;
+    color: #1e40af;
+}
+
+.grafico-barras-relatorio {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.linha-grafico-relatorio {
+    display: grid;
+    grid-template-columns: 150px 1fr 45px;
+    align-items: center;
+    gap: 10px;
+}
+
+.rotulo-grafico-relatorio {
+    font-weight: 800;
+    color: #334155;
+    font-size: 13px;
+}
+
+.barra-grafico-relatorio {
+    height: 18px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.preenchimento-grafico-relatorio {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+}
+
+.valor-grafico-relatorio {
+    text-align: right;
+    font-weight: 900;
+    color: #0f766e;
+}
+
+/* =====================================================
+   TABELA
+===================================================== */
+
+.card-tabela-relatorio {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.10);
+    border-left: 7px solid #0f766e;
+}
+
+.card-tabela-relatorio h2 {
+    margin: 0 0 18px;
+    color: #0f766e;
+}
+
+.tabela-responsiva-relatorio {
+    overflow-x: auto;
+    border-radius: 16px;
+    border: 1px solid #cbd5e1;
+}
+
+.tabela-responsiva-relatorio table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+}
+
+.tabela-responsiva-relatorio th,
+.tabela-responsiva-relatorio td {
+    padding: 13px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+}
+
+.tabela-responsiva-relatorio th {
+    background: #0f766e;
+    color: white;
+    font-size: 13px;
+}
+
+.tabela-responsiva-relatorio td {
+    color: #334155;
+    font-size: 13px;
+}
+
+.tabela-responsiva-relatorio tr:nth-child(even) td {
+    background: #f8fafc;
+}
+
+/* =====================================================
+   IMPRESSÃO / PDF
+===================================================== */
+
+@media print {
+    body {
+        background: white !important;
+    }
+
+    .topo-relatorios,
+    .card-filtros-relatorio,
+    .acoes-topo-relatorio,
+    .acoes-relatorio {
+        display: none !important;
+    }
+
+    .container-relatorios {
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .cabecalho-documento-relatorio,
+    .card-indicador-relatorio,
+    .card-grafico-relatorio,
+    .card-tabela-relatorio {
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .grade-indicadores-relatorio {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .area-graficos-relatorio {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 1100px) {
+    .grade-indicadores-relatorio {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grade-cabecalho-documento,
+    .grade-filtros-relatorio {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 850px) {
+    .topo-relatorios {
+        flex-direction: column;
+        margin: 12px;
+        padding: 22px;
+    }
+
+    .topo-relatorios h1 {
+        font-size: 28px;
+    }
+
+    .container-relatorios {
+        padding: 0 10px 30px;
+    }
+
+    .grade-indicadores-relatorio,
+    .area-graficos-relatorio,
+    .grade-cabecalho-documento,
+    .grade-filtros-relatorio {
+        grid-template-columns: 1fr;
+    }
+
+    .acoes-relatorio button,
+    .acoes-topo-relatorio a {
+        width: 100%;
+    }
+
+    .linha-grafico-relatorio {
+        grid-template-columns: 110px 1fr 40px;
+    }
+}
