@@ -16,7 +16,7 @@
 
     <title>Agenda Pedagógica</title>
 
-    <link rel="stylesheet" href="agenda.css?v=20260612-02">
+   <link rel="stylesheet" href="agenda.css?v=20260612-03">
 
     <style>
         /* =====================================================
@@ -439,197 +439,189 @@
     ====================================================== -->
     <main class="container-agenda">
 
-        <!-- CONTROLES DO MÊS -->
-        <section class="barra-controles-agenda">
+    <!-- CONTROLES DO MÊS -->
+    <section class="barra-controles-agenda">
 
-            <button id="btnMesAnterior" type="button">
-                ← Mês anterior
-            </button>
+        <button id="btnMesAnterior" type="button">
+            ← Mês anterior
+        </button>
 
-            <h2 id="tituloMesAno"></h2>
+        <h2 id="tituloMesAno"></h2>
 
-            <button id="btnProximoMes" type="button">
-                Próximo mês →
-            </button>
+        <button id="btnProximoMes" type="button">
+            Próximo mês →
+        </button>
 
-        </section>
-
-
-        <!-- BOTÃO DE LEMBRETES SONOROS -->
-        <section class="area-lembretes-agenda">
-
-            <button type="button" id="btnAtivarLembretesAgenda" class="btn-lembretes-agenda">
-                🔔 Ativar lembretes sonoros
-            </button>
-
-            <p id="mensagemLembretesAgenda" class="mensagem-lembretes-agenda">
-                O alerta sonoro funciona para o administrador logado quando a agenda estiver aberta.
-            </p>
-
-        </section>
+    </section>
 
 
-        <!-- BOTÃO DE NOTIFICAÇÕES PUSH NO CELULAR -->
-        <section class="area-push-agenda">
+    <!-- FILTRO VISÍVEL PARA ADMIN -->
+    <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
 
-            <button type="button" id="btnAtivarPushAgenda" class="btn-push-agenda">
-                📲 Ativar notificações no celular
-            </button>
+        <label for="filtroCursoAgenda">
+            Filtrar por curso:
+        </label>
 
-            <p id="mensagemPushAgenda" class="mensagem-push-agenda">
-                Ative para receber lembretes da agenda mesmo quando o aplicativo estiver fechado.
-            </p>
+        <select id="filtroCursoAgenda">
+            <option value="todos">Ver tudo</option>
+            <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+            <option value="vendas">Vendas</option>
+            <option value="substituicoes">Substituições</option>
+        </select>
 
-        </section>
+    </section>
 
 
+    <!-- LEGENDA COM CORES -->
+    <section class="legenda-agenda">
+        <span class="tag-legenda tipo-aula">Aula</span>
+        <span class="tag-legenda tipo-atpcs">ATPCS</span>
+        <span class="tag-legenda tipo-atpcg">ATPCG</span>
+        <span class="tag-legenda tipo-apd">APD</span>
+        <span class="tag-legenda tipo-efape">EFAPE</span>
+        <span class="tag-legenda tipo-multiplica">Multiplica</span>
+        <span class="tag-legenda tipo-visita_tecnica">Visita Técnica</span>
+        <span class="tag-legenda tipo-apoio_pedagogico">Apoio Pedagógico</span>
+        <span class="tag-legenda tipo-atendimento_aluno">Atendimento</span>
+        <span class="tag-legenda tipo-reuniao_gestao">Reunião gestão</span>
+        <span class="tag-legenda tipo-ot">OT</span>
+        <span class="tag-legenda tipo-atestado_medico">Atestado</span>
+        <span class="tag-legenda tipo-tre">TRE</span>
+        <span class="tag-legenda tipo-ferias">Férias</span>
+        <span class="tag-legenda tipo-feriado_prolongado">Feriado prolongado</span>
+        <span class="tag-legenda tipo-outro">Outro</span>
+    </section>
 
 
-        <!-- =====================================================
-             DISPONIBILIDADE DO PROFESSOR PAEET
-        ====================================================== -->
-        <section class="card-agenda disponibilidade-paeet">
+    <!-- CALENDÁRIO -->
+    <section class="calendario">
 
-            <div class="topo-disponibilidade-paeet">
-                <div>
-                    <span class="selo-disponibilidade">PAEET</span>
+        <div class="dias-semana">
+            <div>Dom</div>
+            <div>Seg</div>
+            <div>Ter</div>
+            <div>Qua</div>
+            <div>Qui</div>
+            <div>Sex</div>
+            <div>Sáb</div>
+        </div>
 
-                    <h2>🟢 Disponibilidade do Professor PAEET</h2>
+        <div id="gradeCalendario" class="grade-calendario"></div>
 
-                    <p>
-                        Consulte os horários disponíveis do Professor/PAEET Willyan Vieira para atendimento a alunos,
-                        reuniões com gestão, alinhamentos pedagógicos, solicitações e demais demandas escolares.
-                    </p>
-                </div>
+    </section>
 
-                <button type="button" id="btnAtualizarDisponibilidadePaeet">
-                    🔄 Atualizar disponibilidade
-                </button>
-            </div>
 
-            <div id="areaConfiguracaoExpedientePaeet" class="configuracao-expediente-paeet" style="display:none;">
+    <!-- DISPONIBILIDADE DO PROFESSOR PAEET -->
+    <section class="card-agenda disponibilidade-paeet">
 
-                <h3>⚙️ Configuração do expediente PAEET</h3>
+        <div class="topo-disponibilidade-paeet">
+            <div>
+                <span class="selo-disponibilidade">PAEET</span>
+
+                <h2>🟢 Disponibilidade do Professor PAEET</h2>
 
                 <p>
-                    Defina o horário base usado para calcular automaticamente os intervalos livres da agenda.
-                    O padrão inicial é das 12:30 às 21:30.
+                    Consulte os horários disponíveis do Professor/PAEET Willyan Vieira para atendimento a alunos,
+                    reuniões com gestão, alinhamentos pedagógicos, solicitações e demais demandas escolares.
                 </p>
-
-                <div class="filtros-disponibilidade-paeet">
-
-                    <div>
-                        <label for="inicioExpedientePaeet">Início do expediente</label>
-                        <input type="time" id="inicioExpedientePaeet" value="12:30">
-                    </div>
-
-                    <div>
-                        <label for="fimExpedientePaeet">Fim do expediente</label>
-                        <input type="time" id="fimExpedientePaeet" value="21:30">
-                    </div>
-
-                    <div class="area-botao-expediente">
-                        <label>&nbsp;</label>
-
-                        <button type="button" id="btnSalvarExpedientePaeet">
-                            💾 Salvar expediente
-                        </button>
-                    </div>
-
-                </div>
-
-                <p id="mensagemExpedientePaeet" class="mensagem-expediente-paeet"></p>
-
             </div>
+
+            <button type="button" id="btnAtualizarDisponibilidadePaeet">
+                🔄 Atualizar disponibilidade
+            </button>
+        </div>
+
+        <div id="areaConfiguracaoExpedientePaeet" class="configuracao-expediente-paeet" style="display:none;">
+
+            <h3>⚙️ Configuração do expediente PAEET</h3>
+
+            <p>
+                Defina o horário base usado para calcular automaticamente os intervalos livres da agenda.
+            </p>
 
             <div class="filtros-disponibilidade-paeet">
 
                 <div>
-                    <label for="dataDisponibilidadePaeet">Consultar data</label>
-                    <input type="date" id="dataDisponibilidadePaeet">
+                    <label for="inicioExpedientePaeet">Início do expediente</label>
+                    <input type="time" id="inicioExpedientePaeet" value="12:30">
                 </div>
 
                 <div>
-                    <label>Status geral</label>
-                    <div id="resumoStatusRapidoPaeet" class="resumo-status-rapido-paeet">
-                        Aguardando consulta...
-                    </div>
+                    <label for="fimExpedientePaeet">Fim do expediente</label>
+                    <input type="time" id="fimExpedientePaeet" value="21:30">
+                </div>
+
+                <div class="area-botao-expediente">
+                    <label>&nbsp;</label>
+
+                    <button type="button" id="btnSalvarExpedientePaeet">
+                        💾 Salvar expediente
+                    </button>
                 </div>
 
             </div>
 
-            <div id="statusDisponibilidadePaeet" class="status-disponibilidade-paeet">
-                <p>Selecione uma data para consultar a disponibilidade.</p>
+            <p id="mensagemExpedientePaeet" class="mensagem-expediente-paeet"></p>
+
+        </div>
+
+        <div class="filtros-disponibilidade-paeet">
+
+            <div>
+                <label for="dataDisponibilidadePaeet">Consultar data</label>
+                <input type="date" id="dataDisponibilidadePaeet">
             </div>
 
-            <div id="alertasDisponibilidadePaeet" class="alertas-disponibilidade-paeet"></div>
-
-            <div id="listaDisponibilidadePaeet" class="lista-disponibilidade-paeet">
-                <p>Os horários livres aparecerão aqui.</p>
+            <div>
+                <label>Status geral</label>
+                <div id="resumoStatusRapidoPaeet" class="resumo-status-rapido-paeet">
+                    Aguardando consulta...
+                </div>
             </div>
 
-        </section>
+        </div>
+
+        <div id="statusDisponibilidadePaeet" class="status-disponibilidade-paeet">
+            <p>Selecione uma data para consultar a disponibilidade.</p>
+        </div>
+
+        <div id="alertasDisponibilidadePaeet" class="alertas-disponibilidade-paeet"></div>
+
+        <div id="listaDisponibilidadePaeet" class="lista-disponibilidade-paeet">
+            <p>Os horários livres aparecerão aqui.</p>
+        </div>
+
+    </section>
 
 
-        <!-- FILTRO VISÍVEL PARA ADMIN -->
-        <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
+    <!-- BOTÃO DE LEMBRETES SONOROS -->
+    <section class="area-lembretes-agenda area-lembretes-final">
 
-            <label for="filtroCursoAgenda">
-                Filtrar por curso:
-            </label>
+        <button type="button" id="btnAtivarLembretesAgenda" class="btn-lembretes-agenda">
+            🔔 Ativar lembretes sonoros
+        </button>
 
-            <select id="filtroCursoAgenda">
-                <option value="todos">Ver tudo</option>
-                <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
-                <option value="vendas">Vendas</option>
-                <option value="substituicoes">Substituições</option>
-            </select>
+        <p id="mensagemLembretesAgenda" class="mensagem-lembretes-agenda">
+            O alerta sonoro funciona para o administrador logado quando a agenda estiver aberta.
+        </p>
 
-        </section>
+    </section>
 
 
-        <!-- LEGENDA COM CORES -->
-        <section class="legenda-agenda">
-            <span class="tag-legenda tipo-aula">Aula</span>
-            <span class="tag-legenda tipo-atpcs">ATPCS</span>
-            <span class="tag-legenda tipo-atpcg">ATPCG</span>
-            <span class="tag-legenda tipo-apd">APD</span>
-            <span class="tag-legenda tipo-efape">EFAPE</span>
-            <span class="tag-legenda tipo-multiplica">Multiplica</span>
-            <span class="tag-legenda tipo-visita_tecnica">Visita Técnica</span>
-            <span class="tag-legenda tipo-apoio_pedagogico">Apoio Pedagógico</span>
-            <span class="tag-legenda tipo-atendimento_aluno">Atendimento</span>
-            <span class="tag-legenda tipo-reuniao_gestao">Reunião gestão</span>
-            <span class="tag-legenda tipo-ot">OT</span>
-            <span class="tag-legenda tipo-atestado_medico">Atestado</span>
-            <span class="tag-legenda tipo-tre">TRE</span>
-            <span class="tag-legenda tipo-ferias">Férias</span>
-            <span class="tag-legenda tipo-feriado_prolongado">Feriado prolongado</span>
-            <span class="tag-legenda tipo-recesso_escolar">Recesso</span>
-            <span class="tag-legenda tipo-ausencia">Ausência</span>
-            <span class="tag-legenda tipo-outro">Outro</span>
-        </section>
+    <!-- BOTÃO DE NOTIFICAÇÕES PUSH NO CELULAR -->
+    <section class="area-push-agenda area-lembretes-final">
 
+        <button type="button" id="btnAtivarPushAgenda" class="btn-push-agenda">
+            📲 Ativar notificações no celular
+        </button>
 
-        <!-- CALENDÁRIO -->
-        <section class="calendario">
+        <p id="mensagemPushAgenda" class="mensagem-push-agenda">
+            Ative para receber lembretes da agenda mesmo quando o aplicativo estiver fechado.
+        </p>
 
-            <div class="dias-semana">
-                <div>Dom</div>
-                <div>Seg</div>
-                <div>Ter</div>
-                <div>Qua</div>
-                <div>Qui</div>
-                <div>Sex</div>
-                <div>Sáb</div>
-            </div>
+    </section>
 
-            <div id="gradeCalendario" class="grade-calendario"></div>
-
-        </section>
-
-    </main>
-
+</main>
 
     <!-- =====================================================
      MODAL DO DIA
@@ -847,7 +839,7 @@
     <!-- Supabase precisa carregar antes do agenda.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="agenda.js?v=20260612-02"></script>
+<script src="agenda.js?v=20260612-03"></script>
     <!-- Registro do Service Worker para o PWA -->
     <script>
         if ("serviceWorker" in navigator) {

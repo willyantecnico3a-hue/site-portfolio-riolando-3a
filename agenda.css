@@ -2598,3 +2598,31 @@ button {
     }
 }
 
+/* =====================================================
+   BOTÕES DE LEMBRETE NO FINAL DA AGENDA
+===================================================== */
+
+.area-lembretes-final {
+    margin-top: 28px;
+    padding: 22px;
+    border-radius: 22px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.area-lembretes-final button {
+    width: 100%;
+    max-width: 420px;
+    padding: 15px 18px;
+    border-radius: 16px;
+    font-weight: 900;
+    font-size: 16px;
+}
+
+.area-lembretes-final p {
+    margin-top: 12px;
+    color: #475569;
+    line-height: 1.5;
+}
+
