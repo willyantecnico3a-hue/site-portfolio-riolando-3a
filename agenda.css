@@ -2626,3 +2626,24 @@ button {
     line-height: 1.5;
 }
 
+/* =====================================================
+   ORDEM VISUAL DA DISPONIBILIDADE PAEET
+===================================================== */
+
+.filtros-disponibilidade-paeet {
+    margin-bottom: 14px !important;
+}
+
+.alertas-disponibilidade-paeet {
+    margin-bottom: 14px !important;
+}
+
+.lista-disponibilidade-paeet {
+    margin-top: 10px !important;
+    margin-bottom: 18px !important;
+}
+
+.status-disponibilidade-paeet {
+    margin-top: 12px !important;
+}
+
