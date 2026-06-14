@@ -1025,3 +1025,16 @@ function criarNomeArquivoRelatorio(extensao) {
     return `relatorio_paeet_${turma}_${dataHoje}.${extensao}`;
 }
 
+function normalizarTurma(turma) {
+    if (!turma) {
+        return "";
+    }
+
+    return turma
+        .toString()
+        .toLowerCase()
+        .replaceAll("º", "")
+        .replaceAll("ª", "")
+        .replace(/\s+/g, "")
+        .trim();
+}
