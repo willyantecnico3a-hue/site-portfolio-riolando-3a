@@ -8,6 +8,7 @@
    - Botão EDITAR volta a funcionar.
    - Botão + CRIAR EVENTO NESTE DIA volta a funcionar.
    - Ao clicar em editar/criar, a tela desce automaticamente até o formulário.
+   - Trava o cadastro de eventos no mesmo dia e horário/período.
 ===================================================== */
 
 
@@ -914,6 +915,18 @@ if (formEvento) {
         let resultado;
 
         if (eventoEmEdicaoId) {
+            const conflitoHorario = await verificarConflitoHorarioEvento({
+                id: eventoEmEdicaoId,
+                data: dataSelecionadaNoModal,
+                horario_inicio: horarioInicio,
+                horario_fim: horarioFim || null
+            });
+
+            if (conflitoHorario.temConflito) {
+                mostrarMensagemConflitoAgenda(conflitoHorario.mensagem);
+                return;
+            }
+
             resultado = await banco
                 .from("eventos")
                 .update({
@@ -941,6 +954,13 @@ if (formEvento) {
                 if (mensagemEvento) {
                     mensagemEvento.textContent = "Nenhuma data válida encontrada para salvar.";
                 }
+                return;
+            }
+
+            const conflitoHorario = await verificarConflitosEmListaDeEventos(eventosParaSalvar);
+
+            if (conflitoHorario.temConflito) {
+                mostrarMensagemConflitoAgenda(conflitoHorario.mensagem);
                 return;
             }
 
@@ -2715,6 +2735,203 @@ function calcularDuracaoIntervaloPaeet(inicio, fim) {
 
     return `${minutos}min`;
 }
+
+/* =====================================================
+   TRAVA DE CONFLITO DE HORÁRIO
+   Impede cadastrar ou editar dois eventos no mesmo dia
+   e no mesmo horário/período.
+
+   Regra aplicada:
+   - Bloqueia horário final menor ou igual ao horário inicial.
+   - Bloqueia evento com mesmo horário de início.
+   - Bloqueia sobreposição de período.
+   - Bloqueia também eventos repetidos que caiam em data/horário já ocupado.
+===================================================== */
+
+async function verificarConflitosEmListaDeEventos(eventosParaSalvar) {
+    for (const evento of eventosParaSalvar) {
+        const conflito = await verificarConflitoHorarioEvento({
+            id: evento.id || null,
+            data: evento.data,
+            horario_inicio: evento.horario_inicio,
+            horario_fim: evento.horario_fim || null
+        });
+
+        if (conflito.temConflito) {
+            return {
+                temConflito: true,
+                tipo: conflito.tipo,
+                evento: conflito.evento,
+                mensagem: conflito.mensagem
+            };
+        }
+    }
+
+    return {
+        temConflito: false,
+        evento: null
+    };
+}
+
+
+async function verificarConflitoHorarioEvento(dadosEvento) {
+    try {
+        if (!dadosEvento || !dadosEvento.data || !dadosEvento.horario_inicio) {
+            return {
+                temConflito: false,
+                evento: null
+            };
+        }
+
+        const inicioNovo = converterHorarioParaMinutos(dadosEvento.horario_inicio);
+        const fimNovo = dadosEvento.horario_fim
+            ? converterHorarioParaMinutos(dadosEvento.horario_fim)
+            : null;
+
+        if (dadosEvento.horario_fim && fimNovo <= inicioNovo) {
+            return {
+                temConflito: true,
+                tipo: "horario_invalido",
+                mensagem: "O horário final precisa ser maior que o horário inicial."
+            };
+        }
+
+        const { data, error } = await banco
+            .from("eventos")
+            .select("id, titulo, data, horario_inicio, horario_fim, tipo, turma_alvo, curso_alvo")
+            .eq("data", dadosEvento.data);
+
+        if (error) {
+            console.error("Erro ao verificar conflito de horário:", error);
+
+            return {
+                temConflito: false,
+                evento: null
+            };
+        }
+
+        const eventosDoDia = data || [];
+
+        const conflito = eventosDoDia.find(function (evento) {
+            if (!evento.horario_inicio) {
+                return false;
+            }
+
+            if (dadosEvento.id && String(evento.id) === String(dadosEvento.id)) {
+                return false;
+            }
+
+            const inicioExistente = converterHorarioParaMinutos(evento.horario_inicio);
+            const fimExistente = evento.horario_fim
+                ? converterHorarioParaMinutos(evento.horario_fim)
+                : null;
+
+            // Caso 1: evento novo sem horário final.
+            // Bloqueia se o horário inicial cair dentro de outro evento
+            // ou se existir outro evento sem fim no mesmo horário.
+            if (fimNovo === null) {
+                if (fimExistente === null) {
+                    return inicioExistente === inicioNovo;
+                }
+
+                return inicioNovo >= inicioExistente && inicioNovo < fimExistente;
+            }
+
+            // Caso 2: evento existente sem horário final.
+            // Bloqueia se o horário de início existente cair dentro do novo período.
+            if (fimExistente === null) {
+                return inicioExistente >= inicioNovo && inicioExistente < fimNovo;
+            }
+
+            // Caso 3: ambos possuem início e fim.
+            // Bloqueia qualquer sobreposição de horário.
+            return inicioExistente < fimNovo && inicioNovo < fimExistente;
+        });
+
+        if (conflito) {
+            const horarioConflito = conflito.horario_fim
+                ? `${formatarHorarioCurto(conflito.horario_inicio)} às ${formatarHorarioCurto(conflito.horario_fim)}`
+                : `às ${formatarHorarioCurto(conflito.horario_inicio)}`;
+
+            return {
+                temConflito: true,
+                tipo: "conflito",
+                evento: conflito,
+                mensagem: `Já possui um evento para esse dia e horário: "${conflito.titulo || "Evento sem título"}", ${horarioConflito}, em ${formatarDataBR(conflito.data)}. Tente outro dia ou outro horário.`
+            };
+        }
+
+        return {
+            temConflito: false,
+            evento: null
+        };
+
+    } catch (erro) {
+        console.error("Erro inesperado ao verificar conflito:", erro);
+
+        return {
+            temConflito: false,
+            evento: null
+        };
+    }
+}
+
+
+function converterHorarioParaMinutos(horario) {
+    if (!horario) {
+        return 0;
+    }
+
+    const partes = horario.toString().split(":");
+    const horas = Number(partes[0]);
+    const minutos = Number(partes[1]);
+
+    if (Number.isNaN(horas) || Number.isNaN(minutos)) {
+        return 0;
+    }
+
+    return horas * 60 + minutos;
+}
+
+
+function mostrarMensagemConflitoAgenda(mensagem) {
+    const possiveisMensagens = [
+        "mensagemEvento",
+        "mensagemAgenda",
+        "mensagemFormularioEvento",
+        "mensagemCalendario",
+        "mensagemDisponibilidade"
+    ];
+
+    let elementoMensagem = null;
+
+    for (const id of possiveisMensagens) {
+        const elemento = document.getElementById(id);
+
+        if (elemento) {
+            elementoMensagem = elemento;
+            break;
+        }
+    }
+
+    if (elementoMensagem) {
+        elementoMensagem.textContent = mensagem;
+        elementoMensagem.style.color = "#dc2626";
+        elementoMensagem.style.fontWeight = "900";
+        elementoMensagem.style.background = "#fee2e2";
+        elementoMensagem.style.border = "1px solid #fecaca";
+        elementoMensagem.style.borderRadius = "12px";
+        elementoMensagem.style.padding = "10px";
+        elementoMensagem.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    } else {
+        alert(mensagem);
+    }
+}
+
+
 
 
 /* =====================================================
