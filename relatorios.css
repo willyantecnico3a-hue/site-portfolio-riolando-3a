@@ -1,10 +1,25 @@
 /* =====================================================
    RELATÓRIOS E INDICADORES PAEET
    Dashboard BI - Professor Willyan Vieira da Cruz
+   Riolando Conecta Técnico
+
+   ARQUIVO: relatorios.css
+   VERSÃO: 20260614-03
+
+   Correções aplicadas:
+   - Remove bloco duplicado do organizador estilo Windows
+   - Mantém visual profissional e responsivo
+   - Melhora foco dos campos e acessibilidade visual
+   - Organizador rápido fica integrado ao cabeçalho dos filtros
+   - Ajusta impressão/PDF para não mostrar filtros/botões
 ===================================================== */
 
 * {
     box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
@@ -39,8 +54,8 @@ body {
     display: inline-flex;
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(255,255,255,0.18);
-    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     font-weight: 900;
     font-size: 13px;
 }
@@ -55,7 +70,7 @@ body {
     margin: 0;
     max-width: 760px;
     line-height: 1.6;
-    color: rgba(255,255,255,0.92);
+    color: rgba(255, 255, 255, 0.92);
 }
 
 .acoes-topo-relatorio {
@@ -75,11 +90,18 @@ body {
     color: #0f766e;
     text-decoration: none;
     font-weight: 900;
-    box-shadow: 0 10px 22px rgba(15,23,42,0.16);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+    transition: 0.2s ease;
 }
 
 .btn-voltar-agenda {
     color: #1e40af;
+}
+
+.btn-voltar-admin:hover,
+.btn-voltar-agenda:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.20);
 }
 
 /* =====================================================
@@ -102,6 +124,17 @@ body {
 
 .bloqueio-relatorio h2 {
     color: #991b1b;
+}
+
+.bloqueio-relatorio a {
+    display: inline-flex;
+    margin-top: 10px;
+    color: #ffffff;
+    background: #dc2626;
+    padding: 12px 16px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 900;
 }
 
 /* =====================================================
@@ -159,6 +192,74 @@ body {
     color: #1e40af;
 }
 
+/* =====================================================
+   ORGANIZADOR ESTILO WINDOWS - RELATÓRIOS
+===================================================== */
+
+.organizador-relatorio-windows {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding: 18px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f8fafc, #ecfeff);
+    border: 1px solid #cbd5e1;
+}
+
+.grupo-organizador-relatorio label {
+    display: block;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.grupo-organizador-relatorio select {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    border: 2px solid #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.grupo-organizador-relatorio select:focus {
+    outline: none;
+    border-color: #0f766e;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+}
+
+.btn-ordenar-data-relatorio {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    border: 2px solid #0f766e;
+    background: #ffffff;
+    color: #0f766e;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    text-align: left;
+    transition: 0.2s ease;
+}
+
+.btn-ordenar-data-relatorio:hover {
+    background: #ccfbf1;
+    transform: translateY(-1px);
+}
+
+.btn-ordenar-data-relatorio:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.16);
+}
+
+/* =====================================================
+   GRADE DE FILTROS PADRÃO
+===================================================== */
+
 .grade-filtros-relatorio {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -179,6 +280,7 @@ body {
     border-radius: 14px;
     border: 2px solid #cbd5e1;
     background: #f8fafc;
+    color: #0f172a;
     font-size: 15px;
 }
 
@@ -186,7 +288,7 @@ body {
 .grade-filtros-relatorio input:focus {
     outline: none;
     border-color: #0f766e;
-    box-shadow: 0 0 0 4px rgba(15,118,110,0.12);
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
     background: #ffffff;
 }
 
@@ -206,6 +308,7 @@ body {
     color: white;
     background: #0f766e;
     box-shadow: 0 10px 22px rgba(15, 118, 110, 0.22);
+    transition: 0.2s ease;
 }
 
 .acoes-relatorio button:hover {
@@ -213,12 +316,25 @@ body {
     transform: translateY(-1px);
 }
 
+.acoes-relatorio button:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.18);
+}
+
 #btnBaixarCsvRelatorio {
     background: #1e40af;
 }
 
+#btnBaixarCsvRelatorio:hover {
+    background: #1d4ed8;
+}
+
 #btnBaixarPdfRelatorio {
     background: #dc2626;
+}
+
+#btnBaixarPdfRelatorio:hover {
+    background: #b91c1c;
 }
 
 .mensagem-relatorio {
@@ -377,6 +493,9 @@ body {
     background: #0f766e;
     color: white;
     font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .tabela-responsiva-relatorio td {
@@ -388,6 +507,10 @@ body {
     background: #f8fafc;
 }
 
+.tabela-responsiva-relatorio tr:hover td {
+    background: #ecfeff;
+}
+
 /* =====================================================
    IMPRESSÃO / PDF
 ===================================================== */
@@ -395,12 +518,14 @@ body {
 @media print {
     body {
         background: white !important;
+        color: #111827 !important;
     }
 
     .topo-relatorios,
     .card-filtros-relatorio,
     .acoes-topo-relatorio,
-    .acoes-relatorio {
+    .acoes-relatorio,
+    .organizador-relatorio-windows {
         display: none !important;
     }
 
@@ -416,6 +541,7 @@ body {
     .card-tabela-relatorio {
         box-shadow: none !important;
         break-inside: avoid;
+        page-break-inside: avoid;
     }
 
     .grade-indicadores-relatorio {
@@ -424,6 +550,14 @@ body {
 
     .area-graficos-relatorio {
         grid-template-columns: 1fr;
+    }
+
+    .tabela-responsiva-relatorio {
+        overflow: visible;
+    }
+
+    .tabela-responsiva-relatorio table {
+        min-width: 100%;
     }
 }
 
@@ -457,6 +591,7 @@ body {
         padding: 0 10px 30px;
     }
 
+    .organizador-relatorio-windows,
     .grade-indicadores-relatorio,
     .area-graficos-relatorio,
     .grade-cabecalho-documento,
@@ -474,115 +609,29 @@ body {
     }
 }
 
-/* =====================================================
-   ORGANIZADOR ESTILO WINDOWS - RELATÓRIOS
-===================================================== */
-
-.organizador-relatorio-windows {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 22px;
-    padding: 18px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, #f8fafc, #ecfeff);
-    border: 1px solid #cbd5e1;
-}
-
-.grupo-organizador-relatorio label {
-    display: block;
-    font-weight: 900;
-    margin-bottom: 8px;
-    color: #0f172a;
-}
-
-.grupo-organizador-relatorio select {
-    width: 100%;
-    padding: 13px;
-    border-radius: 14px;
-    border: 2px solid #cbd5e1;
-    background: white;
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.btn-ordenar-data-relatorio {
-    width: 100%;
-    padding: 13px;
-    border-radius: 14px;
-    border: 2px solid #0f766e;
-    background: #ffffff;
-    color: #0f766e;
-    font-size: 15px;
-    font-weight: 900;
-    cursor: pointer;
-    text-align: left;
-}
-
-.btn-ordenar-data-relatorio:hover {
-    background: #ccfbf1;
-    transform: translateY(-1px);
-}
-
-@media (max-width: 850px) {
-    .organizador-relatorio-windows {
-        grid-template-columns: 1fr;
+@media (max-width: 520px) {
+    .topo-relatorios h1 {
+        font-size: 24px;
     }
-}
 
-/* =====================================================
-   ORGANIZADOR ESTILO WINDOWS - RELATÓRIOS
-===================================================== */
+    .card-filtros-relatorio,
+    .cabecalho-documento-relatorio,
+    .card-tabela-relatorio,
+    .card-grafico-relatorio {
+        padding: 18px;
+        border-radius: 18px;
+    }
 
-.organizador-relatorio-windows {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 22px;
-    padding: 18px;
-    border-radius: 20px;
-    background: linear-gradient(135deg, #f8fafc, #ecfeff);
-    border: 1px solid #cbd5e1;
-}
+    .card-indicador-relatorio h3 {
+        font-size: 30px;
+    }
 
-.grupo-organizador-relatorio label {
-    display: block;
-    font-weight: 900;
-    margin-bottom: 8px;
-    color: #0f172a;
-}
-
-.grupo-organizador-relatorio select {
-    width: 100%;
-    padding: 13px;
-    border-radius: 14px;
-    border: 2px solid #cbd5e1;
-    background: white;
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.btn-ordenar-data-relatorio {
-    width: 100%;
-    padding: 13px;
-    border-radius: 14px;
-    border: 2px solid #0f766e;
-    background: #ffffff;
-    color: #0f766e;
-    font-size: 15px;
-    font-weight: 900;
-    cursor: pointer;
-    text-align: left;
-    transition: 0.2s ease;
-}
-
-.btn-ordenar-data-relatorio:hover {
-    background: #ccfbf1;
-    transform: translateY(-1px);
-}
-
-@media (max-width: 850px) {
-    .organizador-relatorio-windows {
+    .linha-grafico-relatorio {
         grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .valor-grafico-relatorio {
+        text-align: left;
     }
 }
