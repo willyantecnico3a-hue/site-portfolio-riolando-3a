@@ -4,13 +4,17 @@
    Riolando Conecta Técnico
 
    ARQUIVO: relatorios.js
-   Versão corrigida:
-   - recoloca a função gerarRelatorio()
-   - remove função buscarEventosRelatorio duplicada
-   - evita travamento com "Carregando dados reais do Supabase..."
-   - filtra curso e turma no JavaScript com segurança
-   - usa turma_alvo para relatório por turma
-   - mantém CSV e PDF
+   VERSÃO: 20260614-03
+
+   Correções aplicadas:
+   - Corrige erro de bloco solto fora da função buscarEventosRelatorio()
+   - Mantém filtro rápido estilo Windows:
+       Hoje, Ontem, Semana passada, Anteriores neste mês, Último mês
+   - Mantém botão de ordenação por data:
+       Mais recentes / Mais antigas
+   - Usa turma_alvo para relatório por turma
+   - Evita travamento em "Carregando dados reais do Supabase..."
+   - Mantém CSV, PDF, gráficos, tabela e indicadores
 ===================================================== */
 
 
@@ -52,7 +56,9 @@ async function iniciarRelatorios() {
     configurarDatasIniciais();
 
     if (!banco) {
-        mostrarMensagemRelatorio("Erro: Supabase não foi carregado. Confira se o script do Supabase está antes do relatorios.js no HTML.");
+        mostrarMensagemRelatorio(
+            "Erro: Supabase não foi carregado. Confira se o script do Supabase está antes do relatorios.js no HTML."
+        );
         mostrarBloqueioRelatorio();
         return;
     }
@@ -166,6 +172,7 @@ function configurarEventosDosBotoes() {
         btnOrdenarData.addEventListener("click", alternarOrdemDataRelatorio);
     }
 }
+
 
 /* =====================================================
    6. DATAS E FILTROS
@@ -328,19 +335,6 @@ async function buscarEventosRelatorio(filtros) {
     }
 
     eventos = ordenarEventosPorDataRelatorio(eventos);
-
-    return eventos;
-}
-    // Filtro seguro por turma_alvo.
-    // Para evitar relatório equivocado, turma específica mostra apenas eventos da turma escolhida.
-    if (filtros.turma && filtros.turma !== "todas") {
-        eventos = eventos.filter(function (evento) {
-            const turmaEvento = normalizarTurma(evento.turma_alvo || "");
-            const turmaFiltro = normalizarTurma(filtros.turma);
-
-            return turmaEvento === turmaFiltro;
-        });
-    }
 
     return eventos;
 }
@@ -1121,8 +1115,9 @@ function criarNomeArquivoRelatorio(extensao) {
     return `relatorio_paeet_${turma}_${dataHoje}.${extensao}`;
 }
 
+
 /* =====================================================
-   FILTRO RÁPIDO E ORDENAÇÃO ESTILO WINDOWS
+   18. FILTRO RÁPIDO E ORDENAÇÃO ESTILO WINDOWS
 ===================================================== */
 
 function aplicarFiltroRapidoDataRelatorio() {
