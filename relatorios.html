@@ -2,300 +2,780 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios e Indicadores PAEET</title>
 
-    <!-- CSS da página de relatórios -->
-   <link rel="stylesheet" href="relatorios.css?v=20260614-01">
+    <!-- CONFIGURAÇÃO PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+
+    <meta name="theme-color" content="#0f766e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Riolando Técnico">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Agenda Pedagógica</title>
+
+    <link rel="stylesheet" href="agenda.css?v=20260612-PAEET-01">
+
+    <style>
+        /* =====================================================
+           DISPONIBILIDADE DO PROFESSOR PAEET
+        ===================================================== */
+
+        .disponibilidade-paeet {
+            background: linear-gradient(135deg, #ffffff, #f0fdfa);
+            border-left: 7px solid #0f766e;
+            border-radius: 24px;
+            padding: 24px;
+            margin: 24px 0;
+            box-shadow: 0 16px 38px rgba(15, 23, 42, 0.12);
+        }
+
+        .topo-disponibilidade-paeet {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .selo-disponibilidade {
+            display: inline-flex;
+            padding: 7px 13px;
+            border-radius: 999px;
+            background: #ccfbf1;
+            color: #0f766e;
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        .topo-disponibilidade-paeet h2 {
+            margin: 10px 0 8px;
+            color: #0f766e;
+            font-size: 28px;
+        }
+
+        .topo-disponibilidade-paeet p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .configuracao-expediente-paeet {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 6px solid #1d4ed8;
+            border-radius: 20px;
+            padding: 18px;
+            margin: 18px 0;
+        }
+
+        .configuracao-expediente-paeet h3 {
+            margin-top: 0;
+            color: #1d4ed8;
+        }
+
+        .filtros-disponibilidade-paeet {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 18px;
+            margin: 18px 0;
+        }
+
+        .filtros-disponibilidade-paeet label {
+            display: block;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #0f172a;
+        }
+
+        .filtros-disponibilidade-paeet input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 13px;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            font-size: 15px;
+        }
+
+        .filtros-disponibilidade-paeet input:focus {
+            outline: none;
+            border-color: #0f766e;
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+        }
+
+        .area-botao-expediente button,
+        #btnAtualizarDisponibilidadePaeet,
+        #btnSalvarExpedientePaeet {
+            border: none;
+            border-radius: 14px;
+            padding: 13px 16px;
+            background: #0f766e;
+            color: #ffffff;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        .area-botao-expediente button:hover,
+        #btnAtualizarDisponibilidadePaeet:hover,
+        #btnSalvarExpedientePaeet:hover {
+            background: #0d9488;
+        }
+
+        .mensagem-expediente-paeet {
+            font-weight: 800;
+            color: #0f766e;
+        }
+
+        .resumo-status-rapido-paeet {
+            padding: 13px;
+            border-radius: 12px;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            font-weight: 800;
+            color: #0f766e;
+        }
+
+        .status-disponibilidade-paeet {
+            margin: 18px 0;
+        }
+
+        .status-card-paeet {
+            padding: 18px;
+            border-radius: 18px;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10);
+        }
+
+        .status-card-paeet h3 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .status-card-paeet p {
+            margin: 0 0 8px;
+            line-height: 1.6;
+        }
+
+        .status-card-paeet small {
+            font-weight: 700;
+        }
+
+        .status-disponivel {
+            background: #dcfce7;
+            border-left: 6px solid #16a34a;
+            color: #14532d;
+        }
+
+        .status-indisponivel {
+            background: #fee2e2;
+            border-left: 6px solid #dc2626;
+            color: #7f1d1d;
+        }
+
+        .status-alerta-parcial {
+            background: #fef3c7;
+            border-left: 6px solid #f59e0b;
+            color: #78350f;
+        }
+
+        .lista-disponibilidade-paeet {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .card-horario-disponivel {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px;
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #bbf7d0;
+            border-left: 6px solid #16a34a;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.09);
+        }
+
+        .card-horario-disponivel h3 {
+            margin: 8px 0;
+            color: #0f766e;
+            font-size: 21px;
+        }
+
+        .card-horario-disponivel p {
+            margin: 0;
+            color: #334155;
+        }
+
+        .selo-horario-livre {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-weight: 900;
+            font-size: 12px;
+        }
+
+        .card-horario-disponivel button {
+            border: none;
+            border-radius: 12px;
+            padding: 11px 13px;
+            background: #0f766e;
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .card-sem-disponibilidade {
+            padding: 18px;
+            border-radius: 18px;
+            background: #fff7ed;
+            border-left: 6px solid #f97316;
+            color: #7c2d12;
+        }
+
+        .bloco-alertas-paeet {
+            margin: 18px 0;
+            padding: 18px;
+            background: #fff7ed;
+            border-left: 7px solid #f97316;
+            border-radius: 20px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .bloco-alertas-paeet h3 {
+            margin-top: 0;
+            color: #c2410c;
+        }
+
+        .card-alerta-especial-paeet {
+            margin-top: 14px;
+            padding: 16px;
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #fed7aa;
+        }
+
+        .card-alerta-especial-paeet strong {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #ffedd5;
+            color: #9a3412;
+            font-size: 12px;
+        }
+
+        .card-alerta-especial-paeet h4 {
+            margin: 10px 0;
+            color: #7c2d12;
+        }
+
+        .descricao-alerta-paeet {
+            background: #fff7ed;
+            border-radius: 12px;
+            padding: 12px;
+            line-height: 1.6;
+            color: #7c2d12;
+        }
+
+        .dia-alerta-paeet {
+            border: 2px solid #f97316 !important;
+            background: #fff7ed !important;
+        }
+
+        .alerta-dia-paeet {
+            margin: 4px 0;
+            padding: 4px 6px;
+            border-radius: 8px;
+            background: #fed7aa;
+            color: #9a3412;
+            font-size: 11px;
+            font-weight: 900;
+        }
+
+        @media (max-width: 800px) {
+            .filtros-disponibilidade-paeet,
+            .lista-disponibilidade-paeet {
+                grid-template-columns: 1fr;
+            }
+
+            .card-horario-disponivel {
+                flex-direction: column;
+            }
+
+            .card-horario-disponivel button {
+                width: 100%;
+            }
+        }
+    </style>
+
 </head>
 
 <body>
 
-    <header class="topo-relatorios">
-        <div>
-            <span class="selo-relatorio">Dashboard PAEET</span>
+    <!-- =====================================================
+         TOPO DA AGENDA
+    ====================================================== -->
+    <header class="topo-agenda">
 
-            <h1>📊 Relatórios e Indicadores</h1>
+        <div class="topo-agenda-navegacao">
+            <a href="index.html" class="btn-home-agenda">
+                🏠 Início
+            </a>
+        </div>
+
+        <div class="conteudo-topo-agenda">
+            <span class="selo-agenda">Agenda Pedagógica</span>
+
+            <h1>Calendário Interativo</h1>
 
             <p>
-                Painel de análise pedagógica do Professor e PAEET Willyan Vieira da Cruz,
-                com dados reais da agenda, portfólios e chamados dos alunos.
+                Organize aulas, ATPCS, ATPCG, APD, EFAPE, Multiplica, visitas técnicas,
+                apoio pedagógico e demais rotinas escolares.
             </p>
         </div>
 
-        <div class="acoes-topo-relatorio">
-            <a href="admin.html" class="btn-voltar-admin">
-                ⬅ Voltar ao Admin
-            </a>
-
-            <a href="agenda.html" class="btn-voltar-agenda">
-                📅 Agenda
-            </a>
-        </div>
     </header>
 
 
-    <main class="container-relatorios">
+    <!-- =====================================================
+         CONTEÚDO PRINCIPAL DA AGENDA
+    ====================================================== -->
+    <main class="container-agenda">
 
-        <section id="areaBloqueioRelatorio" class="bloqueio-relatorio" style="display:none;">
-            <h2>🔒 Acesso restrito</h2>
-            <p>Esta página é exclusiva para administradores.</p>
-            <a href="admin.html">Voltar para o login administrativo</a>
-        </section>
+        <!-- CONTROLES DO MÊS -->
+        <section class="barra-controles-agenda">
 
+            <button id="btnMesAnterior" type="button">
+                ← Mês anterior
+            </button>
 
-        <section id="areaDashboardRelatorio" style="display:none;">
+            <h2 id="tituloMesAno"></h2>
 
-            <section class="cabecalho-documento-relatorio">
-                <h2>Relatório Pedagógico — Professor/PAEET</h2>
-
-                <div class="grade-cabecalho-documento">
-                    <p><strong>Data de emissão:</strong> <span id="dataEmissaoRelatorio"></span></p>
-                    <p><strong>Professor/PAEET:</strong> Willyan Vieira da Cruz</p>
-                    <p><strong>Escola:</strong> PEI Professor Riolando Canno</p>
-                    <p><strong>Curso:</strong> <span id="cursoDocumentoRelatorio">Desenvolvimento de Sistemas</span></p>
-                    <p><strong>Turma:</strong> <span id="turmaDocumentoRelatorio">Todas</span></p>
-                    <p><strong>Período:</strong> <span id="periodoDocumentoRelatorio">Não selecionado</span></p>
-                </div>
-            </section>
-
-
-            <section class="card-filtros-relatorio">
-
-                <h2>🔎 Filtros do relatório</h2>
-
-                
-
-                <div class="grade-filtros-relatorio">
-
-                    <div>
-                        <label for="filtroPeriodoRelatorio">Período</label>
-                        <select id="filtroPeriodoRelatorio">
-                            <option value="mensal">Mensal</option>
-                            <option value="semanal">Semanal</option>
-                            <option value="bimestral">Bimestral</option>
-                            <option value="semestral">Semestral</option>
-                            <option value="anual">Anual</option>
-                            <option value="personalizado">Personalizado</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="filtroCursoRelatorio">Curso</label>
-                        <select id="filtroCursoRelatorio">
-                            <option value="todos">Todos</option>
-                            <option value="desenvolvimento_sistemas" selected>Desenvolvimento de Sistemas</option>
-                            <option value="vendas">Vendas</option>
-                            <option value="substituicoes">Substituições</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="filtroTurmaRelatorio">Turma</label>
-                        <select id="filtroTurmaRelatorio">
-                            <option value="todas">Todas</option>
-                            <option value="2ºA">2ºA</option>
-                            <option value="3ºA">3ºA</option>
-                            <option value="3ºB">3ºB</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="filtroTipoEventoRelatorio">Tipo de evento</label>
-                        <select id="filtroTipoEventoRelatorio">
-                            <option value="todos">Todos</option>
-                            <option value="aula">Aulas</option>
-                            <option value="atendimento_aluno">Atendimento ao aluno</option>
-                            <option value="reuniao_gestao">Reunião com gestão</option>
-                            <option value="apoio_pedagogico">Apoio pedagógico</option>
-                            <option value="ot">OT</option>
-                            <option value="atestado_medico">Atestado médico</option>
-                            <option value="tre">TRE</option>
-                            <option value="ferias">Férias</option>
-                            <option value="feriado_prolongado">Feriado prolongado</option>
-                            <option value="outro">Outro</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="dataInicioRelatorio">Data inicial</label>
-                        <input type="date" id="dataInicioRelatorio">
-                    </div>
-
-                    <div>
-                        <label for="dataFimRelatorio">Data final</label>
-                        <input type="date" id="dataFimRelatorio">
-                    </div>
-
-                </div>
-
-                <div class="acoes-relatorio">
-                    <button type="button" id="btnGerarRelatorio">
-                        📊 Gerar relatório
-                    </button>
-
-                    <button type="button" id="btnBaixarCsvRelatorio">
-                        ⬇️ Baixar CSV
-                    </button>
-
-                    <button type="button" id="btnBaixarPdfRelatorio">
-                        📄 Baixar PDF
-                    </button>
-                </div>
-
-                <p id="mensagemRelatorio" class="mensagem-relatorio"></p>
-
-                <div class="organizador-relatorio-windows">
-
-    <div class="grupo-organizador-relatorio">
-        <label for="filtroRapidoDataRelatorio">Filtro rápido</label>
-
-        <select id="filtroRapidoDataRelatorio">
-            <option value="">Selecionar período rápido</option>
-            <option value="hoje">Hoje</option>
-            <option value="ontem">Ontem</option>
-            <option value="semana_passada">Semana passada</option>
-            <option value="anteriores_neste_mes">Anteriores neste mês</option>
-            <option value="ultimo_mes">Último mês</option>
-        </select>
-    </div>
-
-    <div class="grupo-organizador-relatorio">
-        <label>Organizar por data</label>
-
-        <button type="button" id="btnOrdenarDataRelatorio" class="btn-ordenar-data-relatorio" data-ordem="desc">
-            📅 Data do evento ↓ Mais recentes
-        </button>
-    </div>
-
-</div>
-
-            </section>
-
-
-            <section class="grade-indicadores-relatorio">
-
-                <article class="card-indicador-relatorio">
-                    <span>📚</span>
-                    <h3 id="indicadorAulasLecionadas">0</h3>
-                    <p>Aulas lecionadas</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>📅</span>
-                    <h3 id="indicadorTotalEventos">0</h3>
-                    <p>Eventos no calendário</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>⏱️</span>
-                    <h3 id="indicadorCargaHoraria">0h</h3>
-                    <p>Carga horária registrada</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>🧑‍💻</span>
-                    <h3 id="indicadorPortfolios">0</h3>
-                    <p>Portfólios enviados</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>📨</span>
-                    <h3 id="indicadorChamadosEnviados">0</h3>
-                    <p>Chamados enviados</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>🟡</span>
-                    <h3 id="indicadorChamadosAnalise">0</h3>
-                    <p>Em análise</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>✅</span>
-                    <h3 id="indicadorChamadosRespondidos">0</h3>
-                    <p>Respondidos</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>🟢</span>
-                    <h3 id="indicadorChamadosResolvidos">0</h3>
-                    <p>Resolvidos</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>🗄️</span>
-                    <h3 id="indicadorChamadosArquivados">0</h3>
-                    <p>Arquivados</p>
-                </article>
-
-                <article class="card-indicador-relatorio alerta">
-                    <span>⚠️</span>
-                    <h3 id="indicadorIntercorrencias">0</h3>
-                    <p>Intercorrências especiais</p>
-                </article>
-
-            </section>
-
-
-            <section class="area-graficos-relatorio">
-
-                <div class="card-grafico-relatorio">
-                    <h2>📊 Eventos por tipo</h2>
-                    <div id="graficoEventosPorTipo" class="grafico-barras-relatorio"></div>
-                </div>
-
-                <div class="card-grafico-relatorio">
-                    <h2>📨 Chamados por status</h2>
-                    <div id="graficoChamadosStatus" class="grafico-barras-relatorio"></div>
-                </div>
-
-            </section>
-
-
-            <section class="card-tabela-relatorio">
-
-                <h2>📋 Eventos detalhados do período</h2>
-
-                <div class="tabela-responsiva-relatorio">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Tipo</th>
-                                <th>Título</th>
-                                <th>Descrição</th>
-                                <th>Início</th>
-                                <th>Fim</th>
-                                <th>Duração</th>
-                                <th>Curso</th>
-                                <th>Turma</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="corpoTabelaEventosRelatorio">
-                            <tr>
-                                <td colspan="9">Clique em “Gerar relatório” para carregar os dados.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-            </section>
+            <button id="btnProximoMes" type="button">
+                Próximo mês →
+            </button>
 
         </section>
 
-        
+
+        <!-- BOTÃO DE LEMBRETES SONOROS -->
+        <section class="area-lembretes-agenda">
+
+            <button type="button" id="btnAtivarLembretesAgenda" class="btn-lembretes-agenda">
+                🔔 Ativar lembretes sonoros
+            </button>
+
+            <p id="mensagemLembretesAgenda" class="mensagem-lembretes-agenda">
+                O alerta sonoro funciona para o administrador logado quando a agenda estiver aberta.
+            </p>
+
+        </section>
+
+
+        <!-- BOTÃO DE NOTIFICAÇÕES PUSH NO CELULAR -->
+        <section class="area-push-agenda">
+
+            <button type="button" id="btnAtivarPushAgenda" class="btn-push-agenda">
+                📲 Ativar notificações no celular
+            </button>
+
+            <p id="mensagemPushAgenda" class="mensagem-push-agenda">
+                Ative para receber lembretes da agenda mesmo quando o aplicativo estiver fechado.
+            </p>
+
+        </section>
+
+
+
+
+        <!-- =====================================================
+             DISPONIBILIDADE DO PROFESSOR PAEET
+        ====================================================== -->
+        <section class="card-agenda disponibilidade-paeet">
+
+            <div class="topo-disponibilidade-paeet">
+                <div>
+                    <span class="selo-disponibilidade">PAEET</span>
+
+                    <h2>🟢 Disponibilidade do Professor PAEET</h2>
+
+                    <p>
+                        Consulte os horários disponíveis do Professor/PAEET Willyan Vieira para atendimento a alunos,
+                        reuniões com gestão, alinhamentos pedagógicos, solicitações e demais demandas escolares.
+                    </p>
+                </div>
+
+                <button type="button" id="btnAtualizarDisponibilidadePaeet">
+                    🔄 Atualizar disponibilidade
+                </button>
+            </div>
+
+            <div id="areaConfiguracaoExpedientePaeet" class="configuracao-expediente-paeet" style="display:none;">
+
+                <h3>⚙️ Configuração do expediente PAEET</h3>
+
+                <p>
+                    Defina o horário base usado para calcular automaticamente os intervalos livres da agenda.
+                    O padrão inicial é das 12:30 às 21:30.
+                </p>
+
+                <div class="filtros-disponibilidade-paeet">
+
+                    <div>
+                        <label for="inicioExpedientePaeet">Início do expediente</label>
+                        <input type="time" id="inicioExpedientePaeet" value="12:30">
+                    </div>
+
+                    <div>
+                        <label for="fimExpedientePaeet">Fim do expediente</label>
+                        <input type="time" id="fimExpedientePaeet" value="21:30">
+                    </div>
+
+                    <div class="area-botao-expediente">
+                        <label>&nbsp;</label>
+
+                        <button type="button" id="btnSalvarExpedientePaeet">
+                            💾 Salvar expediente
+                        </button>
+                    </div>
+
+                </div>
+
+                <p id="mensagemExpedientePaeet" class="mensagem-expediente-paeet"></p>
+
+            </div>
+
+            <div class="filtros-disponibilidade-paeet">
+
+                <div>
+                    <label for="dataDisponibilidadePaeet">Consultar data</label>
+                    <input type="date" id="dataDisponibilidadePaeet">
+                </div>
+
+                <div>
+                    <label>Status geral</label>
+                    <div id="resumoStatusRapidoPaeet" class="resumo-status-rapido-paeet">
+                        Aguardando consulta...
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="statusDisponibilidadePaeet" class="status-disponibilidade-paeet">
+                <p>Selecione uma data para consultar a disponibilidade.</p>
+            </div>
+
+            <div id="alertasDisponibilidadePaeet" class="alertas-disponibilidade-paeet"></div>
+
+            <div id="listaDisponibilidadePaeet" class="lista-disponibilidade-paeet">
+                <p>Os horários livres aparecerão aqui.</p>
+            </div>
+
+        </section>
+
+
+        <!-- FILTRO VISÍVEL PARA ADMIN -->
+        <section class="filtros-agenda" id="areaFiltroAdmin" style="display:none;">
+
+            <label for="filtroCursoAgenda">
+                Filtrar por curso:
+            </label>
+
+            <select id="filtroCursoAgenda">
+                <option value="todos">Ver tudo</option>
+                <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                <option value="vendas">Vendas</option>
+                <option value="substituicoes">Substituições</option>
+            </select>
+
+        </section>
+
+
+        <!-- LEGENDA COM CORES -->
+        <section class="legenda-agenda">
+            <span class="tag-legenda tipo-aula">Aula</span>
+            <span class="tag-legenda tipo-atpcs">ATPCS</span>
+            <span class="tag-legenda tipo-atpcg">ATPCG</span>
+            <span class="tag-legenda tipo-apd">APD</span>
+            <span class="tag-legenda tipo-efape">EFAPE</span>
+            <span class="tag-legenda tipo-multiplica">Multiplica</span>
+            <span class="tag-legenda tipo-visita_tecnica">Visita Técnica</span>
+            <span class="tag-legenda tipo-apoio_pedagogico">Apoio Pedagógico</span>
+            <span class="tag-legenda tipo-atendimento_aluno">Atendimento</span>
+            <span class="tag-legenda tipo-reuniao_gestao">Reunião gestão</span>
+            <span class="tag-legenda tipo-ot">OT</span>
+            <span class="tag-legenda tipo-atestado_medico">Atestado</span>
+            <span class="tag-legenda tipo-tre">TRE</span>
+            <span class="tag-legenda tipo-ferias">Férias</span>
+            <span class="tag-legenda tipo-feriado_prolongado">Feriado prolongado</span>
+            <span class="tag-legenda tipo-recesso_escolar">Recesso</span>
+            <span class="tag-legenda tipo-ausencia">Ausência</span>
+            <span class="tag-legenda tipo-outro">Outro</span>
+        </section>
+
+
+        <!-- CALENDÁRIO -->
+        <section class="calendario">
+
+            <div class="dias-semana">
+                <div>Dom</div>
+                <div>Seg</div>
+                <div>Ter</div>
+                <div>Qua</div>
+                <div>Qui</div>
+                <div>Sex</div>
+                <div>Sáb</div>
+            </div>
+
+            <div id="gradeCalendario" class="grade-calendario"></div>
+
+        </section>
 
     </main>
 
 
-    <!-- O Supabase precisa carregar antes do relatorios.js -->
+    <!-- =====================================================
+     MODAL DO DIA
+====================================================== -->
+<div id="modalDia" class="modal-agenda">
+
+    <div class="modal-conteudo-agenda">
+
+        <div class="modal-topo">
+            <h2 id="modalTituloData"></h2>
+
+            <button id="btnFecharModal" type="button">
+                ✕
+            </button>
+        </div>
+
+        <div id="listaEventosDia"></div>
+
+        <button id="btnAbrirFormEvento" class="btn-criar-evento" type="button" style="display:none;">
+            + Criar evento neste dia
+        </button>
+
+
+        <!-- FORMULÁRIO DE CADASTRO/EDIÇÃO DO EVENTO -->
+        <form id="formEvento" class="form-evento" style="display:none;">
+
+            <h3 id="tituloFormularioEvento">Novo Evento</h3>
+
+            <label for="eventoTipo">Tipo do evento</label>
+            <select id="eventoTipo">
+                <option value="aula">Aula</option>
+                <option value="atpcs">ATPCS</option>
+                <option value="atpcg">ATPCG</option>
+                <option value="apd">APD</option>
+                <option value="efape">EFAPE</option>
+                <option value="multiplica">Multiplica</option>
+                <option value="visita_tecnica">Visita Técnica</option>
+                <option value="apoio_pedagogico">Apoio Pedagógico</option>
+                <option value="atendimento_aluno">Atendimento ao aluno</option>
+                <option value="reuniao_gestao">Reunião com gestão</option>
+                <option value="planejamento_paeet">Planejamento PAEET</option>
+                <option value="ot">OT - Orientação Técnica</option>
+                <option value="formacao_externa">Formação externa</option>
+                <option value="reuniao_externa">Reunião externa</option>
+                <option value="atestado_medico">Atestado médico</option>
+                <option value="tre">TRE / convocação eleitoral</option>
+                <option value="ferias">Férias</option>
+                <option value="feriado_prolongado">Feriado prolongado</option>
+                <option value="recesso_escolar">Recesso escolar</option>
+                <option value="ponto_facultativo">Ponto facultativo</option>
+                <option value="licenca_afastamento">Licença / afastamento</option>
+                <option value="abono">Abono</option>
+                <option value="convocacao_oficial">Convocação oficial</option>
+                <option value="conselho_classe">Conselho de classe</option>
+                <option value="atpc_htpc">ATPC / HTPC</option>
+                <option value="evento_escolar">Evento escolar</option>
+                <option value="ausencia">Ausência / fora da escola</option>
+                <option value="outro">Outro</option>
+            </select>
+
+            <label for="eventoTitulo">Nome/Título do evento</label>
+            <input type="text" id="eventoTitulo" placeholder="Ex: Aula de Front-End">
+
+            <div class="linha-form-evento">
+                <div>
+                    <label for="eventoHorarioInicio">Horário de início</label>
+                    <input type="time" id="eventoHorarioInicio">
+                </div>
+
+                <div>
+                    <label for="eventoHorarioFim">Horário de fim</label>
+                    <input type="time" id="eventoHorarioFim">
+                </div>
+            </div>
+
+            <label for="eventoCursoAlvo">Curso alvo</label>
+            <select id="eventoCursoAlvo">
+                <option value="todos">Todos</option>
+                <option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option>
+                <option value="vendas">Vendas</option>
+                <option value="substituicoes">Substituições</option>
+            </select>
+
+            <label for="eventoDescricao">Descrição do evento</label>
+            <textarea id="eventoDescricao" placeholder="Descreva o evento, aula, orientação, plano de aula ou recado"></textarea>
+
+            <label for="eventoLinkMaterial">Link do material</label>
+            <input type="url" id="eventoLinkMaterial" placeholder="Link do PDF, vídeo, slide ou atividade">
+
+
+            <!-- LEMBRETE DO EVENTO -->
+            <div class="area-lembrete-evento">
+
+                <h4>🔔 Lembrete do evento</h4>
+
+                <label for="eventoLembreteMinutos">
+                    Avisar antes do compromisso
+                </label>
+
+                <select id="eventoLembreteMinutos">
+                    <option value="0">Sem lembrete</option>
+                    <option value="5">5 minutos antes</option>
+                    <option value="10" selected>10 minutos antes</option>
+                    <option value="15">15 minutos antes</option>
+                    <option value="30">30 minutos antes</option>
+                    <option value="60">1 hora antes</option>
+                </select>
+
+                <p class="observacao-repeticao">
+                    O lembrete funciona quando o administrador estiver logado e com a agenda aberta no navegador.
+                </p>
+
+            </div>
+
+
+            <!-- REPETIÇÃO ESTILO GOOGLE AGENDA -->
+            <div class="area-repeticao-evento">
+
+                <h4>🔁 Repetição do evento</h4>
+
+                <label for="eventoRepeticao">Repetir</label>
+                <select id="eventoRepeticao">
+                    <option value="nao_repete">Não se repete</option>
+                    <option value="diariamente">Todos os dias úteis</option>
+                    <option value="semanalmente">Todas as semanas</option>
+                    <option value="mensalmente">Todos os meses</option>
+                    <option value="anualmente">Todos os anos</option>
+                </select>
+
+                <label for="eventoRepetirAte">Repetir até</label>
+                <input type="date" id="eventoRepetirAte">
+
+                <p class="observacao-repeticao">
+                    Sábados, domingos e feriados fixos serão ignorados automaticamente.
+                </p>
+
+            </div>
+
+            <button type="submit">
+                💾 Salvar Evento
+            </button>
+
+            <p id="mensagemEvento"></p>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+    
+
+    <!-- =====================================================
+         MODAL DE DETALHES DO EVENTO
+    ====================================================== -->
+    <div id="modalDetalheEvento" class="modal-agenda">
+
+        
+
+        <div class="modal-conteudo-agenda detalhe-evento">
+
+            <div class="modal-topo">
+                <h2>Detalhes do Evento</h2>
+
+                <button id="btnFecharDetalheEvento" type="button">
+                    ✕
+                </button>
+            </div>
+
+            <div id="conteudoDetalheEvento"></div>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         MODAL CONFIRMAR EXCLUSÃO
+    ====================================================== -->
+    <div id="modalConfirmarExclusao" class="modal-agenda">
+
+        <div class="modal-conteudo-agenda modal-exclusao-evento">
+
+            <h2>Excluir evento</h2>
+
+            <p>
+                Como deseja excluir este evento?
+            </p>
+
+            <div class="opcoes-exclusao-evento">
+
+                <button type="button" id="btnExcluirSomenteEste">
+                    🗓️ Excluir somente este evento
+                </button>
+
+                <button type="button" id="btnExcluirEsteEProximos">
+                    ➡️ Excluir este e os próximos eventos
+                </button>
+
+                <button type="button" id="btnExcluirTodaSerie">
+                    🔁 Excluir todos os eventos da série
+                </button>
+
+                <button type="button" id="btnCancelarExclusao">
+                    ❌ Cancelar
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Supabase precisa carregar antes do agenda.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- JavaScript da página de relatórios -->
-    <script src="relatorios.js?v=20260614-01"></script>
+    <script src="agenda.js?v=20260612-PAEET-01"></script>
 
+    <!-- Registro do Service Worker para o PWA -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/service-worker.js")
+                    .then(function () {
+                        console.log("Service Worker registrado com sucesso.");
+                    })
+                    .catch(function (erro) {
+                        console.log("Erro ao registrar Service Worker:", erro);
+                    });
+            });
+        }
+    </script>
 
 </body>
 </html>
