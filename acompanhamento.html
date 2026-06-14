@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acompanhamento PAEET | Riolando Conecta Técnico</title>
+  <link rel="stylesheet" href="acompanhamento.css?v=20260614-01" />
+</head>
+<body>
+  <header class="topo-acompanhamento">
+    <div>
+      <span class="selo-acompanhamento">Acompanhamento PAEET</span>
+      <h1>🧑‍🎓 Acompanhamento Individual do Aluno Técnico</h1>
+      <p>Registre atendimentos, dificuldades, intervenções pedagógicas, encaminhamentos, evidências e evolução dos estudantes acompanhados pelo Professor/PAEET.</p>
+    </div>
+    <div class="acoes-topo-acompanhamento">
+      <a href="admin.html" class="btn-topo-acompanhamento">⬅ Voltar ao Admin</a>
+      <a href="central-paeet.html" class="btn-topo-acompanhamento btn-central">🎯 Central PAEET</a>
+      <a href="relatorios.html" class="btn-topo-acompanhamento btn-relatorio">📊 Relatórios</a>
+    </div>
+  </header>
+
+  <main class="container-acompanhamento">
+    <section id="areaBloqueioAcompanhamento" class="bloqueio-acompanhamento" style="display:none;">
+      <h2>🔒 Acesso restrito</h2>
+      <p>Esta página é exclusiva para administradores.</p>
+      <a href="admin.html">Voltar para o login administrativo</a>
+    </section>
+
+    <section id="areaAcompanhamento" style="display:none;">
+      <section class="card-resumo-acompanhamento">
+        <div>
+          <h2>📌 Painel de acompanhamento pedagógico</h2>
+          <p>Use esta página para registrar o que os sistemas oficiais não organizam do jeito necessário para a rotina PAEET: observações, intervenções, evidências, encaminhamentos e resultados.</p>
+        </div>
+        <div class="status-login-acompanhamento">
+          <span>Administrador logado</span>
+          <strong id="emailAdminAcompanhamento">Carregando...</strong>
+        </div>
+      </section>
+
+      <section class="grade-indicadores-acompanhamento">
+        <article class="card-indicador-acompanhamento"><span>📋</span><h3 id="indicadorTotalRegistros">0</h3><p>Total de registros</p></article>
+        <article class="card-indicador-acompanhamento"><span>🔵</span><h3 id="indicadorAbertos">0</h3><p>Abertos</p></article>
+        <article class="card-indicador-acompanhamento"><span>🟡</span><h3 id="indicadorAndamento">0</h3><p>Em andamento</p></article>
+        <article class="card-indicador-acompanhamento"><span>✅</span><h3 id="indicadorResolvidos">0</h3><p>Resolvidos</p></article>
+        <article class="card-indicador-acompanhamento alerta"><span>🚨</span><h3 id="indicadorUrgentes">0</h3><p>Alta/urgente</p></article>
+      </section>
+
+      <section class="layout-acompanhamento">
+        <section class="card-formulario-acompanhamento">
+          <h2 id="tituloFormularioAcompanhamento">➕ Novo acompanhamento</h2>
+          <input type="hidden" id="registroIdAcompanhamento" />
+
+          <div class="grade-formulario-acompanhamento">
+            <div><label for="nomeAlunoAcompanhamento">Nome do aluno *</label><input type="text" id="nomeAlunoAcompanhamento" placeholder="Nome completo do aluno" /></div>
+            <div><label for="raAlunoAcompanhamento">RA</label><input type="text" id="raAlunoAcompanhamento" placeholder="RA do aluno" /></div>
+            <div><label for="turmaAlunoAcompanhamento">Turma *</label><select id="turmaAlunoAcompanhamento"><option value="">Selecione</option><option value="2ºA">2ºA</option><option value="3ºA">3ºA</option><option value="3ºB">3ºB</option></select></div>
+            <div><label for="cursoAlunoAcompanhamento">Curso *</label><select id="cursoAlunoAcompanhamento"><option value="desenvolvimento_sistemas">Desenvolvimento de Sistemas</option><option value="vendas">Vendas</option><option value="substituicoes">Substituições</option></select></div>
+            <div><label for="dataRegistroAcompanhamento">Data do registro *</label><input type="date" id="dataRegistroAcompanhamento" /></div>
+            <div><label for="tipoAcompanhamento">Tipo de acompanhamento *</label><select id="tipoAcompanhamento"><option value="atendimento_paeet">Atendimento PAEET</option><option value="dificuldade_aprendizagem">Dificuldade de aprendizagem</option><option value="baixo_rendimento">Baixo rendimento</option><option value="baixa_frequencia">Baixa frequência</option><option value="risco_evasao">Risco de evasão</option><option value="orientacao_estudo">Orientação de estudo</option><option value="intervencao_pedagogica">Intervenção pedagógica</option><option value="recuperacao">Recuperação</option><option value="encaminhamento_gestao">Encaminhamento à gestão</option><option value="encaminhamento_familia">Encaminhamento à família</option><option value="acompanhamento_estagio">Acompanhamento de estágio</option><option value="outro">Outro</option></select></div>
+            <div><label for="componenteAcompanhamento">Componente curricular</label><input type="text" id="componenteAcompanhamento" placeholder="Ex.: Programação Web" /></div>
+            <div><label for="prioridadeAcompanhamento">Prioridade *</label><select id="prioridadeAcompanhamento"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
+            <div><label for="statusAcompanhamento">Status *</label><select id="statusAcompanhamento"><option value="aberto">Aberto</option><option value="em_andamento">Em andamento</option><option value="aguardando_retorno">Aguardando retorno</option><option value="resolvido">Resolvido</option><option value="arquivado">Arquivado</option></select></div>
+            <div><label for="prazoAcompanhamento">Prazo/retorno</label><input type="date" id="prazoAcompanhamento" /></div>
+          </div>
+
+          <div class="campo-longo-acompanhamento"><label for="dificuldadeAcompanhamento">Dificuldade identificada</label><textarea id="dificuldadeAcompanhamento" rows="3" placeholder="Descreva a dificuldade ou ponto de atenção."></textarea></div>
+          <div class="campo-longo-acompanhamento"><label for="evidenciaAcompanhamento">Evidência observada</label><textarea id="evidenciaAcompanhamento" rows="3" placeholder="Descreva a evidência observada."></textarea></div>
+          <div class="campo-longo-acompanhamento"><label for="intervencaoAcompanhamento">Intervenção realizada</label><textarea id="intervencaoAcompanhamento" rows="3" placeholder="Descreva a ação pedagógica realizada."></textarea></div>
+          <div class="campo-longo-acompanhamento"><label for="encaminhamentoAcompanhamento">Encaminhamento</label><textarea id="encaminhamentoAcompanhamento" rows="3" placeholder="Ex.: acompanhar, comunicar gestão, orientar família..."></textarea></div>
+          <div class="campo-longo-acompanhamento"><label for="resultadoAcompanhamento">Resultado observado</label><textarea id="resultadoAcompanhamento" rows="3" placeholder="Preencha quando houver retorno ou evolução."></textarea></div>
+          <div class="campo-longo-acompanhamento"><label for="observacoesAcompanhamento">Observações gerais</label><textarea id="observacoesAcompanhamento" rows="3" placeholder="Informações complementares."></textarea></div>
+
+          <div class="acoes-formulario-acompanhamento">
+            <button type="button" id="btnSalvarAcompanhamento">💾 Salvar acompanhamento</button>
+            <button type="button" id="btnLimparAcompanhamento" class="btn-secundario-acompanhamento">🧹 Limpar</button>
+            <button type="button" id="btnCancelarEdicaoAcompanhamento" class="btn-alerta-acompanhamento" style="display:none;">✖ Cancelar edição</button>
+          </div>
+          <p id="mensagemFormularioAcompanhamento" class="mensagem-acompanhamento"></p>
+        </section>
+
+        <section class="card-lista-acompanhamento">
+          <h2>🔎 Filtros e registros</h2>
+          <div class="grade-filtros-acompanhamento">
+            <div><label for="buscaAcompanhamento">Buscar</label><input type="search" id="buscaAcompanhamento" placeholder="Aluno, RA, turma, dificuldade..." /></div>
+            <div><label for="filtroTurmaAcompanhamento">Turma</label><select id="filtroTurmaAcompanhamento"><option value="todas">Todas</option><option value="2ºA">2ºA</option><option value="3ºA">3ºA</option><option value="3ºB">3ºB</option></select></div>
+            <div><label for="filtroStatusAcompanhamento">Status</label><select id="filtroStatusAcompanhamento"><option value="todos">Todos</option><option value="aberto">Aberto</option><option value="em_andamento">Em andamento</option><option value="aguardando_retorno">Aguardando retorno</option><option value="resolvido">Resolvido</option><option value="arquivado">Arquivado</option></select></div>
+            <div><label for="filtroPrioridadeAcompanhamento">Prioridade</label><select id="filtroPrioridadeAcompanhamento"><option value="todas">Todas</option><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></div>
+            <div><label for="dataInicioFiltroAcompanhamento">Data inicial</label><input type="date" id="dataInicioFiltroAcompanhamento" /></div>
+            <div><label for="dataFimFiltroAcompanhamento">Data final</label><input type="date" id="dataFimFiltroAcompanhamento" /></div>
+          </div>
+
+          <div class="acoes-lista-acompanhamento">
+            <button type="button" id="btnFiltrarAcompanhamento">🔎 Filtrar</button>
+            <button type="button" id="btnRecarregarAcompanhamento">🔄 Recarregar</button>
+            <button type="button" id="btnCsvAcompanhamento">⬇️ Baixar CSV</button>
+            <button type="button" id="btnPdfAcompanhamento">📄 PDF</button>
+          </div>
+          <p id="mensagemListaAcompanhamento" class="mensagem-acompanhamento"></p>
+
+          <div class="tabela-acompanhamento-responsiva">
+            <table>
+              <thead><tr><th>Data</th><th>Aluno</th><th>Turma</th><th>Tipo</th><th>Prioridade</th><th>Status</th><th>Dificuldade</th><th>Ações</th></tr></thead>
+              <tbody id="corpoTabelaAcompanhamento"><tr><td colspan="8">Carregando registros...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="acompanhamento.js?v=20260614-01"></script>
+</body>
+</html>
