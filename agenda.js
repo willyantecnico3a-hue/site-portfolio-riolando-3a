@@ -978,6 +978,24 @@ if (formEvento) {
             return;
         }
 
+        await registrarLogAgenda({
+    acao: estavaEditando ? "editar_evento" : "criar_evento",
+    tipo_evento: estavaEditando
+        ? "admin_alterou_evento_calendario"
+        : "admin_criou_evento_calendario",
+    tabela_afetada: "eventos",
+    registro_id: eventoEmEdicaoId ? String(eventoEmEdicaoId) : null,
+    descricao: estavaEditando
+        ? "Administrador alterou um evento no calendário."
+        : "Administrador criou um novo evento no calendário.",
+    dados_novos: {
+        ...dadosBase,
+        data: dataSelecionadaNoModal,
+        repeticao: repeticao,
+        repetir_ate: repetirAte || null
+    }
+});
+
         const dataParaReabrir = dataSelecionadaNoModal;
 
         limparFormularioEvento();
@@ -1237,6 +1255,15 @@ async function excluirSomenteEsteEvento() {
         return;
     }
 
+    await registrarLogAgenda({
+    acao: "excluir_evento",
+    tipo_evento: "admin_excluiu_evento_calendario",
+    tabela_afetada: "eventos",
+    registro_id: String(eventoParaExcluirId),
+    descricao: "Administrador excluiu um evento individual do calendário.",
+    dados_anteriores: eventoParaExcluirObjeto || null
+});
+
     finalizarExclusaoEvento("Evento excluído com sucesso!");
 }
 
@@ -1272,6 +1299,19 @@ async function excluirEsteEProximosEventos() {
         return;
     }
 
+    await registrarLogAgenda({
+    acao: "excluir_eventos_futuros",
+    tipo_evento: "admin_excluiu_evento_e_proximos",
+    tabela_afetada: "eventos",
+    registro_id: String(eventoParaExcluirObjeto.id),
+    descricao: "Administrador excluiu este evento e os próximos eventos da série.",
+    dados_anteriores: eventoParaExcluirObjeto || null,
+    detalhes: {
+        serie_id: eventoParaExcluirObjeto.serie_id || null,
+        data_inicio_exclusao: eventoParaExcluirObjeto.data || null
+    }
+});
+
     finalizarExclusaoEvento("Este evento e os próximos foram excluídos com sucesso!");
 }
 
@@ -1304,6 +1344,18 @@ async function excluirTodaSerieEventos() {
         console.log("Erro ao excluir série:", error);
         return;
     }
+
+    await registrarLogAgenda({
+    acao: "excluir_serie_eventos",
+    tipo_evento: "admin_excluiu_toda_serie_eventos",
+    tabela_afetada: "eventos",
+    registro_id: String(eventoParaExcluirObjeto.id),
+    descricao: "Administrador excluiu todos os eventos de uma série do calendário.",
+    dados_anteriores: eventoParaExcluirObjeto || null,
+    detalhes: {
+        serie_id: eventoParaExcluirObjeto.serie_id || null
+    }
+});
 
     finalizarExclusaoEvento("Todos os eventos da série foram excluídos com sucesso!");
 }
@@ -2928,6 +2980,26 @@ function mostrarMensagemConflitoAgenda(mensagem) {
         });
     } else {
         alert(mensagem);
+    }
+}
+
+async function registrarLogAgenda(config) {
+    try {
+        if (typeof registrarLogSistema !== "function") {
+            console.warn("Função registrarLogSistema não encontrada.");
+            return;
+        }
+
+        await registrarLogSistema({
+            modulo: "agenda",
+            usuario_nome: perfilUsuario?.nome || null,
+            usuario_funcao: perfilUsuario?.funcao || null,
+            origem_pagina: "agenda.html",
+            ...config
+        });
+
+    } catch (erro) {
+        console.warn("Erro ao registrar log da agenda:", erro);
     }
 }
 
