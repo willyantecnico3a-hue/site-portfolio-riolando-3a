@@ -275,20 +275,12 @@ async function buscarEventosRelatorio(filtros) {
 
     let eventos = data || [];
 
-    if (filtros.turma && filtros.turma !== "todas") {
-        eventos = eventos.filter(function (evento) {
-            const texto = `
-                ${evento.titulo || ""}
-                ${evento.descricao || ""}
-                ${evento.turma || ""}
-                ${evento.nome_turma || ""}
-            `.toLowerCase();
+   if (filtros.turma && filtros.turma !== "todas") {
+    eventos = eventos.filter(function (evento) {
+        const turmaEvento = (evento.turma_alvo || "todas").toLowerCase();
 
-            return texto.includes(filtros.turma.toLowerCase());
-        });
-    }
-
-    return eventos;
+        return turmaEvento === filtros.turma.toLowerCase() || turmaEvento === "todas";
+    });
 }
 
 

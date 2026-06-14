@@ -584,6 +584,7 @@ function configurarCliqueDosBotoesDinamicos() {
             console.log("Botão editar clicado. ID:", idEvento);
 
             prepararEdicaoEvento(idEvento);
+
             return;
         }
 
@@ -732,6 +733,7 @@ function prepararEdicaoEvento(idEvento) {
     setValorCampo("eventoLembreteMinutos", evento.lembrete_minutos || 10);
     setValorCampo("eventoRepeticao", "nao_repete");
     setValorCampo("eventoRepetirAte", "");
+    setValorCampo("eventoTurmaAlvo", evento.turma_alvo || "todas");
 
     const mensagemEvento = document.getElementById("mensagemEvento");
 
@@ -865,6 +867,7 @@ if (formEvento) {
         const horarioFim = getValorCampo("eventoHorarioFim");
         const descricao = getValorCampo("eventoDescricao").trim();
         const cursoAlvo = getValorCampo("eventoCursoAlvo");
+        const turmaAlvo = getValorCampo("eventoTurmaAlvo") || "todas";
         const linkMaterial = getValorCampo("eventoLinkMaterial").trim();
         const repeticao = getValorCampo("eventoRepeticao") || "nao_repete";
         const repetirAte = getValorCampo("eventoRepetirAte");
@@ -901,8 +904,10 @@ if (formEvento) {
             horario_fim: horarioFim || null,
             descricao: descricao,
             curso_alvo: cursoAlvo,
+            turma_alvo: turmaAlvo,
             link_material: linkMaterial || null,
             lembrete_minutos: lembreteMinutos
+            
         };
 
         let resultado;
@@ -955,6 +960,8 @@ if (formEvento) {
         const dataParaReabrir = dataSelecionadaNoModal;
 
         limparFormularioEvento();
+
+        setValorCampo("eventoTurmaAlvo", "todas");
 
         await carregarEventosDoMes();
 
