@@ -37,9 +37,7 @@ document.addEventListener("DOMContentLoaded", iniciarRelatorios);
 
 async function iniciarRelatorios() {
     preencherDataEmissao();
-
     configurarEventosDosBotoes();
-
     configurarDatasIniciais();
 
     await verificarAcessoAdminRelatorio();
@@ -116,7 +114,6 @@ function configurarEventosDosBotoes() {
     const btnGerar = document.getElementById("btnGerarRelatorio");
     const btnCsv = document.getElementById("btnBaixarCsvRelatorio");
     const btnPdf = document.getElementById("btnBaixarPdfRelatorio");
-
     const filtroPeriodo = document.getElementById("filtroPeriodoRelatorio");
 
     if (btnGerar) {
@@ -211,6 +208,14 @@ async function gerarRelatorio() {
 
     const filtros = obterFiltrosRelatorio();
 
+    if (!filtros.dataInicio || !filtros.dataFim) {
+        if (mensagem) {
+            mensagem.textContent = "Informe a data inicial e a data final para gerar o relatório.";
+        }
+
+        return;
+    }
+
     atualizarCabecalhoDocumento(filtros);
 
     const eventos = await buscarEventosRelatorio(filtros);
@@ -259,7 +264,7 @@ async function buscarEventosRelatorio(filtros) {
         .order("horario_inicio", { ascending: true });
 
     if (filtros.curso && filtros.curso !== "todos") {
-        consulta = consulta.or(`curso_alvo.eq.${filtros.curso},curso_alvo.eq.todos`);
+        consulta = consulta.or(`curso_alvo.eq.${filtros.curso},curso_alvo.eq.todos,curso_alvo.is.null`);
     }
 
     if (filtros.tipoEvento && filtros.tipoEvento !== "todos") {
@@ -275,12 +280,16 @@ async function buscarEventosRelatorio(filtros) {
 
     let eventos = data || [];
 
-   if (filtros.turma && filtros.turma !== "todas") {
-    eventos = eventos.filter(function (evento) {
-        const turmaEvento = (evento.turma_alvo || "todas").toLowerCase();
+    if (filtros.turma && filtros.turma !== "todas") {
+        eventos = eventos.filter(function (evento) {
+            const turmaEvento = normalizarTurma(evento.turma_alvo || "todas");
+            const turmaFiltro = normalizarTurma(filtros.turma);
 
-        return turmaEvento === filtros.turma.toLowerCase() || turmaEvento === "todas";
-    });
+            return turmaEvento === turmaFiltro || turmaEvento === "todas";
+        });
+    }
+
+    return eventos;
 }
 
 
@@ -312,17 +321,18 @@ async function buscarPortfoliosRelatorio(filtros) {
 
     if (filtros.curso && filtros.curso !== "todos") {
         portfolios = portfolios.filter(function (item) {
-            const curso = (item.curso || item.curso_alvo || "").toLowerCase();
+            const curso = normalizarTexto(item.curso || item.curso_alvo || item.curso_aluno || "");
 
-            return curso === filtros.curso.toLowerCase() || curso === "todos" || curso === "";
+            return curso === normalizarTexto(filtros.curso) || curso === "todos" || curso === "";
         });
     }
 
     if (filtros.turma && filtros.turma !== "todas") {
         portfolios = portfolios.filter(function (item) {
-            const turma = (item.turma || item.nome_turma || "").toLowerCase();
+            const turma = normalizarTurma(item.turma || item.nome_turma || item.turma_aluno || "");
+            const turmaFiltro = normalizarTurma(filtros.turma);
 
-            return turma.includes(filtros.turma.toLowerCase());
+            return turma.includes(turmaFiltro);
         });
     }
 
@@ -358,17 +368,18 @@ async function buscarChamadosRelatorio(filtros) {
 
     if (filtros.curso && filtros.curso !== "todos") {
         chamados = chamados.filter(function (item) {
-            const curso = (item.curso || item.curso_aluno || "").toLowerCase();
+            const curso = normalizarTexto(item.curso || item.curso_aluno || item.curso_alvo || "");
 
-            return curso === filtros.curso.toLowerCase() || curso === "";
+            return curso === normalizarTexto(filtros.curso) || curso === "";
         });
     }
 
     if (filtros.turma && filtros.turma !== "todas") {
         chamados = chamados.filter(function (item) {
-            const turma = (item.turma || item.turma_aluno || item.aluno_turma || "").toLowerCase();
+            const turma = normalizarTurma(item.turma || item.turma_aluno || item.aluno_turma || "");
+            const turmaFiltro = normalizarTurma(filtros.turma);
 
-            return turma.includes(filtros.turma.toLowerCase());
+            return turma.includes(turmaFiltro);
         });
     }
 
