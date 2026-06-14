@@ -2,6 +2,15 @@
    RELATÓRIOS E INDICADORES PAEET
    Professor/PAEET Willyan Vieira da Cruz
    Riolando Conecta Técnico
+
+   ARQUIVO: relatorios.js
+   Versão corrigida:
+   - recoloca a função gerarRelatorio()
+   - remove função buscarEventosRelatorio duplicada
+   - evita travamento com "Carregando dados reais do Supabase..."
+   - filtra curso e turma no JavaScript com segurança
+   - usa turma_alvo para relatório por turma
+   - mantém CSV e PDF
 ===================================================== */
 
 
@@ -12,7 +21,9 @@
 const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
-const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const banco = window.supabase
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    : null;
 
 
 /* =====================================================
@@ -40,6 +51,12 @@ async function iniciarRelatorios() {
     configurarEventosDosBotoes();
     configurarDatasIniciais();
 
+    if (!banco) {
+        mostrarMensagemRelatorio("Erro: Supabase não foi carregado. Confira se o script do Supabase está antes do relatorios.js no HTML.");
+        mostrarBloqueioRelatorio();
+        return;
+    }
+
     await verificarAcessoAdminRelatorio();
 }
 
@@ -49,46 +66,52 @@ async function iniciarRelatorios() {
 ===================================================== */
 
 async function verificarAcessoAdminRelatorio() {
-    const areaBloqueio = document.getElementById("areaBloqueioRelatorio");
-    const areaDashboard = document.getElementById("areaDashboardRelatorio");
+    try {
+        const { data: userData, error: userError } = await banco.auth.getUser();
 
-    const { data: userData, error: userError } = await banco.auth.getUser();
+        if (userError || !userData || !userData.user) {
+            mostrarBloqueioRelatorio();
+            return;
+        }
 
-    if (userError || !userData || !userData.user) {
+        const usuario = userData.user;
+
+        const { data: admin, error: adminError } = await banco
+            .from("admins")
+            .select("email")
+            .eq("email", usuario.email)
+            .maybeSingle();
+
+        if (adminError) {
+            console.log("Erro ao verificar admin:", adminError);
+            mostrarBloqueioRelatorio();
+            return;
+        }
+
+        if (!admin) {
+            mostrarBloqueioRelatorio();
+            return;
+        }
+
+        usuarioAdminRelatorio = usuario;
+
+        const areaBloqueio = document.getElementById("areaBloqueioRelatorio");
+        const areaDashboard = document.getElementById("areaDashboardRelatorio");
+
+        if (areaBloqueio) {
+            areaBloqueio.style.display = "none";
+        }
+
+        if (areaDashboard) {
+            areaDashboard.style.display = "block";
+        }
+
+        await gerarRelatorio();
+
+    } catch (erro) {
+        console.error("Erro geral ao verificar acesso administrativo:", erro);
         mostrarBloqueioRelatorio();
-        return;
     }
-
-    const usuario = userData.user;
-
-    const { data: admin, error: adminError } = await banco
-        .from("admins")
-        .select("email")
-        .eq("email", usuario.email)
-        .maybeSingle();
-
-    if (adminError) {
-        console.log("Erro ao verificar admin:", adminError);
-        mostrarBloqueioRelatorio();
-        return;
-    }
-
-    if (!admin) {
-        mostrarBloqueioRelatorio();
-        return;
-    }
-
-    usuarioAdminRelatorio = usuario;
-
-    if (areaBloqueio) {
-        areaBloqueio.style.display = "none";
-    }
-
-    if (areaDashboard) {
-        areaDashboard.style.display = "block";
-    }
-
-    await gerarRelatorio();
 }
 
 
@@ -195,8 +218,65 @@ function configurarDatasPorPeriodo() {
 }
 
 
+function obterFiltrosRelatorio() {
+    return {
+        periodo: getValor("filtroPeriodoRelatorio") || "mensal",
+        curso: getValor("filtroCursoRelatorio") || "todos",
+        turma: getValor("filtroTurmaRelatorio") || "todas",
+        tipoEvento: getValor("filtroTipoEventoRelatorio") || "todos",
+        dataInicio: getValor("dataInicioRelatorio"),
+        dataFim: getValor("dataFimRelatorio")
+    };
+}
+
+
 /* =====================================================
    7. GERAR RELATÓRIO
+===================================================== */
+
+async function gerarRelatorio() {
+    try {
+        mostrarMensagemRelatorio("Carregando dados reais do Supabase...");
+
+        const filtros = obterFiltrosRelatorio();
+
+        if (!filtros.dataInicio || !filtros.dataFim) {
+            mostrarMensagemRelatorio("Informe a data inicial e a data final para gerar o relatório.");
+            return;
+        }
+
+        atualizarCabecalhoDocumento(filtros);
+
+        const eventos = await buscarEventosRelatorio(filtros);
+        const portfolios = await buscarPortfoliosRelatorio(filtros);
+        const chamados = await buscarChamadosRelatorio(filtros);
+
+        dadosRelatorio.eventos = eventos;
+        dadosRelatorio.portfolios = portfolios;
+        dadosRelatorio.chamados = chamados;
+
+        dadosRelatorio.indicadores = calcularIndicadoresRelatorio(eventos, portfolios, chamados);
+
+        renderizarIndicadores(dadosRelatorio.indicadores);
+        renderizarGraficos(eventos, chamados);
+        renderizarTabelaEventos(eventos);
+
+        mostrarMensagemRelatorio(
+            `Relatório atualizado com sucesso. ${eventos.length} evento(s), ${portfolios.length} portfólio(s) e ${chamados.length} chamado(s) encontrados.`
+        );
+
+    } catch (erro) {
+        console.error("Erro geral ao gerar relatório:", erro);
+
+        mostrarMensagemRelatorio(
+            "Erro ao gerar relatório. Abra o console do navegador para ver o detalhe do erro."
+        );
+    }
+}
+
+
+/* =====================================================
+   8. BUSCAR EVENTOS
 ===================================================== */
 
 async function buscarEventosRelatorio(filtros) {
@@ -220,7 +300,7 @@ async function buscarEventosRelatorio(filtros) {
 
     let eventos = data || [];
 
-    // Filtro de curso feito no JavaScript para evitar erro/travamento no Supabase
+    // Filtro de curso feito no JavaScript para evitar erro com .or() no Supabase.
     if (filtros.curso && filtros.curso !== "todos") {
         eventos = eventos.filter(function (evento) {
             const cursoEvento = normalizarTexto(evento.curso_alvo || "todos");
@@ -230,68 +310,14 @@ async function buscarEventosRelatorio(filtros) {
         });
     }
 
-    // Filtro de turma usando a nova coluna turma_alvo
-    // Para evitar relatório equivocado, turma específica mostra somente eventos daquela turma.
+    // Filtro seguro por turma_alvo.
+    // Para evitar relatório equivocado, turma específica mostra apenas eventos da turma escolhida.
     if (filtros.turma && filtros.turma !== "todas") {
         eventos = eventos.filter(function (evento) {
             const turmaEvento = normalizarTurma(evento.turma_alvo || "");
             const turmaFiltro = normalizarTurma(filtros.turma);
 
             return turmaEvento === turmaFiltro;
-        });
-    }
-
-    return eventos;
-}
-
-function obterFiltrosRelatorio() {
-    return {
-        periodo: getValor("filtroPeriodoRelatorio") || "mensal",
-        curso: getValor("filtroCursoRelatorio") || "todos",
-        turma: getValor("filtroTurmaRelatorio") || "todas",
-        tipoEvento: getValor("filtroTipoEventoRelatorio") || "todos",
-        dataInicio: getValor("dataInicioRelatorio"),
-        dataFim: getValor("dataFimRelatorio")
-    };
-}
-
-
-/* =====================================================
-   8. BUSCAR EVENTOS
-===================================================== */
-
-async function buscarEventosRelatorio(filtros) {
-    let consulta = banco
-        .from("eventos")
-        .select("*")
-        .gte("data", filtros.dataInicio)
-        .lte("data", filtros.dataFim)
-        .order("data", { ascending: true })
-        .order("horario_inicio", { ascending: true });
-
-    if (filtros.curso && filtros.curso !== "todos") {
-        consulta = consulta.or(`curso_alvo.eq.${filtros.curso},curso_alvo.eq.todos,curso_alvo.is.null`);
-    }
-
-    if (filtros.tipoEvento && filtros.tipoEvento !== "todos") {
-        consulta = consulta.eq("tipo", filtros.tipoEvento);
-    }
-
-    const { data, error } = await consulta;
-
-    if (error) {
-        console.log("Erro ao buscar eventos:", error);
-        return [];
-    }
-
-    let eventos = data || [];
-
-    if (filtros.turma && filtros.turma !== "todas") {
-        eventos = eventos.filter(function (evento) {
-            const turmaEvento = normalizarTurma(evento.turma_alvo || "todas");
-            const turmaFiltro = normalizarTurma(filtros.turma);
-
-            return turmaEvento === turmaFiltro || turmaEvento === "todas";
         });
     }
 
@@ -579,7 +605,7 @@ function renderizarTabelaEventos(eventos) {
     if (!eventos || eventos.length === 0) {
         corpo.innerHTML = `
             <tr>
-                <td colspan="8">Nenhum evento encontrado para o período selecionado.</td>
+                <td colspan="9">Nenhum evento encontrado para o período selecionado.</td>
             </tr>
         `;
         return;
@@ -600,6 +626,7 @@ function renderizarTabelaEventos(eventos) {
                 <td>${formatarHorarioCurto(evento.horario_fim)}</td>
                 <td>${duracao}</td>
                 <td>${formatarCursoBonito(evento.curso_alvo || "todos")}</td>
+                <td>${formatarTurmaBonita(evento.turma_alvo || "todas")}</td>
             </tr>
         `;
     });
@@ -631,6 +658,7 @@ function baixarCsvRelatorio() {
         "horario_fim",
         "duracao",
         "curso",
+        "turma_evento",
         "turma_filtro",
         "professor_paeet",
         "data_emissao"
@@ -646,6 +674,7 @@ function baixarCsvRelatorio() {
             formatarHorarioCurto(evento.horario_fim),
             calcularDuracaoEvento(evento.horario_inicio, evento.horario_fim),
             formatarCursoBonito(evento.curso_alvo || "todos"),
+            formatarTurmaBonita(evento.turma_alvo || "todas"),
             filtros.turma,
             "Willyan Vieira da Cruz",
             formatarDataBR(formatarDataISO(new Date()))
@@ -723,6 +752,11 @@ function atualizarCabecalhoDocumento(filtros) {
    17. FUNÇÕES AUXILIARES
 ===================================================== */
 
+function mostrarMensagemRelatorio(texto) {
+    setTexto("mensagemRelatorio", texto);
+}
+
+
 function getValor(id) {
     const elemento = document.getElementById(id);
 
@@ -770,7 +804,7 @@ function formatarDataBR(dataISO) {
         return "Não informada";
     }
 
-    const partes = dataISO.split("-");
+    const partes = dataISO.toString().substring(0, 10).split("-");
 
     if (partes.length !== 3) {
         return dataISO;
@@ -888,6 +922,44 @@ function normalizarTexto(texto) {
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/\s+/g, "_")
         .trim();
+}
+
+
+function normalizarTurma(turma) {
+    if (!turma) {
+        return "";
+    }
+
+    return turma
+        .toString()
+        .toLowerCase()
+        .replaceAll("º", "")
+        .replaceAll("ª", "")
+        .replace(/\s+/g, "")
+        .trim();
+}
+
+
+function formatarTurmaBonita(turma) {
+    const valor = normalizarTurma(turma);
+
+    if (!valor || valor === "todas" || valor === "todos") {
+        return "Todas";
+    }
+
+    if (valor === "2a") {
+        return "2ºA";
+    }
+
+    if (valor === "3a") {
+        return "3ºA";
+    }
+
+    if (valor === "3b") {
+        return "3ºB";
+    }
+
+    return turma;
 }
 
 
@@ -1019,22 +1091,11 @@ function escaparHTML(texto) {
 function criarNomeArquivoRelatorio(extensao) {
     const filtros = obterFiltrosRelatorio();
 
-    const turma = filtros.turma === "todas" ? "todas_turmas" : filtros.turma.replaceAll("º", "").replaceAll(" ", "");
+    const turma = filtros.turma === "todas"
+        ? "todas_turmas"
+        : normalizarTurma(filtros.turma);
+
     const dataHoje = formatarDataISO(new Date());
 
     return `relatorio_paeet_${turma}_${dataHoje}.${extensao}`;
-}
-
-function normalizarTurma(turma) {
-    if (!turma) {
-        return "";
-    }
-
-    return turma
-        .toString()
-        .toLowerCase()
-        .replaceAll("º", "")
-        .replaceAll("ª", "")
-        .replace(/\s+/g, "")
-        .trim();
 }
