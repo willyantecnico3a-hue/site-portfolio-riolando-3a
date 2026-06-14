@@ -6,7 +6,7 @@
     <title>Relatórios e Indicadores PAEET</title>
 
     <!-- CSS da página de relatórios -->
-    <link rel="stylesheet" href="relatorios.css?v=20260614-04">
+    <link rel="stylesheet" href="relatorios.css?v=20260614-05">
 </head>
 
 <body>
@@ -63,10 +63,6 @@
             <section class="card-filtros-relatorio">
 
                 <h2>🔎 Filtros do relatório</h2>
-
-                <!-- Organizador estilo Windows: fica no cabeçalho dos filtros para facilitar a visualização -->
-                
-
 
                 <div class="grade-filtros-relatorio">
 
@@ -230,34 +226,69 @@
             </section>
 
 
+            <!-- Organizador solicitado: abaixo dos gráficos e antes da tabela detalhada -->
+            <section class="card-tabela-relatorio card-organizador-eventos-relatorio">
+
+                <h2>🗂️ Organizar eventos detalhados</h2>
+
+                <div class="organizador-relatorio-windows">
+
+                    <div class="grupo-organizador-relatorio">
+                        <label for="filtroRapidoDataRelatorio">Filtro rápido</label>
+
+                        <select id="filtroRapidoDataRelatorio">
+                            <option value="">Selecionar período rápido</option>
+                            <option value="hoje">Hoje</option>
+                            <option value="ontem">Ontem</option>
+                            <option value="semana_passada">Semana passada</option>
+                            <option value="anteriores_neste_mes">Anteriores neste mês</option>
+                            <option value="ultimo_mes">Último mês</option>
+                        </select>
+                    </div>
+
+                    <div class="grupo-organizador-relatorio">
+                        <label for="btnOrdenarDataRelatorio">Organizar por data</label>
+
+                        <button type="button" id="btnOrdenarDataRelatorio" class="btn-ordenar-data-relatorio" data-ordem="desc">
+                            📅 Data do evento ↓ Mais recentes
+                        </button>
+                    </div>
+
+                </div>
+
+            </section>
+
+
             <section class="card-tabela-relatorio">
 
-    <div class="organizador-relatorio-windows">
+                <h2>📋 Eventos detalhados do período</h2>
 
-        <div class="grupo-organizador-relatorio">
-            <label for="filtroRapidoDataRelatorio">Filtro rápido</label>
+                <div class="tabela-responsiva-relatorio">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Título</th>
+                                <th>Descrição</th>
+                                <th>Início</th>
+                                <th>Fim</th>
+                                <th>Duração</th>
+                                <th>Curso</th>
+                                <th>Turma</th>
+                            </tr>
+                        </thead>
 
-            <select id="filtroRapidoDataRelatorio">
-                <option value="">Selecionar período rápido</option>
-                <option value="hoje">Hoje</option>
-                <option value="ontem">Ontem</option>
-                <option value="semana_passada">Semana passada</option>
-                <option value="anteriores_neste_mes">Anteriores neste mês</option>
-                <option value="ultimo_mes">Último mês</option>
-            </select>
-        </div>
+                        <tbody id="corpoTabelaEventosRelatorio">
+                            <tr>
+                                <td colspan="9">Clique em “Gerar relatório” para carregar os dados.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-        <div class="grupo-organizador-relatorio">
-            <label for="btnOrdenarDataRelatorio">Organizar por data</label>
+            </section>
 
-            <button type="button" id="btnOrdenarDataRelatorio" class="btn-ordenar-data-relatorio" data-ordem="desc">
-                📅 Data do evento ↓ Mais recentes
-            </button>
-        </div>
-
-    </div>
-
-    <h2>📋 Eventos detalhados do período</h2>
         </section>
 
     </main>
@@ -267,7 +298,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- JavaScript da página de relatórios -->
-    <script src="relatorios.js?v=20260614-04"></script>
+    <script src="relatorios.js?v=20260614-05"></script>
 
 </body>
 </html>
