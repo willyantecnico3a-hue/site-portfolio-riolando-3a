@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central PAEET | Riolando Conecta Técnico</title>
+
+    <link rel="stylesheet" href="central-paeet.css?v=20260614-01">
+</head>
+
+<body>
+
+    <header class="topo-central-paeet">
+        <div>
+            <span class="selo-central-paeet">Central de Trabalho PAEET</span>
+
+            <h1>🎯 Central PAEET — Acessos Oficiais e Ações Pedagógicas</h1>
+
+            <p>
+                Página de apoio ao Professor/PAEET Willyan Vieira da Cruz para acessar rapidamente
+                sistemas oficiais, organizar verificações pedagógicas e registrar ações realizadas no
+                Riolando Conecta Técnico.
+            </p>
+        </div>
+
+        <div class="acoes-topo-central">
+            <a href="admin.html" class="btn-topo-central">⬅ Voltar ao Admin</a>
+            <a href="agenda.html" class="btn-topo-central btn-agenda">📅 Agenda</a>
+            <a href="relatorios.html" class="btn-topo-central btn-relatorio">📊 Relatórios</a>
+        </div>
+    </header>
+
+
+    <main class="container-central-paeet">
+
+        <section class="card-aviso-central">
+            <div class="icone-aviso-central">🛡️</div>
+
+            <div>
+                <h2>Orientação de uso</h2>
+                <p>
+                    Esta página não substitui os sistemas oficiais da SEDUC/CIEE. Ela funciona como uma
+                    central de atalhos e organização do trabalho PAEET. Os dados oficiais devem ser conferidos
+                    nos sistemas próprios; no Riolando Conecta, registre apenas a ação pedagógica, evidência,
+                    encaminhamento ou observação necessária para seu acompanhamento.
+                </p>
+            </div>
+        </section>
+
+
+        <section class="painel-controles-central">
+            <div>
+                <label for="buscaCardCentral">Buscar serviço ou ação</label>
+                <input type="search" id="buscaCardCentral" placeholder="Ex.: frequência, diário, CIEE, relatório, busca ativa...">
+            </div>
+
+            <div>
+                <label for="filtroCategoriaCentral">Filtrar por categoria</label>
+                <select id="filtroCategoriaCentral">
+                    <option value="todos">Todos os cards</option>
+                    <option value="oficial">Sistemas oficiais</option>
+                    <option value="interno">Riolando Conecta</option>
+                    <option value="paeet">Rotina PAEET</option>
+                    <option value="estagio">Estágio e mundo do trabalho</option>
+                </select>
+            </div>
+        </section>
+
+
+        <section class="secao-central">
+            <div class="cabecalho-secao-central">
+                <h2>🌐 Sistemas oficiais e plataformas de apoio</h2>
+                <p>Cards de redirecionamento para os principais serviços utilizados na rotina escolar e PAEET.</p>
+            </div>
+
+            <div class="grade-cards-central">
+
+                <a href="https://paeet.ciee.org.br/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="card-central-paeet card-link-externo"
+                   data-categoria="oficial estagio paeet"
+                   data-busca="paeet ciee estágio estudante ensino técnico acompanhamento">
+
+                    <div class="icone-card-central">🎓</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central">CIEE • PAEET</span>
+                        <h3>Portal PAEET CIEE</h3>
+                        <p>
+                            Acesso à plataforma PAEET/CIEE para ações relacionadas ao Projeto de Apoio
+                            ao Estudante do Ensino Técnico, estágio e acompanhamento.
+                        </p>
+                        <strong>Abrir portal externo ↗</strong>
+                    </div>
+                </a>
+
+
+                <a href="https://saladofuturoprofessor.educacao.sp.gov.br/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="card-central-paeet card-link-externo"
+                   data-categoria="oficial paeet"
+                   data-busca="sala do futuro professor diário frequência aulas avaliação fechamento">
+
+                    <div class="icone-card-central">📘</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central">SEDUC • Professor</span>
+                        <h3>Sala do Futuro Professor</h3>
+                        <p>
+                            Acesso ao registro de aula, frequência, rotina escolar, avaliações e informações
+                            do diário de classe.
+                        </p>
+                        <strong>Abrir sistema oficial ↗</strong>
+                    </div>
+                </a>
+
+
+                <a href="https://sed.educacao.sp.gov.br/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="card-central-paeet card-link-externo"
+                   data-categoria="oficial paeet"
+                   data-busca="sed secretaria escolar digital dados escolares módulos administrativos">
+
+                    <div class="icone-card-central">🏫</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central">SEDUC • SED</span>
+                        <h3>Secretaria Escolar Digital</h3>
+                        <p>
+                            Acesso à plataforma SED para consultas, módulos administrativos e serviços
+                            escolares oficiais.
+                        </p>
+                        <strong>Abrir SED ↗</strong>
+                    </div>
+                </a>
+
+
+                <a href="https://escolatotal.educacao.sp.gov.br/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="card-central-paeet card-link-externo"
+                   data-categoria="oficial paeet"
+                   data-busca="escola total aluno presente frequência presença bi educação indicador">
+
+                    <div class="icone-card-central">📊</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central">SEDUC • BI</span>
+                        <h3>Escola Total / Aluno Presente</h3>
+                        <p>
+                            Apoio à consulta de frequência, presença e indicadores educacionais para
+                            acompanhamento da unidade escolar.
+                        </p>
+                        <strong>Abrir Escola Total ↗</strong>
+                    </div>
+                </a>
+
+
+                <a href="https://atendimento.educacao.sp.gov.br/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="card-central-paeet card-link-externo"
+                   data-categoria="oficial paeet"
+                   data-busca="portal atendimento seduc chamado suporte dúvidas orientação">
+
+                    <div class="icone-card-central">🛠️</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central">SEDUC • Suporte</span>
+                        <h3>Portal de Atendimento SEDUC</h3>
+                        <p>
+                            Consulta de tutoriais, abertura de chamados, base de conhecimento e orientações
+                            sobre sistemas oficiais.
+                        </p>
+                        <strong>Abrir atendimento ↗</strong>
+                    </div>
+                </a>
+
+
+                <a href="https://saladofuturo.educacao.sp.gov.br/"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="card-central-paeet card-link-externo"
+                   data-categoria="oficial paeet"
+                   data-busca="sala do futuro aluno responsável servidor aplicativo escola">
+
+                    <div class="icone-card-central">👨‍👩‍👧</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central">SEDUC • Comunidade</span>
+                        <h3>Sala do Futuro — Aluno e Responsável</h3>
+                        <p>
+                            Acesso geral ao Sala do Futuro para estudantes, servidores e responsáveis.
+                        </p>
+                        <strong>Abrir Sala do Futuro ↗</strong>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+
+        <section class="secao-central">
+            <div class="cabecalho-secao-central">
+                <h2>🧩 Ações internas no Riolando Conecta</h2>
+                <p>Áreas próprias para registrar evidências, relatórios e ações pedagógicas do PAEET.</p>
+            </div>
+
+            <div class="grade-cards-central">
+
+                <a href="relatorios.html"
+                   class="card-central-paeet"
+                   data-categoria="interno paeet"
+                   data-busca="relatório indicadores paeet bi eventos aula carga horária">
+
+                    <div class="icone-card-central">📈</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central tag-interno">Riolando Conecta</span>
+                        <h3>Relatórios e Indicadores PAEET</h3>
+                        <p>
+                            Visualize eventos, carga horária, portfólios, chamados e dados organizados
+                            do seu acompanhamento pedagógico.
+                        </p>
+                        <strong>Abrir relatório →</strong>
+                    </div>
+                </a>
+
+
+                <a href="agenda.html"
+                   class="card-central-paeet"
+                   data-categoria="interno paeet"
+                   data-busca="agenda calendário evento aula paeet planejamento cronograma">
+
+                    <div class="icone-card-central">📅</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central tag-interno">Riolando Conecta</span>
+                        <h3>Agenda Pedagógica PAEET</h3>
+                        <p>
+                            Registre aulas, atendimentos, reuniões, eventos, intercorrências e ações realizadas
+                            na rotina do curso técnico.
+                        </p>
+                        <strong>Abrir agenda →</strong>
+                    </div>
+                </a>
+
+
+                <a href="acompanhamento.html"
+                   class="card-central-paeet"
+                   data-categoria="interno paeet"
+                   data-busca="acompanhamento aluno intervenção busca ativa risco dificuldade aprendizagem">
+
+                    <div class="icone-card-central">🧑‍🎓</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central tag-planejado">Módulo em construção</span>
+                        <h3>Acompanhamento Individual do Aluno</h3>
+                        <p>
+                            Área planejada para registrar atendimentos, dificuldades, intervenções, encaminhamentos
+                            e evolução dos estudantes.
+                        </p>
+                        <strong>Abrir módulo →</strong>
+                    </div>
+                </a>
+
+
+                <a href="admin.html"
+                   class="card-central-paeet"
+                   data-categoria="interno"
+                   data-busca="admin gestão usuários permissões alunos professores">
+
+                    <div class="icone-card-central">⚙️</div>
+
+                    <div class="conteudo-card-central">
+                        <span class="tag-card-central tag-interno">Riolando Conecta</span>
+                        <h3>Painel Administrativo</h3>
+                        <p>
+                            Gerencie informações, usuários, permissões e áreas internas do Riolando Conecta.
+                        </p>
+                        <strong>Abrir admin →</strong>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+
+        <section class="secao-central">
+            <div class="cabecalho-secao-central">
+                <h2>✅ Checklist rápido do PAEET</h2>
+                <p>
+                    Use este checklist como lembrete da rotina de conferência. Ele fica salvo apenas neste navegador.
+                </p>
+            </div>
+
+            <div class="checklist-central" id="checklistCentralPaeet">
+
+                <label class="item-checklist-central">
+                    <input type="checkbox" data-check="frequencia">
+                    <span>Verificar frequência/presença nos sistemas oficiais.</span>
+                </label>
+
+                <label class="item-checklist-central">
+                    <input type="checkbox" data-check="diario">
+                    <span>Conferir registros de aula, diário e fechamento quando necessário.</span>
+                </label>
+
+                <label class="item-checklist-central">
+                    <input type="checkbox" data-check="busca_ativa">
+                    <span>Identificar estudantes que precisam de busca ativa ou acompanhamento.</span>
+                </label>
+
+                <label class="item-checklist-central">
+                    <input type="checkbox" data-check="intervencao">
+                    <span>Registrar no Riolando Conecta as ações pedagógicas realizadas.</span>
+                </label>
+
+                <label class="item-checklist-central">
+                    <input type="checkbox" data-check="relatorio">
+                    <span>Gerar relatório PAEET com evidências e indicadores.</span>
+                </label>
+
+            </div>
+
+            <div class="acoes-checklist-central">
+                <button type="button" id="btnLimparChecklistCentral">🔄 Limpar checklist</button>
+                <span id="statusChecklistCentral">0 de 5 concluídos</span>
+            </div>
+        </section>
+
+    </main>
+
+
+    <script src="central-paeet.js?v=20260614-01"></script>
+
+</body>
+</html>
