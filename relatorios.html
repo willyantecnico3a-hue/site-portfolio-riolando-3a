@@ -5,260 +5,262 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatórios e Indicadores PAEET</title>
 
-    <link rel="stylesheet" href="relatorios.css?v=20260613-01">
+    <link rel="stylesheet" href="relatorios.css?v=20260613-03">
 </head>
 
 <body>
 
     <header class="topo-relatorios">
-    <div>
-        <span class="selo-relatorio">Dashboard PAEET</span>
+        <div>
+            <span class="selo-relatorio">Dashboard PAEET</span>
 
-        <h1>📊 Relatórios e Indicadores</h1>
+            <h1>📊 Relatórios e Indicadores</h1>
 
-        <p>
-            Painel de análise pedagógica do Professor e PAEET Willyan Vieira da Cruz,
-            com dados reais da agenda, portfólios e chamados dos alunos.
-        </p>
-    </div>
+            <p>
+                Painel de análise pedagógica do Professor e PAEET Willyan Vieira da Cruz,
+                com dados reais da agenda, portfólios e chamados dos alunos.
+            </p>
+        </div>
 
-    <div class="acoes-topo-relatorio">
-        <a href="admin.html" class="btn-voltar-admin">
-            ⬅ Voltar ao Admin
-        </a>
+        <div class="acoes-topo-relatorio">
+            <a href="admin.html" class="btn-voltar-admin">
+                ⬅ Voltar ao Admin
+            </a>
 
-        <a href="agenda.html" class="btn-voltar-agenda">
-            📅 Agenda
-        </a>
-    </div>
-</header>
-
-
-<main class="container-relatorios">
-
-    <section id="areaBloqueioRelatorio" class="bloqueio-relatorio" style="display:none;">
-        <h2>🔒 Acesso restrito</h2>
-        <p>Esta página é exclusiva para administradores.</p>
-        <a href="admin.html">Voltar para o login administrativo</a>
-    </section>
+            <a href="agenda.html" class="btn-voltar-agenda">
+                📅 Agenda
+            </a>
+        </div>
+    </header>
 
 
-    <section id="areaDashboardRelatorio" style="display:none;">
+    <main class="container-relatorios">
 
-        <section class="cabecalho-documento-relatorio">
-            <h2>Relatório Pedagógico — Professor/PAEET</h2>
-
-            <div class="grade-cabecalho-documento">
-                <p><strong>Data de emissão:</strong> <span id="dataEmissaoRelatorio"></span></p>
-                <p><strong>Professor/PAEET:</strong> Willyan Vieira da Cruz</p>
-                <p><strong>Escola:</strong> PEI Professor Riolando Canno</p>
-                <p><strong>Curso:</strong> <span id="cursoDocumentoRelatorio">Desenvolvimento de Sistemas</span></p>
-                <p><strong>Turma:</strong> <span id="turmaDocumentoRelatorio">Todas</span></p>
-                <p><strong>Período:</strong> <span id="periodoDocumentoRelatorio">Não selecionado</span></p>
-            </div>
+        <section id="areaBloqueioRelatorio" class="bloqueio-relatorio" style="display:none;">
+            <h2>🔒 Acesso restrito</h2>
+            <p>Esta página é exclusiva para administradores.</p>
+            <a href="admin.html">Voltar para o login administrativo</a>
         </section>
 
 
-        <section class="card-filtros-relatorio">
+        <section id="areaDashboardRelatorio" style="display:none;">
 
-            <h2>🔎 Filtros do relatório</h2>
+            <section class="cabecalho-documento-relatorio">
+                <h2>Relatório Pedagógico — Professor/PAEET</h2>
 
-            <div class="grade-filtros-relatorio">
+                <div class="grade-cabecalho-documento">
+                    <p><strong>Data de emissão:</strong> <span id="dataEmissaoRelatorio"></span></p>
+                    <p><strong>Professor/PAEET:</strong> Willyan Vieira da Cruz</p>
+                    <p><strong>Escola:</strong> PEI Professor Riolando Canno</p>
+                    <p><strong>Curso:</strong> <span id="cursoDocumentoRelatorio">Desenvolvimento de Sistemas</span></p>
+                    <p><strong>Turma:</strong> <span id="turmaDocumentoRelatorio">Todas</span></p>
+                    <p><strong>Período:</strong> <span id="periodoDocumentoRelatorio">Não selecionado</span></p>
+                </div>
+            </section>
 
-                <div>
-                    <label for="filtroPeriodoRelatorio">Período</label>
-                    <select id="filtroPeriodoRelatorio">
-                        <option value="mensal">Mensal</option>
-                        <option value="semanal">Semanal</option>
-                        <option value="bimestral">Bimestral</option>
-                        <option value="semestral">Semestral</option>
-                        <option value="anual">Anual</option>
-                        <option value="personalizado">Personalizado</option>
-                    </select>
+
+            <section class="card-filtros-relatorio">
+
+                <h2>🔎 Filtros do relatório</h2>
+
+                <div class="grade-filtros-relatorio">
+
+                    <div>
+                        <label for="filtroPeriodoRelatorio">Período</label>
+                        <select id="filtroPeriodoRelatorio">
+                            <option value="mensal">Mensal</option>
+                            <option value="semanal">Semanal</option>
+                            <option value="bimestral">Bimestral</option>
+                            <option value="semestral">Semestral</option>
+                            <option value="anual">Anual</option>
+                            <option value="personalizado">Personalizado</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="filtroCursoRelatorio">Curso</label>
+                        <select id="filtroCursoRelatorio">
+                            <option value="todos">Todos</option>
+                            <option value="desenvolvimento_sistemas" selected>Desenvolvimento de Sistemas</option>
+                            <option value="vendas">Vendas</option>
+                            <option value="substituicoes">Substituições</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="filtroTurmaRelatorio">Turma</label>
+                        <select id="filtroTurmaRelatorio">
+                            <option value="todas">Todas</option>
+                            <option value="2ºA">2ºA</option>
+                            <option value="3ºA">3ºA</option>
+                            <option value="3ºB">3ºB</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="filtroTipoEventoRelatorio">Tipo de evento</label>
+                        <select id="filtroTipoEventoRelatorio">
+                            <option value="todos">Todos</option>
+                            <option value="aula">Aulas</option>
+                            <option value="atendimento_aluno">Atendimento ao aluno</option>
+                            <option value="reuniao_gestao">Reunião com gestão</option>
+                            <option value="apoio_pedagogico">Apoio pedagógico</option>
+                            <option value="ot">OT</option>
+                            <option value="atestado_medico">Atestado médico</option>
+                            <option value="tre">TRE</option>
+                            <option value="ferias">Férias</option>
+                            <option value="feriado_prolongado">Feriado prolongado</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="dataInicioRelatorio">Data inicial</label>
+                        <input type="date" id="dataInicioRelatorio">
+                    </div>
+
+                    <div>
+                        <label for="dataFimRelatorio">Data final</label>
+                        <input type="date" id="dataFimRelatorio">
+                    </div>
+
                 </div>
 
-                <div>
-                    <label for="filtroCursoRelatorio">Curso</label>
-                    <select id="filtroCursoRelatorio">
-                        <option value="todos">Todos</option>
-                        <option value="desenvolvimento_sistemas" selected>Desenvolvimento de Sistemas</option>
-                        <option value="vendas">Vendas</option>
-                        <option value="substituicoes">Substituições</option>
-                    </select>
+                <div class="acoes-relatorio">
+                    <button type="button" id="btnGerarRelatorio">
+                        📊 Gerar relatório
+                    </button>
+
+                    <button type="button" id="btnBaixarCsvRelatorio">
+                        ⬇️ Baixar CSV
+                    </button>
+
+                    <button type="button" id="btnBaixarPdfRelatorio">
+                        📄 Baixar PDF
+                    </button>
                 </div>
 
-                <div>
-                    <label for="filtroTurmaRelatorio">Turma</label>
-                    <select id="filtroTurmaRelatorio">
-                        <option value="todas">Todas</option>
-                        <option value="2ºA">2ºA</option>
-                        <option value="3ºA">3ºA</option>
-                        <option value="3ºB">3ºB</option>
-                    </select>
+                <p id="mensagemRelatorio" class="mensagem-relatorio"></p>
+
+            </section>
+
+
+            <section class="grade-indicadores-relatorio">
+
+                <article class="card-indicador-relatorio">
+                    <span>📚</span>
+                    <h3 id="indicadorAulasLecionadas">0</h3>
+                    <p>Aulas lecionadas</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>📅</span>
+                    <h3 id="indicadorTotalEventos">0</h3>
+                    <p>Eventos no calendário</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>⏱️</span>
+                    <h3 id="indicadorCargaHoraria">0h</h3>
+                    <p>Carga horária registrada</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>🧑‍💻</span>
+                    <h3 id="indicadorPortfolios">0</h3>
+                    <p>Portfólios enviados</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>📨</span>
+                    <h3 id="indicadorChamadosEnviados">0</h3>
+                    <p>Chamados enviados</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>🟡</span>
+                    <h3 id="indicadorChamadosAnalise">0</h3>
+                    <p>Em análise</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>✅</span>
+                    <h3 id="indicadorChamadosRespondidos">0</h3>
+                    <p>Respondidos</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>🟢</span>
+                    <h3 id="indicadorChamadosResolvidos">0</h3>
+                    <p>Resolvidos</p>
+                </article>
+
+                <article class="card-indicador-relatorio">
+                    <span>🗄️</span>
+                    <h3 id="indicadorChamadosArquivados">0</h3>
+                    <p>Arquivados</p>
+                </article>
+
+                <article class="card-indicador-relatorio alerta">
+                    <span>⚠️</span>
+                    <h3 id="indicadorIntercorrencias">0</h3>
+                    <p>Intercorrências especiais</p>
+                </article>
+
+            </section>
+
+
+            <section class="area-graficos-relatorio">
+
+                <div class="card-grafico-relatorio">
+                    <h2>📊 Eventos por tipo</h2>
+                    <div id="graficoEventosPorTipo" class="grafico-barras-relatorio"></div>
                 </div>
 
-                <div>
-                    <label for="filtroTipoEventoRelatorio">Tipo de evento</label>
-                    <select id="filtroTipoEventoRelatorio">
-                        <option value="todos">Todos</option>
-                        <option value="aula">Aulas</option>
-                        <option value="atendimento_aluno">Atendimento ao aluno</option>
-                        <option value="reuniao_gestao">Reunião com gestão</option>
-                        <option value="apoio_pedagogico">Apoio pedagógico</option>
-                        <option value="ot">OT</option>
-                        <option value="atestado_medico">Atestado médico</option>
-                        <option value="tre">TRE</option>
-                        <option value="ferias">Férias</option>
-                        <option value="feriado_prolongado">Feriado prolongado</option>
-                        <option value="outro">Outro</option>
-                    </select>
+                <div class="card-grafico-relatorio">
+                    <h2>📨 Chamados por status</h2>
+                    <div id="graficoChamadosStatus" class="grafico-barras-relatorio"></div>
                 </div>
 
-                <div>
-                    <label for="dataInicioRelatorio">Data inicial</label>
-                    <input type="date" id="dataInicioRelatorio">
+            </section>
+
+
+            <section class="card-tabela-relatorio">
+
+                <h2>📋 Eventos detalhados do período</h2>
+
+                <div class="tabela-responsiva-relatorio">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Título</th>
+                                <th>Descrição</th>
+                                <th>Início</th>
+                                <th>Fim</th>
+                                <th>Duração</th>
+                                <th>Curso</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="corpoTabelaEventosRelatorio">
+                            <tr>
+                                <td colspan="8">Clique em “Gerar relatório” para carregar os dados.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div>
-                    <label for="dataFimRelatorio">Data final</label>
-                    <input type="date" id="dataFimRelatorio">
-                </div>
-
-            </div>
-
-            <div class="acoes-relatorio">
-                <button type="button" id="btnGerarRelatorio">
-                    📊 Gerar relatório
-                </button>
-
-                <button type="button" id="btnBaixarCsvRelatorio">
-                    ⬇️ Baixar CSV
-                </button>
-
-                <button type="button" id="btnBaixarPdfRelatorio">
-                    📄 Baixar PDF
-                </button>
-            </div>
-
-            <p id="mensagemRelatorio" class="mensagem-relatorio"></p>
+            </section>
 
         </section>
 
-
-        <section class="grade-indicadores-relatorio">
-
-            <article class="card-indicador-relatorio">
-                <span>📚</span>
-                <h3 id="indicadorAulasLecionadas">0</h3>
-                <p>Aulas lecionadas</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>📅</span>
-                <h3 id="indicadorTotalEventos">0</h3>
-                <p>Eventos no calendário</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>⏱️</span>
-                <h3 id="indicadorCargaHoraria">0h</h3>
-                <p>Carga horária registrada</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>🧑‍💻</span>
-                <h3 id="indicadorPortfolios">0</h3>
-                <p>Portfólios enviados</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>📨</span>
-                <h3 id="indicadorChamadosEnviados">0</h3>
-                <p>Chamados enviados</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>🟡</span>
-                <h3 id="indicadorChamadosAnalise">0</h3>
-                <p>Em análise</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>✅</span>
-                <h3 id="indicadorChamadosRespondidos">0</h3>
-                <p>Respondidos</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>🟢</span>
-                <h3 id="indicadorChamadosResolvidos">0</h3>
-                <p>Resolvidos</p>
-            </article>
-
-            <article class="card-indicador-relatorio">
-                <span>🗄️</span>
-                <h3 id="indicadorChamadosArquivados">0</h3>
-                <p>Arquivados</p>
-            </article>
-
-            <article class="card-indicador-relatorio alerta">
-                <span>⚠️</span>
-                <h3 id="indicadorIntercorrencias">0</h3>
-                <p>Intercorrências especiais</p>
-            </article>
-
-        </section>
+    </main>
 
 
-        <section class="area-graficos-relatorio">
-
-            <div class="card-grafico-relatorio">
-                <h2>📊 Eventos por tipo</h2>
-                <div id="graficoEventosPorTipo" class="grafico-barras-relatorio"></div>
-            </div>
-
-            <div class="card-grafico-relatorio">
-                <h2>📨 Chamados por status</h2>
-                <div id="graficoChamadosStatus" class="grafico-barras-relatorio"></div>
-            </div>
-
-        </section>
-
-
-        <section class="card-tabela-relatorio">
-
-            <h2>📋 Eventos detalhados do período</h2>
-
-            <div class="tabela-responsiva-relatorio">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Tipo</th>
-                            <th>Título</th>
-                            <th>Descrição</th>
-                            <th>Início</th>
-                            <th>Fim</th>
-                            <th>Duração</th>
-                            <th>Curso</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="corpoTabelaEventosRelatorio">
-                        <tr>
-                            <td colspan="8">Clique em “Gerar relatório” para carregar os dados.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-        </section>
-
-    </section>
-
-</main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="relatorios.js?v=20260613-01"></script>
+    <script src="relatorios.js?v=20260613-03"></script>
 
 </body>
 </html>
