@@ -584,6 +584,7 @@ function configurarCliqueDosBotoesDinamicos() {
             console.log("Botão editar clicado. ID:", idEvento);
 
             prepararEdicaoEvento(idEvento);
+        
 
             return;
         }
@@ -961,7 +962,6 @@ if (formEvento) {
 
         limparFormularioEvento();
 
-        setValorCampo("eventoTurmaAlvo", "todas");
 
         await carregarEventosDoMes();
 
@@ -1149,6 +1149,7 @@ function limparFormularioEvento() {
     setValorCampo("eventoHorarioFim", "");
     setValorCampo("eventoDescricao", "");
     setValorCampo("eventoCursoAlvo", "todos");
+    setValorCampo("eventoTurmaAlvo", "todas");
     setValorCampo("eventoLinkMaterial", "");
     setValorCampo("eventoRepeticao", "nao_repete");
     setValorCampo("eventoRepetirAte", "");
