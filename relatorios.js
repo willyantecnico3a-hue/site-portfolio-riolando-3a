@@ -199,44 +199,50 @@ function configurarDatasPorPeriodo() {
    7. GERAR RELATÓRIO
 ===================================================== */
 
-async function gerarRelatorio() {
-    const mensagem = document.getElementById("mensagemRelatorio");
+async function buscarEventosRelatorio(filtros) {
+    let consulta = banco
+        .from("eventos")
+        .select("*")
+        .gte("data", filtros.dataInicio)
+        .lte("data", filtros.dataFim)
+        .order("data", { ascending: true });
 
-    if (mensagem) {
-        mensagem.textContent = "Carregando dados reais do Supabase...";
+    if (filtros.tipoEvento && filtros.tipoEvento !== "todos") {
+        consulta = consulta.eq("tipo", filtros.tipoEvento);
     }
 
-    const filtros = obterFiltrosRelatorio();
+    const { data, error } = await consulta;
 
-    if (!filtros.dataInicio || !filtros.dataFim) {
-        if (mensagem) {
-            mensagem.textContent = "Informe a data inicial e a data final para gerar o relatório.";
-        }
-
-        return;
+    if (error) {
+        console.log("Erro ao buscar eventos:", error);
+        return [];
     }
 
-    atualizarCabecalhoDocumento(filtros);
+    let eventos = data || [];
 
-    const eventos = await buscarEventosRelatorio(filtros);
-    const portfolios = await buscarPortfoliosRelatorio(filtros);
-    const chamados = await buscarChamadosRelatorio(filtros);
+    // Filtro de curso feito no JavaScript para evitar erro/travamento no Supabase
+    if (filtros.curso && filtros.curso !== "todos") {
+        eventos = eventos.filter(function (evento) {
+            const cursoEvento = normalizarTexto(evento.curso_alvo || "todos");
+            const cursoFiltro = normalizarTexto(filtros.curso);
 
-    dadosRelatorio.eventos = eventos;
-    dadosRelatorio.portfolios = portfolios;
-    dadosRelatorio.chamados = chamados;
-
-    dadosRelatorio.indicadores = calcularIndicadoresRelatorio(eventos, portfolios, chamados);
-
-    renderizarIndicadores(dadosRelatorio.indicadores);
-    renderizarGraficos(eventos, chamados);
-    renderizarTabelaEventos(eventos);
-
-    if (mensagem) {
-        mensagem.textContent = "Relatório atualizado com sucesso.";
+            return cursoEvento === cursoFiltro || cursoEvento === "todos" || cursoEvento === "";
+        });
     }
+
+    // Filtro de turma usando a nova coluna turma_alvo
+    // Para evitar relatório equivocado, turma específica mostra somente eventos daquela turma.
+    if (filtros.turma && filtros.turma !== "todas") {
+        eventos = eventos.filter(function (evento) {
+            const turmaEvento = normalizarTurma(evento.turma_alvo || "");
+            const turmaFiltro = normalizarTurma(filtros.turma);
+
+            return turmaEvento === turmaFiltro;
+        });
+    }
+
+    return eventos;
 }
-
 
 function obterFiltrosRelatorio() {
     return {
@@ -1018,3 +1024,18 @@ function criarNomeArquivoRelatorio(extensao) {
 
     return `relatorio_paeet_${turma}_${dataHoje}.${extensao}`;
 }
+
+function normalizarTurma(turma) {
+    if (!turma) {
+        return "";
+    }
+
+    return turma
+        .toString()
+        .toLowerCase()
+        .replaceAll("º", "")
+        .replaceAll("ª", "")
+        .replace(/\s+/g, "")
+        .trim();
+}
+
