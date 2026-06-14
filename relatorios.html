@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatórios e Indicadores PAEET</title>
 
-    <script src="relatorios.js?v=20260613-05"></script>
+    <!-- CSS da página de relatórios -->
+    <link rel="stylesheet" href="relatorios.css?v=20260613-06">
 </head>
 
 <body>
@@ -241,12 +242,13 @@
                                 <th>Fim</th>
                                 <th>Duração</th>
                                 <th>Curso</th>
+                                <th>Turma</th>
                             </tr>
                         </thead>
 
                         <tbody id="corpoTabelaEventosRelatorio">
                             <tr>
-                                <td colspan="8">Clique em “Gerar relatório” para carregar os dados.</td>
+                                <td colspan="9">Clique em “Gerar relatório” para carregar os dados.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -259,8 +261,11 @@
     </main>
 
 
+    <!-- O Supabase precisa carregar antes do relatorios.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="relatorios.js?v=20260613-05"></script>
+
+    <!-- JavaScript da página de relatórios -->
+    <script src="relatorios.js?v=20260613-06"></script>
 
 </body>
 </html>
