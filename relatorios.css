@@ -473,3 +473,59 @@ body {
         grid-template-columns: 110px 1fr 40px;
     }
 }
+
+/* =====================================================
+   ORGANIZADOR ESTILO WINDOWS - RELATÓRIOS
+===================================================== */
+
+.organizador-relatorio-windows {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding: 18px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f8fafc, #ecfeff);
+    border: 1px solid #cbd5e1;
+}
+
+.grupo-organizador-relatorio label {
+    display: block;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: #0f172a;
+}
+
+.grupo-organizador-relatorio select {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    border: 2px solid #cbd5e1;
+    background: white;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.btn-ordenar-data-relatorio {
+    width: 100%;
+    padding: 13px;
+    border-radius: 14px;
+    border: 2px solid #0f766e;
+    background: #ffffff;
+    color: #0f766e;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    text-align: left;
+}
+
+.btn-ordenar-data-relatorio:hover {
+    background: #ccfbf1;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 850px) {
+    .organizador-relatorio-windows {
+        grid-template-columns: 1fr;
+    }
+}

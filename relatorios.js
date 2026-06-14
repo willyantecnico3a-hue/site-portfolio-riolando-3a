@@ -139,6 +139,9 @@ function configurarEventosDosBotoes() {
     const btnPdf = document.getElementById("btnBaixarPdfRelatorio");
     const filtroPeriodo = document.getElementById("filtroPeriodoRelatorio");
 
+    const filtroRapidoData = document.getElementById("filtroRapidoDataRelatorio");
+    const btnOrdenarData = document.getElementById("btnOrdenarDataRelatorio");
+
     if (btnGerar) {
         btnGerar.addEventListener("click", gerarRelatorio);
     }
@@ -154,8 +157,15 @@ function configurarEventosDosBotoes() {
     if (filtroPeriodo) {
         filtroPeriodo.addEventListener("change", configurarDatasPorPeriodo);
     }
-}
 
+    if (filtroRapidoData) {
+        filtroRapidoData.addEventListener("change", aplicarFiltroRapidoDataRelatorio);
+    }
+
+    if (btnOrdenarData) {
+        btnOrdenarData.addEventListener("click", alternarOrdemDataRelatorio);
+    }
+}
 
 /* =====================================================
    6. DATAS E FILTROS
@@ -284,8 +294,7 @@ async function buscarEventosRelatorio(filtros) {
         .from("eventos")
         .select("*")
         .gte("data", filtros.dataInicio)
-        .lte("data", filtros.dataFim)
-        .order("data", { ascending: true });
+        .lte("data", filtros.dataFim);
 
     if (filtros.tipoEvento && filtros.tipoEvento !== "todos") {
         consulta = consulta.eq("tipo", filtros.tipoEvento);
@@ -300,7 +309,6 @@ async function buscarEventosRelatorio(filtros) {
 
     let eventos = data || [];
 
-    // Filtro de curso feito no JavaScript para evitar erro com .or() no Supabase.
     if (filtros.curso && filtros.curso !== "todos") {
         eventos = eventos.filter(function (evento) {
             const cursoEvento = normalizarTexto(evento.curso_alvo || "todos");
@@ -310,6 +318,19 @@ async function buscarEventosRelatorio(filtros) {
         });
     }
 
+    if (filtros.turma && filtros.turma !== "todas") {
+        eventos = eventos.filter(function (evento) {
+            const turmaEvento = normalizarTurma(evento.turma_alvo || "");
+            const turmaFiltro = normalizarTurma(filtros.turma);
+
+            return turmaEvento === turmaFiltro;
+        });
+    }
+
+    eventos = ordenarEventosPorDataRelatorio(eventos);
+
+    return eventos;
+}
     // Filtro seguro por turma_alvo.
     // Para evitar relatório equivocado, turma específica mostra apenas eventos da turma escolhida.
     if (filtros.turma && filtros.turma !== "todas") {
@@ -1098,4 +1119,119 @@ function criarNomeArquivoRelatorio(extensao) {
     const dataHoje = formatarDataISO(new Date());
 
     return `relatorio_paeet_${turma}_${dataHoje}.${extensao}`;
+}
+
+/* =====================================================
+   FILTRO RÁPIDO E ORDENAÇÃO ESTILO WINDOWS
+===================================================== */
+
+function aplicarFiltroRapidoDataRelatorio() {
+    const filtroRapido = getValor("filtroRapidoDataRelatorio");
+
+    if (!filtroRapido) {
+        return;
+    }
+
+    const hoje = new Date();
+    let inicio = new Date(hoje);
+    let fim = new Date(hoje);
+
+    if (filtroRapido === "hoje") {
+        inicio = new Date(hoje);
+        fim = new Date(hoje);
+    }
+
+    if (filtroRapido === "ontem") {
+        inicio = new Date(hoje);
+        inicio.setDate(hoje.getDate() - 1);
+
+        fim = new Date(inicio);
+    }
+
+    if (filtroRapido === "semana_passada") {
+        const diaSemana = hoje.getDay();
+        const diferencaSegundaAtual = diaSemana === 0 ? -6 : 1 - diaSemana;
+
+        const segundaAtual = new Date(hoje);
+        segundaAtual.setDate(hoje.getDate() + diferencaSegundaAtual);
+
+        inicio = new Date(segundaAtual);
+        inicio.setDate(segundaAtual.getDate() - 7);
+
+        fim = new Date(inicio);
+        fim.setDate(inicio.getDate() + 6);
+    }
+
+    if (filtroRapido === "anteriores_neste_mes") {
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+        fim = new Date(hoje);
+        fim.setDate(hoje.getDate() - 1);
+
+        if (fim < inicio) {
+            fim = new Date(hoje);
+        }
+    }
+
+    if (filtroRapido === "ultimo_mes") {
+        inicio = new Date(hoje);
+        inicio.setDate(hoje.getDate() - 29);
+
+        fim = new Date(hoje);
+    }
+
+    setValor("filtroPeriodoRelatorio", "personalizado");
+    setValor("dataInicioRelatorio", formatarDataISO(inicio));
+    setValor("dataFimRelatorio", formatarDataISO(fim));
+
+    gerarRelatorio();
+}
+
+
+function alternarOrdemDataRelatorio() {
+    const botao = document.getElementById("btnOrdenarDataRelatorio");
+
+    if (!botao) {
+        return;
+    }
+
+    const ordemAtual = botao.dataset.ordem || "desc";
+    const novaOrdem = ordemAtual === "desc" ? "asc" : "desc";
+
+    botao.dataset.ordem = novaOrdem;
+
+    if (novaOrdem === "desc") {
+        botao.textContent = "📅 Data do evento ↓ Mais recentes";
+    } else {
+        botao.textContent = "📅 Data do evento ↑ Mais antigas";
+    }
+
+    dadosRelatorio.eventos = ordenarEventosPorDataRelatorio(dadosRelatorio.eventos || []);
+
+    renderizarTabelaEventos(dadosRelatorio.eventos);
+}
+
+
+function ordenarEventosPorDataRelatorio(eventos) {
+    const botao = document.getElementById("btnOrdenarDataRelatorio");
+    const ordem = botao ? botao.dataset.ordem || "desc" : "desc";
+
+    return [...eventos].sort(function (a, b) {
+        const dataA = montarDataHoraEvento(a);
+        const dataB = montarDataHoraEvento(b);
+
+        if (ordem === "asc") {
+            return dataA - dataB;
+        }
+
+        return dataB - dataA;
+    });
+}
+
+
+function montarDataHoraEvento(evento) {
+    const data = evento.data || "1900-01-01";
+    const horario = evento.horario_inicio || "00:00";
+
+    return new Date(`${data}T${horario}`);
 }
