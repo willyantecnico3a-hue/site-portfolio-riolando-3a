@@ -20,11 +20,84 @@ if (window.supabase) {
 
 document.addEventListener("DOMContentLoaded", iniciarCentralPaeet);
 
-function iniciarCentralPaeet() {
+async function iniciarCentralPaeet() {
+    const acessoLiberado = await verificarAcessoAdministradorCentral();
+
+    if (!acessoLiberado) {
+        return;
+    }
+
     configurarBuscaECategorias();
     carregarChecklistCentral();
     atualizarStatusChecklistCentral();
     configurarBotaoLimparChecklist();
+}
+
+async function verificarAcessoAdministradorCentral() {
+    try {
+        if (!bancoCentral) {
+            bloquearCentralSemPermissao("Erro ao carregar conexão com o Supabase.");
+            return false;
+        }
+
+        const { data: sessaoData, error: erroSessao } = await bancoCentral.auth.getSession();
+
+        if (erroSessao || !sessaoData || !sessaoData.session) {
+            bloquearCentralSemPermissao("Você precisa estar logado como administrador para acessar a Central PAEET.");
+            return false;
+        }
+
+        const usuario = sessaoData.session.user;
+
+        if (!usuario || !usuario.email) {
+            bloquearCentralSemPermissao("Usuário administrativo não identificado.");
+            return false;
+        }
+
+        const email = usuario.email.toLowerCase();
+
+        const { data: admin, error: erroAdmin } = await bancoCentral
+            .from("admins")
+            .select("email")
+            .ilike("email", email)
+            .limit(1);
+
+        if (erroAdmin || !admin || admin.length === 0) {
+            bloquearCentralSemPermissao("Este usuário não possui permissão administrativa.");
+            return false;
+        }
+
+        localStorage.setItem("adminEmail", email);
+
+        return true;
+
+    } catch (erro) {
+        console.error("Erro ao verificar permissão administrativa:", erro);
+        bloquearCentralSemPermissao("Erro ao validar acesso administrativo.");
+        return false;
+    }
+}
+
+
+function bloquearCentralSemPermissao(mensagem) {
+    document.body.innerHTML = `
+        <main class="container-central-paeet">
+            <section class="card-aviso-central">
+                <div class="icone-aviso-central">🔒</div>
+
+                <div>
+                    <h2>Acesso restrito</h2>
+                    <p>${mensagem}</p>
+                    <p>Faça login com uma conta administrativa para continuar.</p>
+                    <a href="admin.html" class="btn-topo-central">Voltar para o login administrativo</a>
+                </div>
+            </section>
+        </main>
+    `;
+
+    setTimeout(function () {
+        window.location.href = "admin.html";
+    }, 2500);
 }
 
 

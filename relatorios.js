@@ -23,7 +23,12 @@ document.addEventListener("DOMContentLoaded", iniciarRelatorios);
 
 
 async function iniciarRelatorios() {
-    mostrarDashboardRelatorio();
+    const acessoLiberado = await verificarAcessoAdministradorRelatorio();
+
+    if (!acessoLiberado) {
+        return;
+    }
+
     configurarAbasRelatorio();
     configurarEventosDosBotoes();
     configurarEventosAcompanhamento();
@@ -35,6 +40,76 @@ async function iniciarRelatorios() {
 
     await gerarRelatorio();
     await gerarRelatorioAcompanhamento();
+}
+
+async function verificarAcessoAdministradorRelatorio() {
+    try {
+        if (!banco) {
+            bloquearRelatorioSemPermissao("Erro ao carregar conexão com o Supabase.");
+            return false;
+        }
+
+        const { data: sessaoData, error: erroSessao } = await banco.auth.getSession();
+
+        if (erroSessao || !sessaoData || !sessaoData.session) {
+            bloquearRelatorioSemPermissao("Você precisa estar logado como administrador para acessar os relatórios.");
+            return false;
+        }
+
+        const usuario = sessaoData.session.user;
+
+        if (!usuario || !usuario.email) {
+            bloquearRelatorioSemPermissao("Usuário administrativo não identificado.");
+            return false;
+        }
+
+        const email = usuario.email.toLowerCase();
+
+        const { data: admin, error: erroAdmin } = await banco
+            .from("admins")
+            .select("email")
+            .ilike("email", email)
+            .limit(1);
+
+        if (erroAdmin || !admin || admin.length === 0) {
+            bloquearRelatorioSemPermissao("Este usuário não possui permissão administrativa.");
+            return false;
+        }
+
+        localStorage.setItem("adminEmail", email);
+
+        mostrarDashboardRelatorio();
+        return true;
+
+    } catch (erro) {
+        console.error("Erro ao verificar permissão administrativa:", erro);
+        bloquearRelatorioSemPermissao("Erro ao validar acesso administrativo.");
+        return false;
+    }
+}
+
+
+function bloquearRelatorioSemPermissao(mensagem) {
+    const areaDashboard = document.getElementById("areaDashboardRelatorio");
+    const areaBloqueio = document.getElementById("areaBloqueioRelatorio");
+
+    if (areaDashboard) {
+        areaDashboard.style.display = "none";
+    }
+
+    if (areaBloqueio) {
+        areaBloqueio.style.display = "block";
+        areaBloqueio.innerHTML = `
+            <h2>🔒 Acesso restrito</h2>
+            <p>${mensagem}</p>
+            <p>Faça login com uma conta administrativa para continuar.</p>
+            <a href="admin.html">Voltar para o login administrativo</a>
+        `;
+    }
+
+    setTimeout(function () {
+        window.location.href = "admin.html";
+    }, 2500);
 }
 
 
