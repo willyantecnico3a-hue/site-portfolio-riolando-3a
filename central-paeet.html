@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Central PAEET | Riolando Conecta Técnico</title>
 
-    <link rel="stylesheet" href="central-paeet.css?v=20260614-01">
+    <link rel="stylesheet" href="central-paeet.css?v=20260614-02">
 </head>
 
 <body>
@@ -41,7 +41,7 @@
                 <p>
                     Esta página não substitui os sistemas oficiais da SEDUC/CIEE. Ela funciona como uma
                     central de atalhos e organização do trabalho PAEET. Os dados oficiais devem ser conferidos
-                    nos sistemas próprios; no Riolando Conecta, registre apenas a ação pedagógica, evidência,
+                    nos sistemas próprios; no Riolando Conecta, registre a ação pedagógica, evidência,
                     encaminhamento ou observação necessária para seu acompanhamento.
                 </p>
             </div>
@@ -214,7 +214,7 @@
                 <a href="relatorios.html"
                    class="card-central-paeet"
                    data-categoria="interno paeet"
-                   data-busca="relatório indicadores paeet bi eventos aula carga horária">
+                   data-busca="relatório indicadores paeet bi eventos aula carga horária acompanhamento checklist">
 
                     <div class="icone-card-central">📈</div>
 
@@ -222,8 +222,8 @@
                         <span class="tag-card-central tag-interno">Riolando Conecta</span>
                         <h3>Relatórios e Indicadores PAEET</h3>
                         <p>
-                            Visualize eventos, carga horária, portfólios, chamados e dados organizados
-                            do seu acompanhamento pedagógico.
+                            Visualize eventos, carga horária, portfólios, chamados e o acompanhamento das ações
+                            do checklist PAEET.
                         </p>
                         <strong>Abrir relatório →</strong>
                     </div>
@@ -293,34 +293,35 @@
             <div class="cabecalho-secao-central">
                 <h2>✅ Checklist rápido do PAEET</h2>
                 <p>
-                    Use este checklist como lembrete da rotina de conferência. Ele fica salvo apenas neste navegador.
+                    Use este checklist como lembrete da rotina de conferência. Agora ele também pode salvar no servidor
+                    para gerar relatórios de acompanhamento do Professor/PAEET.
                 </p>
             </div>
 
             <div class="checklist-central" id="checklistCentralPaeet">
 
                 <label class="item-checklist-central">
-                    <input type="checkbox" data-check="frequencia">
+                    <input type="checkbox" data-check="frequencia" data-descricao="Verificar frequência/presença nos sistemas oficiais.">
                     <span>Verificar frequência/presença nos sistemas oficiais.</span>
                 </label>
 
                 <label class="item-checklist-central">
-                    <input type="checkbox" data-check="diario">
+                    <input type="checkbox" data-check="diario" data-descricao="Conferir registros de aula, diário e fechamento quando necessário.">
                     <span>Conferir registros de aula, diário e fechamento quando necessário.</span>
                 </label>
 
                 <label class="item-checklist-central">
-                    <input type="checkbox" data-check="busca_ativa">
+                    <input type="checkbox" data-check="busca_ativa" data-descricao="Identificar estudantes que precisam de busca ativa ou acompanhamento.">
                     <span>Identificar estudantes que precisam de busca ativa ou acompanhamento.</span>
                 </label>
 
                 <label class="item-checklist-central">
-                    <input type="checkbox" data-check="intervencao">
+                    <input type="checkbox" data-check="intervencao" data-descricao="Registrar no Riolando Conecta as ações pedagógicas realizadas.">
                     <span>Registrar no Riolando Conecta as ações pedagógicas realizadas.</span>
                 </label>
 
                 <label class="item-checklist-central">
-                    <input type="checkbox" data-check="relatorio">
+                    <input type="checkbox" data-check="relatorio" data-descricao="Gerar relatório PAEET com evidências e indicadores.">
                     <span>Gerar relatório PAEET com evidências e indicadores.</span>
                 </label>
 
@@ -330,12 +331,18 @@
                 <button type="button" id="btnLimparChecklistCentral">🔄 Limpar checklist</button>
                 <span id="statusChecklistCentral">0 de 5 concluídos</span>
             </div>
+
+            <p id="statusServidorChecklistCentral" class="status-servidor-checklist">
+                Aguardando ação no checklist.
+            </p>
         </section>
 
     </main>
 
 
-    <script src="central-paeet.js?v=20260614-01"></script>
+    <!-- Supabase precisa carregar antes do JS da Central PAEET -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="central-paeet.js?v=20260614-02"></script>
 
 </body>
 </html>

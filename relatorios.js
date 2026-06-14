@@ -1,150 +1,95 @@
 /* =====================================================
    RELATÓRIOS E INDICADORES PAEET
-   Professor/PAEET Willyan Vieira da Cruz
    Riolando Conecta Técnico
-
    ARQUIVO: relatorios.js
-   VERSÃO: 20260614-03
-
-   Correções aplicadas:
-   - Corrige erro de bloco solto fora da função buscarEventosRelatorio()
-   - Mantém filtro rápido estilo Windows:
-       Hoje, Ontem, Semana passada, Anteriores neste mês, Último mês
-   - Mantém botão de ordenação por data:
-       Mais recentes / Mais antigas
-   - Usa turma_alvo para relatório por turma
-   - Evita travamento em "Carregando dados reais do Supabase..."
-   - Mantém CSV, PDF, gráficos, tabela e indicadores
+   VERSÃO: 20260614-06
 ===================================================== */
 
-
-/* =====================================================
-   1. CONEXÃO COM SUPABASE
-===================================================== */
-
-const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
+const SUPABASE_URL_RELATORIO = "https://pwomyoprbvoimqmikvev.supabase.co";
+const SUPABASE_KEY_RELATORIO = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 const banco = window.supabase
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    ? window.supabase.createClient(SUPABASE_URL_RELATORIO, SUPABASE_KEY_RELATORIO)
     : null;
-
-
-/* =====================================================
-   2. VARIÁVEIS GLOBAIS
-===================================================== */
-
-let usuarioAdminRelatorio = null;
 
 let dadosRelatorio = {
     eventos: [],
     portfolios: [],
     chamados: [],
-    indicadores: {}
+    acompanhamento: []
 };
-
-
-/* =====================================================
-   3. INICIAR PÁGINA
-===================================================== */
 
 document.addEventListener("DOMContentLoaded", iniciarRelatorios);
 
+
 async function iniciarRelatorios() {
-    preencherDataEmissao();
+    mostrarDashboardRelatorio();
+    configurarAbasRelatorio();
     configurarEventosDosBotoes();
-    configurarDatasIniciais();
+    configurarEventosAcompanhamento();
 
-    if (!banco) {
-        mostrarMensagemRelatorio(
-            "Erro: Supabase não foi carregado. Confira se o script do Supabase está antes do relatorios.js no HTML."
-        );
-        mostrarBloqueioRelatorio();
-        return;
-    }
+    definirPeriodoPadraoRelatorio();
+    definirPeriodoPadraoAcompanhamento();
 
-    await verificarAcessoAdminRelatorio();
+    atualizarDataEmissao();
+
+    await gerarRelatorio();
+    await gerarRelatorioAcompanhamento();
 }
 
 
-/* =====================================================
-   4. SEGURANÇA - SOMENTE ADMIN
-===================================================== */
-
-async function verificarAcessoAdminRelatorio() {
-    try {
-        const { data: userData, error: userError } = await banco.auth.getUser();
-
-        if (userError || !userData || !userData.user) {
-            mostrarBloqueioRelatorio();
-            return;
-        }
-
-        const usuario = userData.user;
-
-        const { data: admin, error: adminError } = await banco
-            .from("admins")
-            .select("email")
-            .eq("email", usuario.email)
-            .maybeSingle();
-
-        if (adminError) {
-            console.log("Erro ao verificar admin:", adminError);
-            mostrarBloqueioRelatorio();
-            return;
-        }
-
-        if (!admin) {
-            mostrarBloqueioRelatorio();
-            return;
-        }
-
-        usuarioAdminRelatorio = usuario;
-
-        const areaBloqueio = document.getElementById("areaBloqueioRelatorio");
-        const areaDashboard = document.getElementById("areaDashboardRelatorio");
-
-        if (areaBloqueio) {
-            areaBloqueio.style.display = "none";
-        }
-
-        if (areaDashboard) {
-            areaDashboard.style.display = "block";
-        }
-
-        await gerarRelatorio();
-
-    } catch (erro) {
-        console.error("Erro geral ao verificar acesso administrativo:", erro);
-        mostrarBloqueioRelatorio();
-    }
-}
-
-
-function mostrarBloqueioRelatorio() {
-    const areaBloqueio = document.getElementById("areaBloqueioRelatorio");
+function mostrarDashboardRelatorio() {
     const areaDashboard = document.getElementById("areaDashboardRelatorio");
+    const areaBloqueio = document.getElementById("areaBloqueioRelatorio");
 
     if (areaBloqueio) {
-        areaBloqueio.style.display = "block";
+        areaBloqueio.style.display = "none";
     }
 
     if (areaDashboard) {
-        areaDashboard.style.display = "none";
+        areaDashboard.style.display = "block";
     }
 }
 
 
+function configurarAbasRelatorio() {
+    const botoes = document.querySelectorAll(".aba-relatorio");
+
+    botoes.forEach(function (botao) {
+        botao.addEventListener("click", function () {
+            const aba = botao.dataset.aba;
+
+            document.querySelectorAll(".aba-relatorio").forEach(function (item) {
+                item.classList.remove("ativa");
+            });
+
+            document.querySelectorAll(".conteudo-aba-relatorio").forEach(function (conteudo) {
+                conteudo.classList.remove("ativo");
+            });
+
+            botao.classList.add("ativa");
+
+            if (aba === "geral") {
+                document.getElementById("conteudoRelatorioGeral")?.classList.add("ativo");
+            }
+
+            if (aba === "acompanhamento") {
+                document.getElementById("conteudoRelatorioAcompanhamento")?.classList.add("ativo");
+            }
+        });
+    });
+}
+
+
 /* =====================================================
-   5. EVENTOS DOS BOTÕES
+   RELATÓRIO GERAL
 ===================================================== */
 
 function configurarEventosDosBotoes() {
     const btnGerar = document.getElementById("btnGerarRelatorio");
     const btnCsv = document.getElementById("btnBaixarCsvRelatorio");
     const btnPdf = document.getElementById("btnBaixarPdfRelatorio");
-    const filtroPeriodo = document.getElementById("filtroPeriodoRelatorio");
-
+    const periodo = document.getElementById("filtroPeriodoRelatorio");
     const filtroRapidoData = document.getElementById("filtroRapidoDataRelatorio");
     const btnOrdenarData = document.getElementById("btnOrdenarDataRelatorio");
 
@@ -157,11 +102,17 @@ function configurarEventosDosBotoes() {
     }
 
     if (btnPdf) {
-        btnPdf.addEventListener("click", baixarPdfRelatorio);
+        btnPdf.addEventListener("click", function () {
+            window.print();
+        });
     }
 
-    if (filtroPeriodo) {
-        filtroPeriodo.addEventListener("change", configurarDatasPorPeriodo);
+    if (periodo) {
+        periodo.addEventListener("change", function () {
+            if (periodo.value !== "personalizado") {
+                aplicarPeriodoRelatorio();
+            }
+        });
     }
 
     if (filtroRapidoData) {
@@ -174,127 +125,83 @@ function configurarEventosDosBotoes() {
 }
 
 
-/* =====================================================
-   6. DATAS E FILTROS
-===================================================== */
-
-function configurarDatasIniciais() {
-    configurarDatasPorPeriodo();
+function definirPeriodoPadraoRelatorio() {
+    setValor("filtroPeriodoRelatorio", "mensal");
+    aplicarPeriodoRelatorio();
 }
 
 
-function configurarDatasPorPeriodo() {
+function aplicarPeriodoRelatorio() {
     const periodo = getValor("filtroPeriodoRelatorio") || "mensal";
+    const intervalo = calcularIntervaloPorPeriodo(periodo);
 
-    const hoje = new Date();
-    let inicio = new Date(hoje);
-    let fim = new Date(hoje);
-
-    if (periodo === "semanal") {
-        const diaSemana = hoje.getDay();
-        const diferencaSegunda = diaSemana === 0 ? -6 : 1 - diaSemana;
-
-        inicio = new Date(hoje);
-        inicio.setDate(hoje.getDate() + diferencaSegunda);
-
-        fim = new Date(inicio);
-        fim.setDate(inicio.getDate() + 6);
-    }
-
-    if (periodo === "mensal") {
-        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-        fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
-    }
-
-    if (periodo === "bimestral") {
-        const mesAtual = hoje.getMonth();
-        const inicioBimestre = Math.floor(mesAtual / 2) * 2;
-
-        inicio = new Date(hoje.getFullYear(), inicioBimestre, 1);
-        fim = new Date(hoje.getFullYear(), inicioBimestre + 2, 0);
-    }
-
-    if (periodo === "semestral") {
-        const inicioSemestre = hoje.getMonth() < 6 ? 0 : 6;
-
-        inicio = new Date(hoje.getFullYear(), inicioSemestre, 1);
-        fim = new Date(hoje.getFullYear(), inicioSemestre + 6, 0);
-    }
-
-    if (periodo === "anual") {
-        inicio = new Date(hoje.getFullYear(), 0, 1);
-        fim = new Date(hoje.getFullYear(), 11, 31);
-    }
-
-    if (periodo === "personalizado") {
-        return;
-    }
-
-    setValor("dataInicioRelatorio", formatarDataISO(inicio));
-    setValor("dataFimRelatorio", formatarDataISO(fim));
+    setValor("dataInicioRelatorio", intervalo.inicio);
+    setValor("dataFimRelatorio", intervalo.fim);
 }
 
-
-function obterFiltrosRelatorio() {
-    return {
-        periodo: getValor("filtroPeriodoRelatorio") || "mensal",
-        curso: getValor("filtroCursoRelatorio") || "todos",
-        turma: getValor("filtroTurmaRelatorio") || "todas",
-        tipoEvento: getValor("filtroTipoEventoRelatorio") || "todos",
-        dataInicio: getValor("dataInicioRelatorio"),
-        dataFim: getValor("dataFimRelatorio")
-    };
-}
-
-
-/* =====================================================
-   7. GERAR RELATÓRIO
-===================================================== */
 
 async function gerarRelatorio() {
+    const mensagem = document.getElementById("mensagemRelatorio");
+
     try {
-        mostrarMensagemRelatorio("Carregando dados reais do Supabase...");
+        if (!banco) {
+            throw new Error("Supabase não carregou.");
+        }
+
+        if (mensagem) {
+            mensagem.textContent = "Carregando dados reais do Supabase...";
+        }
 
         const filtros = obterFiltrosRelatorio();
-
-        if (!filtros.dataInicio || !filtros.dataFim) {
-            mostrarMensagemRelatorio("Informe a data inicial e a data final para gerar o relatório.");
-            return;
-        }
 
         atualizarCabecalhoDocumento(filtros);
 
         const eventos = await buscarEventosRelatorio(filtros);
-        const portfolios = await buscarPortfoliosRelatorio(filtros);
+        const portfolios = await buscarPortfoliosRelatorio();
         const chamados = await buscarChamadosRelatorio(filtros);
 
         dadosRelatorio.eventos = eventos;
         dadosRelatorio.portfolios = portfolios;
         dadosRelatorio.chamados = chamados;
 
-        dadosRelatorio.indicadores = calcularIndicadoresRelatorio(eventos, portfolios, chamados);
-
-        renderizarIndicadores(dadosRelatorio.indicadores);
-        renderizarGraficos(eventos, chamados);
+        renderizarIndicadoresRelatorio(eventos, portfolios, chamados);
+        renderizarGraficosRelatorio(eventos, chamados);
         renderizarTabelaEventos(eventos);
 
-        mostrarMensagemRelatorio(
-            `Relatório atualizado com sucesso. ${eventos.length} evento(s), ${portfolios.length} portfólio(s) e ${chamados.length} chamado(s) encontrados.`
-        );
+        if (mensagem) {
+            mensagem.textContent = `Relatório gerado com ${eventos.length} eventos encontrados.`;
+        }
 
     } catch (erro) {
-        console.error("Erro geral ao gerar relatório:", erro);
+        console.error("Erro ao gerar relatório:", erro);
 
-        mostrarMensagemRelatorio(
-            "Erro ao gerar relatório. Abra o console do navegador para ver o detalhe do erro."
-        );
+        if (mensagem) {
+            mensagem.textContent = "Erro ao gerar relatório. Verifique o console, tabelas do Supabase e permissões.";
+        }
     }
 }
 
 
-/* =====================================================
-   8. BUSCAR EVENTOS
-===================================================== */
+function obterFiltrosRelatorio() {
+    let dataInicio = getValor("dataInicioRelatorio");
+    let dataFim = getValor("dataFimRelatorio");
+
+    if (!dataInicio || !dataFim) {
+        aplicarPeriodoRelatorio();
+        dataInicio = getValor("dataInicioRelatorio");
+        dataFim = getValor("dataFimRelatorio");
+    }
+
+    return {
+        periodo: getValor("filtroPeriodoRelatorio") || "mensal",
+        curso: getValor("filtroCursoRelatorio") || "todos",
+        turma: getValor("filtroTurmaRelatorio") || "todas",
+        tipoEvento: getValor("filtroTipoEventoRelatorio") || "todos",
+        dataInicio: dataInicio,
+        dataFim: dataFim
+    };
+}
+
 
 async function buscarEventosRelatorio(filtros) {
     let consulta = banco
@@ -318,7 +225,7 @@ async function buscarEventosRelatorio(filtros) {
 
     if (filtros.curso && filtros.curso !== "todos") {
         eventos = eventos.filter(function (evento) {
-            const cursoEvento = normalizarTexto(evento.curso_alvo || "todos");
+            const cursoEvento = normalizarTexto(evento.curso_alvo || evento.curso || "todos");
             const cursoFiltro = normalizarTexto(filtros.curso);
 
             return cursoEvento === cursoFiltro || cursoEvento === "todos" || cursoEvento === "";
@@ -327,7 +234,7 @@ async function buscarEventosRelatorio(filtros) {
 
     if (filtros.turma && filtros.turma !== "todas") {
         eventos = eventos.filter(function (evento) {
-            const turmaEvento = normalizarTurma(evento.turma_alvo || "");
+            const turmaEvento = normalizarTurma(evento.turma_alvo || evento.turma || "");
             const turmaFiltro = normalizarTurma(filtros.turma);
 
             return turmaEvento === turmaFiltro;
@@ -340,56 +247,19 @@ async function buscarEventosRelatorio(filtros) {
 }
 
 
-/* =====================================================
-   9. BUSCAR PORTFÓLIOS
-===================================================== */
-
-async function buscarPortfoliosRelatorio(filtros) {
+async function buscarPortfoliosRelatorio() {
     const { data, error } = await banco
         .from("portfolio_alunos")
         .select("*");
 
     if (error) {
-        console.log("Erro ao buscar portfólios:", error);
+        console.warn("Erro ao buscar portfólios:", error);
         return [];
     }
 
-    let portfolios = data || [];
-
-    portfolios = portfolios.filter(function (item) {
-        const dataItem = obterDataGenerica(item);
-
-        if (!dataItem) {
-            return true;
-        }
-
-        return dataItem >= filtros.dataInicio && dataItem <= filtros.dataFim;
-    });
-
-    if (filtros.curso && filtros.curso !== "todos") {
-        portfolios = portfolios.filter(function (item) {
-            const curso = normalizarTexto(item.curso || item.curso_alvo || item.curso_aluno || "");
-
-            return curso === normalizarTexto(filtros.curso) || curso === "todos" || curso === "";
-        });
-    }
-
-    if (filtros.turma && filtros.turma !== "todas") {
-        portfolios = portfolios.filter(function (item) {
-            const turma = normalizarTurma(item.turma || item.nome_turma || item.turma_aluno || "");
-            const turmaFiltro = normalizarTurma(filtros.turma);
-
-            return turma.includes(turmaFiltro);
-        });
-    }
-
-    return portfolios;
+    return data || [];
 }
 
-
-/* =====================================================
-   10. BUSCAR CHAMADOS
-===================================================== */
 
 async function buscarChamadosRelatorio(filtros) {
     const { data, error } = await banco
@@ -397,218 +267,59 @@ async function buscarChamadosRelatorio(filtros) {
         .select("*");
 
     if (error) {
-        console.log("Erro ao buscar chamados:", error);
+        console.warn("Erro ao buscar chamados:", error);
         return [];
     }
 
-    let chamados = data || [];
-
-    chamados = chamados.filter(function (item) {
-        const dataItem = obterDataGenerica(item);
-
-        if (!dataItem) {
-            return true;
-        }
-
-        return dataItem >= filtros.dataInicio && dataItem <= filtros.dataFim;
-    });
-
-    if (filtros.curso && filtros.curso !== "todos") {
-        chamados = chamados.filter(function (item) {
-            const curso = normalizarTexto(item.curso || item.curso_aluno || item.curso_alvo || "");
-
-            return curso === normalizarTexto(filtros.curso) || curso === "";
-        });
-    }
-
-    if (filtros.turma && filtros.turma !== "todas") {
-        chamados = chamados.filter(function (item) {
-            const turma = normalizarTurma(item.turma || item.turma_aluno || item.aluno_turma || "");
-            const turmaFiltro = normalizarTurma(filtros.turma);
-
-            return turma.includes(turmaFiltro);
-        });
-    }
-
-    return chamados;
+    return data || [];
 }
 
 
-/* =====================================================
-   11. CALCULAR INDICADORES
-===================================================== */
-
-function calcularIndicadoresRelatorio(eventos, portfolios, chamados) {
+function renderizarIndicadoresRelatorio(eventos, portfolios, chamados) {
     const aulas = eventos.filter(function (evento) {
         return normalizarTexto(evento.tipo) === "aula";
-    });
+    }).length;
+
+    const cargaMinutos = eventos.reduce(function (total, evento) {
+        return total + calcularDuracaoMinutos(evento.horario_inicio, evento.horario_fim);
+    }, 0);
+
+    const enviados = contarChamadosPorStatus(chamados, "enviado");
+    const analise = contarChamadosPorStatus(chamados, "em_analise");
+    const respondidos = contarChamadosPorStatus(chamados, "respondido");
+    const resolvidos = contarChamadosPorStatus(chamados, "resolvido");
+    const arquivados = contarChamadosPorStatus(chamados, "arquivado");
 
     const intercorrencias = eventos.filter(function (evento) {
-        return eventoEhIntercorrencia(evento);
-    });
+        const tipo = normalizarTexto(evento.tipo);
+        return ["atestado_medico", "tre", "ferias", "feriado_prolongado", "ot"].includes(tipo);
+    }).length;
 
-    const chamadosEnviados = chamados.filter(function (item) {
-        return normalizarTexto(item.status) === "enviado";
-    });
-
-    const chamadosAnalise = chamados.filter(function (item) {
-        return normalizarTexto(item.status) === "em_analise";
-    });
-
-    const chamadosRespondidos = chamados.filter(function (item) {
-        return normalizarTexto(item.status) === "respondido";
-    });
-
-    const chamadosResolvidos = chamados.filter(function (item) {
-        return normalizarTexto(item.status) === "resolvido";
-    });
-
-    const chamadosArquivados = chamados.filter(function (item) {
-        return normalizarTexto(item.status) === "arquivado";
-    });
-
-    return {
-        aulasLecionadas: aulas.length,
-        totalEventos: eventos.length,
-        cargaHorariaMinutos: somarCargaHorariaEventos(eventos),
-        portfoliosEnviados: portfolios.length,
-        chamadosEnviados: chamadosEnviados.length,
-        chamadosAnalise: chamadosAnalise.length,
-        chamadosRespondidos: chamadosRespondidos.length,
-        chamadosResolvidos: chamadosResolvidos.length,
-        chamadosArquivados: chamadosArquivados.length,
-        intercorrencias: intercorrencias.length
-    };
+    setTexto("indicadorAulasLecionadas", aulas);
+    setTexto("indicadorTotalEventos", eventos.length);
+    setTexto("indicadorCargaHoraria", formatarMinutos(cargaMinutos));
+    setTexto("indicadorPortfolios", portfolios.length);
+    setTexto("indicadorChamadosEnviados", enviados);
+    setTexto("indicadorChamadosAnalise", analise);
+    setTexto("indicadorChamadosRespondidos", respondidos);
+    setTexto("indicadorChamadosResolvidos", resolvidos);
+    setTexto("indicadorChamadosArquivados", arquivados);
+    setTexto("indicadorIntercorrencias", intercorrencias);
 }
 
 
-function renderizarIndicadores(indicadores) {
-    setTexto("indicadorAulasLecionadas", indicadores.aulasLecionadas);
-    setTexto("indicadorTotalEventos", indicadores.totalEventos);
-    setTexto("indicadorCargaHoraria", formatarMinutosEmHoras(indicadores.cargaHorariaMinutos));
-    setTexto("indicadorPortfolios", indicadores.portfoliosEnviados);
-    setTexto("indicadorChamadosEnviados", indicadores.chamadosEnviados);
-    setTexto("indicadorChamadosAnalise", indicadores.chamadosAnalise);
-    setTexto("indicadorChamadosRespondidos", indicadores.chamadosRespondidos);
-    setTexto("indicadorChamadosResolvidos", indicadores.chamadosResolvidos);
-    setTexto("indicadorChamadosArquivados", indicadores.chamadosArquivados);
-    setTexto("indicadorIntercorrencias", indicadores.intercorrencias);
+function contarChamadosPorStatus(chamados, status) {
+    return chamados.filter(function (chamado) {
+        return normalizarTexto(chamado.status || "") === normalizarTexto(status);
+    }).length;
 }
 
 
-/* =====================================================
-   12. GRÁFICOS SIMPLES
-===================================================== */
-
-function renderizarGraficos(eventos, chamados) {
-    renderizarGraficoEventosPorTipo(eventos);
-    renderizarGraficoChamadosStatus(chamados);
+function renderizarGraficosRelatorio(eventos, chamados) {
+    renderizarGraficoBarras("graficoEventosPorTipo", contarPorCampo(eventos, "tipo"));
+    renderizarGraficoBarras("graficoChamadosStatus", contarPorCampo(chamados, "status"));
 }
 
-
-function renderizarGraficoEventosPorTipo(eventos) {
-    const container = document.getElementById("graficoEventosPorTipo");
-
-    if (!container) {
-        return;
-    }
-
-    const contagem = {};
-
-    eventos.forEach(function (evento) {
-        const tipo = normalizarTexto(evento.tipo || "outro");
-        const nome = nomeBonitoTipo(tipo);
-
-        contagem[nome] = (contagem[nome] || 0) + 1;
-    });
-
-    renderizarGraficoBarras(container, contagem);
-}
-
-
-function renderizarGraficoChamadosStatus(chamados) {
-    const container = document.getElementById("graficoChamadosStatus");
-
-    if (!container) {
-        return;
-    }
-
-    const contagem = {
-        "Enviados": 0,
-        "Em análise": 0,
-        "Respondidos": 0,
-        "Resolvidos": 0,
-        "Arquivados": 0
-    };
-
-    chamados.forEach(function (chamado) {
-        const status = normalizarTexto(chamado.status);
-
-        if (status === "enviado") {
-            contagem["Enviados"]++;
-        }
-
-        if (status === "em_analise") {
-            contagem["Em análise"]++;
-        }
-
-        if (status === "respondido") {
-            contagem["Respondidos"]++;
-        }
-
-        if (status === "resolvido") {
-            contagem["Resolvidos"]++;
-        }
-
-        if (status === "arquivado") {
-            contagem["Arquivados"]++;
-        }
-    });
-
-    renderizarGraficoBarras(container, contagem);
-}
-
-
-function renderizarGraficoBarras(container, contagem) {
-    container.innerHTML = "";
-
-    const valores = Object.values(contagem);
-    const maximo = Math.max(...valores, 1);
-
-    const entradas = Object.entries(contagem)
-        .filter(function ([_, valor]) {
-            return valor > 0;
-        })
-        .sort(function (a, b) {
-            return b[1] - a[1];
-        });
-
-    if (entradas.length === 0) {
-        container.innerHTML = "<p>Nenhum dado encontrado para gerar gráfico.</p>";
-        return;
-    }
-
-    entradas.forEach(function ([rotulo, valor]) {
-        const largura = Math.max((valor / maximo) * 100, 6);
-
-        container.innerHTML += `
-            <div class="linha-grafico-relatorio">
-                <span class="rotulo-grafico-relatorio">${escaparHTML(rotulo)}</span>
-
-                <div class="barra-grafico-relatorio">
-                    <div class="preenchimento-grafico-relatorio" style="width:${largura}%"></div>
-                </div>
-
-                <span class="valor-grafico-relatorio">${valor}</span>
-            </div>
-        `;
-    });
-}
-
-
-/* =====================================================
-   13. TABELA DETALHADA
-===================================================== */
 
 function renderizarTabelaEventos(eventos) {
     const corpo = document.getElementById("corpoTabelaEventosRelatorio");
@@ -618,506 +329,30 @@ function renderizarTabelaEventos(eventos) {
     }
 
     if (!eventos || eventos.length === 0) {
-        corpo.innerHTML = `
-            <tr>
-                <td colspan="9">Nenhum evento encontrado para o período selecionado.</td>
-            </tr>
-        `;
+        corpo.innerHTML = `<tr><td colspan="9">Nenhum evento encontrado para o período selecionado.</td></tr>`;
         return;
     }
 
-    corpo.innerHTML = "";
-
-    eventos.forEach(function (evento) {
-        const duracao = calcularDuracaoEvento(evento.horario_inicio, evento.horario_fim);
-
-        corpo.innerHTML += `
+    corpo.innerHTML = eventos.map(function (evento) {
+        return `
             <tr>
                 <td>${formatarDataBR(evento.data)}</td>
-                <td>${escaparHTML(nomeBonitoTipo(evento.tipo))}</td>
-                <td>${escaparHTML(evento.titulo || "Sem título")}</td>
-                <td>${escaparHTML(limitarTexto(evento.descricao || "Sem descrição", 180))}</td>
-                <td>${formatarHorarioCurto(evento.horario_inicio)}</td>
-                <td>${formatarHorarioCurto(evento.horario_fim)}</td>
-                <td>${duracao}</td>
-                <td>${formatarCursoBonito(evento.curso_alvo || "todos")}</td>
-                <td>${formatarTurmaBonita(evento.turma_alvo || "todas")}</td>
+                <td>${escaparHtml(formatarTipo(evento.tipo))}</td>
+                <td>${escaparHtml(evento.titulo || "-")}</td>
+                <td>${escaparHtml(evento.descricao || "-")}</td>
+                <td>${escaparHtml(evento.horario_inicio || "-")}</td>
+                <td>${escaparHtml(evento.horario_fim || "-")}</td>
+                <td>${formatarMinutos(calcularDuracaoMinutos(evento.horario_inicio, evento.horario_fim))}</td>
+                <td>${escaparHtml(evento.curso_alvo || evento.curso || "Todos")}</td>
+                <td>${escaparHtml(evento.turma_alvo || evento.turma || "Todas")}</td>
             </tr>
         `;
-    });
+    }).join("");
 }
 
 
 /* =====================================================
-   14. CSV
-===================================================== */
-
-function baixarCsvRelatorio() {
-    const eventos = dadosRelatorio.eventos || [];
-
-    if (eventos.length === 0) {
-        alert("Gere um relatório com eventos antes de baixar o CSV.");
-        return;
-    }
-
-    const filtros = obterFiltrosRelatorio();
-
-    const linhas = [];
-
-    linhas.push([
-        "data",
-        "tipo",
-        "titulo",
-        "descricao",
-        "horario_inicio",
-        "horario_fim",
-        "duracao",
-        "curso",
-        "turma_evento",
-        "turma_filtro",
-        "professor_paeet",
-        "data_emissao"
-    ]);
-
-    eventos.forEach(function (evento) {
-        linhas.push([
-            formatarDataBR(evento.data),
-            nomeBonitoTipo(evento.tipo),
-            evento.titulo || "",
-            limparTextoCsv(evento.descricao || ""),
-            formatarHorarioCurto(evento.horario_inicio),
-            formatarHorarioCurto(evento.horario_fim),
-            calcularDuracaoEvento(evento.horario_inicio, evento.horario_fim),
-            formatarCursoBonito(evento.curso_alvo || "todos"),
-            formatarTurmaBonita(evento.turma_alvo || "todas"),
-            filtros.turma,
-            "Willyan Vieira da Cruz",
-            formatarDataBR(formatarDataISO(new Date()))
-        ]);
-    });
-
-    const conteudoCsv = linhas
-        .map(function (linha) {
-            return linha.map(formatarCampoCsv).join(",");
-        })
-        .join("\n");
-
-    const blob = new Blob(["\uFEFF" + conteudoCsv], {
-        type: "text/csv;charset=utf-8;"
-    });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = criarNomeArquivoRelatorio("csv");
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    URL.revokeObjectURL(url);
-}
-
-
-function formatarCampoCsv(valor) {
-    const texto = String(valor ?? "");
-
-    return `"${texto.replaceAll('"', '""')}"`;
-}
-
-
-function limparTextoCsv(texto) {
-    return String(texto || "")
-        .replaceAll("\n", " ")
-        .replaceAll("\r", " ")
-        .trim();
-}
-
-
-/* =====================================================
-   15. PDF
-===================================================== */
-
-function baixarPdfRelatorio() {
-    window.print();
-}
-
-
-/* =====================================================
-   16. CABEÇALHO DO DOCUMENTO
-===================================================== */
-
-function preencherDataEmissao() {
-    setTexto("dataEmissaoRelatorio", formatarDataBR(formatarDataISO(new Date())));
-}
-
-
-function atualizarCabecalhoDocumento(filtros) {
-    setTexto("cursoDocumentoRelatorio", formatarCursoBonito(filtros.curso));
-    setTexto("turmaDocumentoRelatorio", filtros.turma === "todas" ? "Todas" : filtros.turma);
-
-    const periodoTexto = `${formatarDataBR(filtros.dataInicio)} até ${formatarDataBR(filtros.dataFim)}`;
-
-    setTexto("periodoDocumentoRelatorio", periodoTexto);
-}
-
-
-/* =====================================================
-   17. FUNÇÕES AUXILIARES
-===================================================== */
-
-function mostrarMensagemRelatorio(texto) {
-    setTexto("mensagemRelatorio", texto);
-}
-
-
-function getValor(id) {
-    const elemento = document.getElementById(id);
-
-    if (!elemento) {
-        return "";
-    }
-
-    return elemento.value;
-}
-
-
-function setValor(id, valor) {
-    const elemento = document.getElementById(id);
-
-    if (!elemento) {
-        return;
-    }
-
-    elemento.value = valor;
-}
-
-
-function setTexto(id, texto) {
-    const elemento = document.getElementById(id);
-
-    if (!elemento) {
-        return;
-    }
-
-    elemento.textContent = texto;
-}
-
-
-function formatarDataISO(data) {
-    const ano = data.getFullYear();
-    const mes = String(data.getMonth() + 1).padStart(2, "0");
-    const dia = String(data.getDate()).padStart(2, "0");
-
-    return `${ano}-${mes}-${dia}`;
-}
-
-
-function formatarDataBR(dataISO) {
-    if (!dataISO) {
-        return "Não informada";
-    }
-
-    const partes = dataISO.toString().substring(0, 10).split("-");
-
-    if (partes.length !== 3) {
-        return dataISO;
-    }
-
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
-}
-
-
-function formatarHorarioCurto(horario) {
-    if (!horario) {
-        return "--:--";
-    }
-
-    return horario.toString().substring(0, 5);
-}
-
-
-function converterHorarioParaMinutos(horario) {
-    if (!horario) {
-        return 0;
-    }
-
-    const partes = horario.toString().substring(0, 5).split(":");
-    const horas = Number(partes[0]) || 0;
-    const minutos = Number(partes[1]) || 0;
-
-    return horas * 60 + minutos;
-}
-
-
-function calcularDuracaoEvento(inicio, fim) {
-    if (!inicio || !fim) {
-        return "Não informado";
-    }
-
-    const minutos = converterHorarioParaMinutos(fim) - converterHorarioParaMinutos(inicio);
-
-    if (minutos <= 0) {
-        return "Não informado";
-    }
-
-    return formatarMinutosEmHoras(minutos);
-}
-
-
-function somarCargaHorariaEventos(eventos) {
-    return eventos.reduce(function (total, evento) {
-        if (!evento.horario_inicio || !evento.horario_fim) {
-            return total;
-        }
-
-        const minutos = converterHorarioParaMinutos(evento.horario_fim) -
-            converterHorarioParaMinutos(evento.horario_inicio);
-
-        if (minutos > 0) {
-            return total + minutos;
-        }
-
-        return total;
-    }, 0);
-}
-
-
-function formatarMinutosEmHoras(minutos) {
-    if (!minutos || minutos <= 0) {
-        return "0h";
-    }
-
-    const horas = Math.floor(minutos / 60);
-    const resto = minutos % 60;
-
-    if (horas > 0 && resto > 0) {
-        return `${horas}h ${resto}min`;
-    }
-
-    if (horas > 0) {
-        return `${horas}h`;
-    }
-
-    return `${resto}min`;
-}
-
-
-function obterDataGenerica(item) {
-    const possiveisCampos = [
-        "data",
-        "data_envio",
-        "data_criacao",
-        "criado_em",
-        "created_at",
-        "inserted_at",
-        "atualizado_em"
-    ];
-
-    for (const campo of possiveisCampos) {
-        if (item[campo]) {
-            return item[campo].toString().substring(0, 10);
-        }
-    }
-
-    return "";
-}
-
-
-function normalizarTexto(texto) {
-    if (!texto) {
-        return "";
-    }
-
-    return texto
-        .toString()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, "_")
-        .trim();
-}
-
-
-function normalizarTurma(turma) {
-    if (!turma) {
-        return "";
-    }
-
-    return turma
-        .toString()
-        .toLowerCase()
-        .replaceAll("º", "")
-        .replaceAll("ª", "")
-        .replace(/\s+/g, "")
-        .trim();
-}
-
-
-function formatarTurmaBonita(turma) {
-    const valor = normalizarTurma(turma);
-
-    if (!valor || valor === "todas" || valor === "todos") {
-        return "Todas";
-    }
-
-    if (valor === "2a") {
-        return "2ºA";
-    }
-
-    if (valor === "3a") {
-        return "3ºA";
-    }
-
-    if (valor === "3b") {
-        return "3ºB";
-    }
-
-    return turma;
-}
-
-
-function eventoEhIntercorrencia(evento) {
-    const tipo = normalizarTexto(evento.tipo);
-    const titulo = normalizarTexto(evento.titulo || "");
-    const descricao = normalizarTexto(evento.descricao || "");
-
-    const tipos = [
-        "ot",
-        "formacao_externa",
-        "reuniao_externa",
-        "atestado_medico",
-        "tre",
-        "ferias",
-        "feriado_prolongado",
-        "recesso_escolar",
-        "ponto_facultativo",
-        "licenca_afastamento",
-        "abono",
-        "convocacao_oficial",
-        "conselho_classe",
-        "atpc_htpc",
-        "evento_escolar",
-        "ausencia"
-    ];
-
-    if (tipos.includes(tipo)) {
-        return true;
-    }
-
-    const texto = `${titulo} ${descricao}`;
-
-    return (
-        texto.includes("ot") ||
-        texto.includes("atestado") ||
-        texto.includes("tre") ||
-        texto.includes("ferias") ||
-        texto.includes("feriado") ||
-        texto.includes("recesso") ||
-        texto.includes("ausencia") ||
-        texto.includes("afastamento")
-    );
-}
-
-
-function nomeBonitoTipo(tipo) {
-    const tipoNormalizado = normalizarTexto(tipo);
-
-    const nomes = {
-        aula: "Aula",
-        atpcs: "ATPCS",
-        atpcg: "ATPCG",
-        apd: "APD",
-        efape: "EFAPE",
-        multiplica: "Multiplica",
-        visita_tecnica: "Visita Técnica",
-        apoio_pedagogico: "Apoio Pedagógico",
-        atendimento_aluno: "Atendimento ao aluno",
-        reuniao_gestao: "Reunião com gestão",
-        planejamento_paeet: "Planejamento PAEET",
-        ot: "OT - Orientação Técnica",
-        formacao_externa: "Formação externa",
-        reuniao_externa: "Reunião externa",
-        atestado_medico: "Atestado médico",
-        tre: "TRE / convocação eleitoral",
-        ferias: "Férias",
-        feriado_prolongado: "Feriado prolongado",
-        recesso_escolar: "Recesso escolar",
-        ponto_facultativo: "Ponto facultativo",
-        licenca_afastamento: "Licença / afastamento",
-        abono: "Abono",
-        convocacao_oficial: "Convocação oficial",
-        conselho_classe: "Conselho de classe",
-        atpc_htpc: "ATPC / HTPC",
-        evento_escolar: "Evento escolar",
-        ausencia: "Ausência / fora da escola",
-        outro: "Outro"
-    };
-
-    return nomes[tipoNormalizado] || tipo || "Outro";
-}
-
-
-function formatarCursoBonito(curso) {
-    const nomes = {
-        todos: "Todos",
-        desenvolvimento_sistemas: "Desenvolvimento de Sistemas",
-        vendas: "Vendas",
-        substituicoes: "Substituições",
-        apoio_pedagogico: "Apoio Pedagógico",
-        outro: "Outro"
-    };
-
-    return nomes[curso] || curso || "Não informado";
-}
-
-
-function limitarTexto(texto, limite) {
-    if (!texto) {
-        return "";
-    }
-
-    const textoLimpo = texto.toString();
-
-    if (textoLimpo.length <= limite) {
-        return textoLimpo;
-    }
-
-    return textoLimpo.substring(0, limite) + "...";
-}
-
-
-function escaparHTML(texto) {
-    if (!texto) {
-        return "";
-    }
-
-    return texto
-        .toString()
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-
-function criarNomeArquivoRelatorio(extensao) {
-    const filtros = obterFiltrosRelatorio();
-
-    const turma = filtros.turma === "todas"
-        ? "todas_turmas"
-        : normalizarTurma(filtros.turma);
-
-    const dataHoje = formatarDataISO(new Date());
-
-    return `relatorio_paeet_${turma}_${dataHoje}.${extensao}`;
-}
-
-
-/* =====================================================
-   18. FILTRO RÁPIDO E ORDENAÇÃO ESTILO WINDOWS
+   ORGANIZADOR DO RELATÓRIO GERAL
 ===================================================== */
 
 function aplicarFiltroRapidoDataRelatorio() {
@@ -1127,57 +362,11 @@ function aplicarFiltroRapidoDataRelatorio() {
         return;
     }
 
-    const hoje = new Date();
-    let inicio = new Date(hoje);
-    let fim = new Date(hoje);
-
-    if (filtroRapido === "hoje") {
-        inicio = new Date(hoje);
-        fim = new Date(hoje);
-    }
-
-    if (filtroRapido === "ontem") {
-        inicio = new Date(hoje);
-        inicio.setDate(hoje.getDate() - 1);
-
-        fim = new Date(inicio);
-    }
-
-    if (filtroRapido === "semana_passada") {
-        const diaSemana = hoje.getDay();
-        const diferencaSegundaAtual = diaSemana === 0 ? -6 : 1 - diaSemana;
-
-        const segundaAtual = new Date(hoje);
-        segundaAtual.setDate(hoje.getDate() + diferencaSegundaAtual);
-
-        inicio = new Date(segundaAtual);
-        inicio.setDate(segundaAtual.getDate() - 7);
-
-        fim = new Date(inicio);
-        fim.setDate(inicio.getDate() + 6);
-    }
-
-    if (filtroRapido === "anteriores_neste_mes") {
-        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-
-        fim = new Date(hoje);
-        fim.setDate(hoje.getDate() - 1);
-
-        if (fim < inicio) {
-            fim = new Date(hoje);
-        }
-    }
-
-    if (filtroRapido === "ultimo_mes") {
-        inicio = new Date(hoje);
-        inicio.setDate(hoje.getDate() - 29);
-
-        fim = new Date(hoje);
-    }
+    const intervalo = calcularIntervaloRapido(filtroRapido);
 
     setValor("filtroPeriodoRelatorio", "personalizado");
-    setValor("dataInicioRelatorio", formatarDataISO(inicio));
-    setValor("dataFimRelatorio", formatarDataISO(fim));
+    setValor("dataInicioRelatorio", intervalo.inicio);
+    setValor("dataFimRelatorio", intervalo.fim);
 
     gerarRelatorio();
 }
@@ -1195,14 +384,11 @@ function alternarOrdemDataRelatorio() {
 
     botao.dataset.ordem = novaOrdem;
 
-    if (novaOrdem === "desc") {
-        botao.textContent = "📅 Data do evento ↓ Mais recentes";
-    } else {
-        botao.textContent = "📅 Data do evento ↑ Mais antigas";
-    }
+    botao.textContent = novaOrdem === "desc"
+        ? "📅 Data do evento ↓ Mais recentes"
+        : "📅 Data do evento ↑ Mais antigas";
 
     dadosRelatorio.eventos = ordenarEventosPorDataRelatorio(dadosRelatorio.eventos || []);
-
     renderizarTabelaEventos(dadosRelatorio.eventos);
 }
 
@@ -1229,4 +415,710 @@ function montarDataHoraEvento(evento) {
     const horario = evento.horario_inicio || "00:00";
 
     return new Date(`${data}T${horario}`);
+}
+
+
+/* =====================================================
+   ACOMPANHAMENTO PAEET
+===================================================== */
+
+function configurarEventosAcompanhamento() {
+    const btnGerar = document.getElementById("btnGerarAcompanhamento");
+    const btnCsv = document.getElementById("btnBaixarCsvAcompanhamento");
+    const btnPdf = document.getElementById("btnBaixarPdfAcompanhamento");
+    const periodo = document.getElementById("filtroPeriodoAcompanhamento");
+    const filtroRapido = document.getElementById("filtroRapidoAcompanhamento");
+    const btnOrdenar = document.getElementById("btnOrdenarAcompanhamento");
+
+    if (btnGerar) {
+        btnGerar.addEventListener("click", gerarRelatorioAcompanhamento);
+    }
+
+    if (btnCsv) {
+        btnCsv.addEventListener("click", baixarCsvAcompanhamento);
+    }
+
+    if (btnPdf) {
+        btnPdf.addEventListener("click", function () {
+            ativarAbaParaImpressao("acompanhamento");
+            window.print();
+        });
+    }
+
+    if (periodo) {
+        periodo.addEventListener("change", function () {
+            if (periodo.value !== "personalizado") {
+                aplicarPeriodoAcompanhamento();
+            }
+        });
+    }
+
+    if (filtroRapido) {
+        filtroRapido.addEventListener("change", aplicarFiltroRapidoAcompanhamento);
+    }
+
+    if (btnOrdenar) {
+        btnOrdenar.addEventListener("click", alternarOrdemAcompanhamento);
+    }
+}
+
+
+function definirPeriodoPadraoAcompanhamento() {
+    setValor("filtroPeriodoAcompanhamento", "mensal");
+    aplicarPeriodoAcompanhamento();
+}
+
+
+function aplicarPeriodoAcompanhamento() {
+    const periodo = getValor("filtroPeriodoAcompanhamento") || "mensal";
+    const intervalo = calcularIntervaloPorPeriodo(periodo);
+
+    setValor("dataInicioAcompanhamento", intervalo.inicio);
+    setValor("dataFimAcompanhamento", intervalo.fim);
+}
+
+
+function aplicarFiltroRapidoAcompanhamento() {
+    const filtroRapido = getValor("filtroRapidoAcompanhamento");
+
+    if (!filtroRapido) {
+        return;
+    }
+
+    const intervalo = calcularIntervaloRapido(filtroRapido);
+
+    setValor("filtroPeriodoAcompanhamento", "personalizado");
+    setValor("dataInicioAcompanhamento", intervalo.inicio);
+    setValor("dataFimAcompanhamento", intervalo.fim);
+
+    gerarRelatorioAcompanhamento();
+}
+
+
+async function gerarRelatorioAcompanhamento() {
+    const mensagem = document.getElementById("mensagemAcompanhamento");
+
+    try {
+        if (!banco) {
+            throw new Error("Supabase não carregou.");
+        }
+
+        if (mensagem) {
+            mensagem.textContent = "Carregando registros de acompanhamento PAEET...";
+        }
+
+        const filtros = obterFiltrosAcompanhamento();
+        const registros = await buscarAcompanhamentoPaeet(filtros);
+
+        dadosRelatorio.acompanhamento = ordenarAcompanhamentoPorData(registros);
+
+        renderizarIndicadoresAcompanhamento(dadosRelatorio.acompanhamento);
+        renderizarGraficosAcompanhamento(dadosRelatorio.acompanhamento);
+        renderizarTabelaAcompanhamento(dadosRelatorio.acompanhamento);
+
+        if (mensagem) {
+            mensagem.textContent = `Relatório de acompanhamento gerado com ${dadosRelatorio.acompanhamento.length} registros.`;
+        }
+
+    } catch (erro) {
+        console.error("Erro ao gerar acompanhamento:", erro);
+
+        if (mensagem) {
+            mensagem.textContent = "Erro ao gerar acompanhamento. Verifique se a tabela acoes_checklist_paeet foi criada e se há permissão de leitura.";
+        }
+    }
+}
+
+
+function obterFiltrosAcompanhamento() {
+    let dataInicio = getValor("dataInicioAcompanhamento");
+    let dataFim = getValor("dataFimAcompanhamento");
+
+    if (!dataInicio || !dataFim) {
+        aplicarPeriodoAcompanhamento();
+        dataInicio = getValor("dataInicioAcompanhamento");
+        dataFim = getValor("dataFimAcompanhamento");
+    }
+
+    return {
+        periodo: getValor("filtroPeriodoAcompanhamento") || "mensal",
+        status: getValor("filtroStatusAcompanhamento") || "todos",
+        item: getValor("filtroItemAcompanhamento") || "todos",
+        dataInicio: dataInicio,
+        dataFim: dataFim
+    };
+}
+
+
+async function buscarAcompanhamentoPaeet(filtros) {
+    let consulta = banco
+        .from("acoes_checklist_paeet")
+        .select("*")
+        .gte("data_acao", filtros.dataInicio)
+        .lte("data_acao", filtros.dataFim);
+
+    if (filtros.status !== "todos") {
+        consulta = consulta.eq("status", filtros.status);
+    }
+
+    if (filtros.item !== "todos") {
+        consulta = consulta.eq("item_codigo", filtros.item);
+    }
+
+    const { data, error } = await consulta;
+
+    if (error) {
+        console.warn("Erro ao buscar acompanhamento PAEET:", error);
+        return [];
+    }
+
+    return data || [];
+}
+
+
+function renderizarIndicadoresAcompanhamento(registros) {
+    const total = registros.length;
+    const concluidas = registros.filter(function (item) {
+        return normalizarTexto(item.status) === "concluido";
+    }).length;
+
+    const pendentes = registros.filter(function (item) {
+        return normalizarTexto(item.status) === "pendente";
+    }).length;
+
+    const dias = new Set(registros.map(function (item) {
+        return item.data_acao;
+    })).size;
+
+    const itemMais = obterItemMaisRegistrado(registros);
+
+    setTexto("indicadorAcoesTotal", total);
+    setTexto("indicadorAcoesConcluidas", concluidas);
+    setTexto("indicadorAcoesPendentes", pendentes);
+    setTexto("indicadorDiasAcompanhamento", dias);
+    setTexto("indicadorItemMaisRealizado", itemMais);
+}
+
+
+function obterItemMaisRegistrado(registros) {
+    if (!registros.length) {
+        return "-";
+    }
+
+    const contagem = contarPorCampo(registros, "item_codigo");
+    let maiorNome = "-";
+    let maiorValor = 0;
+
+    Object.entries(contagem).forEach(function ([nome, valor]) {
+        if (valor > maiorValor) {
+            maiorValor = valor;
+            maiorNome = formatarItemChecklist(nome);
+        }
+    });
+
+    return maiorNome;
+}
+
+
+function renderizarGraficosAcompanhamento(registros) {
+    renderizarGraficoBarras("graficoAcoesPorStatus", contarPorCampo(registros, "status"));
+    renderizarGraficoBarras("graficoAcoesPorItem", contarPorCampo(registros, "item_codigo"), formatarItemChecklist);
+}
+
+
+function renderizarTabelaAcompanhamento(registros) {
+    const corpo = document.getElementById("corpoTabelaAcompanhamentoPaeet");
+
+    if (!corpo) {
+        return;
+    }
+
+    if (!registros || registros.length === 0) {
+        corpo.innerHTML = `<tr><td colspan="8">Nenhum registro de acompanhamento encontrado para o período selecionado.</td></tr>`;
+        return;
+    }
+
+    corpo.innerHTML = registros.map(function (registro) {
+        const status = normalizarTexto(registro.status || "pendente");
+
+        return `
+            <tr>
+                <td>${formatarDataBR(registro.data_acao)}</td>
+                <td>${escaparHtml(cortarHora(registro.hora_acao))}</td>
+                <td>${escaparHtml(registro.item_descricao || formatarItemChecklist(registro.item_codigo))}</td>
+                <td><span class="badge-status-relatorio ${status}">${formatarStatus(status)}</span></td>
+                <td>${escaparHtml(registro.professor_nome || "-")}</td>
+                <td>${escaparHtml(registro.professor_email || "-")}</td>
+                <td>${escaparHtml(registro.origem || "-")}</td>
+                <td>${escaparHtml(registro.observacao || "-")}</td>
+            </tr>
+        `;
+    }).join("");
+}
+
+
+function alternarOrdemAcompanhamento() {
+    const botao = document.getElementById("btnOrdenarAcompanhamento");
+
+    if (!botao) {
+        return;
+    }
+
+    const ordemAtual = botao.dataset.ordem || "desc";
+    const novaOrdem = ordemAtual === "desc" ? "asc" : "desc";
+
+    botao.dataset.ordem = novaOrdem;
+
+    botao.textContent = novaOrdem === "desc"
+        ? "📅 Data da ação ↓ Mais recentes"
+        : "📅 Data da ação ↑ Mais antigas";
+
+    dadosRelatorio.acompanhamento = ordenarAcompanhamentoPorData(dadosRelatorio.acompanhamento || []);
+    renderizarTabelaAcompanhamento(dadosRelatorio.acompanhamento);
+}
+
+
+function ordenarAcompanhamentoPorData(registros) {
+    const botao = document.getElementById("btnOrdenarAcompanhamento");
+    const ordem = botao ? botao.dataset.ordem || "desc" : "desc";
+
+    return [...registros].sort(function (a, b) {
+        const dataA = new Date(`${a.data_acao || "1900-01-01"}T${a.hora_acao || "00:00"}`);
+        const dataB = new Date(`${b.data_acao || "1900-01-01"}T${b.hora_acao || "00:00"}`);
+
+        if (ordem === "asc") {
+            return dataA - dataB;
+        }
+
+        return dataB - dataA;
+    });
+}
+
+
+/* =====================================================
+   CSV / PDF
+===================================================== */
+
+function baixarCsvRelatorio() {
+    const eventos = dadosRelatorio.eventos || [];
+
+    const linhas = [
+        ["Data", "Tipo", "Título", "Descrição", "Início", "Fim", "Duração", "Curso", "Turma"]
+    ];
+
+    eventos.forEach(function (evento) {
+        linhas.push([
+            formatarDataBR(evento.data),
+            formatarTipo(evento.tipo),
+            evento.titulo || "",
+            evento.descricao || "",
+            evento.horario_inicio || "",
+            evento.horario_fim || "",
+            formatarMinutos(calcularDuracaoMinutos(evento.horario_inicio, evento.horario_fim)),
+            evento.curso_alvo || evento.curso || "Todos",
+            evento.turma_alvo || evento.turma || "Todas"
+        ]);
+    });
+
+    baixarArquivoCsv("relatorio_geral_paeet.csv", linhas);
+}
+
+
+function baixarCsvAcompanhamento() {
+    const registros = dadosRelatorio.acompanhamento || [];
+
+    const linhas = [
+        ["Data", "Hora", "Item", "Status", "Professor", "Email", "Origem", "Observação"]
+    ];
+
+    registros.forEach(function (registro) {
+        linhas.push([
+            formatarDataBR(registro.data_acao),
+            cortarHora(registro.hora_acao),
+            registro.item_descricao || formatarItemChecklist(registro.item_codigo),
+            formatarStatus(registro.status),
+            registro.professor_nome || "",
+            registro.professor_email || "",
+            registro.origem || "",
+            registro.observacao || ""
+        ]);
+    });
+
+    baixarArquivoCsv("relatorio_acompanhamento_paeet.csv", linhas);
+}
+
+
+function baixarArquivoCsv(nomeArquivo, linhas) {
+    const conteudo = linhas.map(function (linha) {
+        return linha.map(function (campo) {
+            const valor = String(campo ?? "").replace(/"/g, '""');
+            return `"${valor}"`;
+        }).join(";");
+    }).join("\n");
+
+    const blob = new Blob(["\ufeff" + conteudo], {
+        type: "text/csv;charset=utf-8;"
+    });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = nomeArquivo;
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+}
+
+
+function ativarAbaParaImpressao(nomeAba) {
+    document.querySelectorAll(".aba-relatorio").forEach(function (botao) {
+        botao.classList.toggle("ativa", botao.dataset.aba === nomeAba);
+    });
+
+    document.querySelectorAll(".conteudo-aba-relatorio").forEach(function (conteudo) {
+        conteudo.classList.remove("ativo");
+    });
+
+    if (nomeAba === "geral") {
+        document.getElementById("conteudoRelatorioGeral")?.classList.add("ativo");
+    }
+
+    if (nomeAba === "acompanhamento") {
+        document.getElementById("conteudoRelatorioAcompanhamento")?.classList.add("ativo");
+    }
+}
+
+
+/* =====================================================
+   FUNÇÕES AUXILIARES
+===================================================== */
+
+function calcularIntervaloPorPeriodo(periodo) {
+    const hoje = new Date();
+    let inicio = new Date(hoje);
+    let fim = new Date(hoje);
+
+    if (periodo === "diario") {
+        inicio = new Date(hoje);
+        fim = new Date(hoje);
+    } else if (periodo === "semanal") {
+        const diaSemana = hoje.getDay();
+        const diferencaSegunda = diaSemana === 0 ? -6 : 1 - diaSemana;
+        inicio = new Date(hoje);
+        inicio.setDate(hoje.getDate() + diferencaSegunda);
+        fim = new Date(inicio);
+        fim.setDate(inicio.getDate() + 6);
+    } else if (periodo === "bimestral") {
+        inicio = new Date(hoje);
+        inicio.setMonth(hoje.getMonth() - 1);
+        inicio.setDate(1);
+    } else if (periodo === "trimestral") {
+        inicio = new Date(hoje);
+        inicio.setMonth(hoje.getMonth() - 2);
+        inicio.setDate(1);
+    } else if (periodo === "semestral") {
+        inicio = new Date(hoje);
+        inicio.setMonth(hoje.getMonth() - 5);
+        inicio.setDate(1);
+    } else if (periodo === "anual") {
+        inicio = new Date(hoje.getFullYear(), 0, 1);
+        fim = new Date(hoje.getFullYear(), 11, 31);
+    } else {
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+    }
+
+    return {
+        inicio: formatarDataISO(inicio),
+        fim: formatarDataISO(fim)
+    };
+}
+
+
+function calcularIntervaloRapido(filtroRapido) {
+    const hoje = new Date();
+    let inicio = new Date(hoje);
+    let fim = new Date(hoje);
+
+    if (filtroRapido === "hoje") {
+        inicio = new Date(hoje);
+        fim = new Date(hoje);
+    }
+
+    if (filtroRapido === "ontem") {
+        inicio = new Date(hoje);
+        inicio.setDate(hoje.getDate() - 1);
+        fim = new Date(inicio);
+    }
+
+    if (filtroRapido === "semana_passada") {
+        const diaSemana = hoje.getDay();
+        const diferencaSegundaAtual = diaSemana === 0 ? -6 : 1 - diaSemana;
+        const segundaAtual = new Date(hoje);
+        segundaAtual.setDate(hoje.getDate() + diferencaSegundaAtual);
+
+        inicio = new Date(segundaAtual);
+        inicio.setDate(segundaAtual.getDate() - 7);
+
+        fim = new Date(inicio);
+        fim.setDate(inicio.getDate() + 6);
+    }
+
+    if (filtroRapido === "anteriores_neste_mes") {
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        fim = new Date(hoje);
+        fim.setDate(hoje.getDate() - 1);
+
+        if (fim < inicio) {
+            fim = new Date(hoje);
+        }
+    }
+
+    if (filtroRapido === "ultimo_mes") {
+        inicio = new Date(hoje);
+        inicio.setDate(hoje.getDate() - 29);
+        fim = new Date(hoje);
+    }
+
+    return {
+        inicio: formatarDataISO(inicio),
+        fim: formatarDataISO(fim)
+    };
+}
+
+
+function atualizarCabecalhoDocumento(filtros) {
+    setTexto("cursoDocumentoRelatorio", formatarCurso(filtros.curso));
+    setTexto("turmaDocumentoRelatorio", filtros.turma === "todas" ? "Todas" : filtros.turma);
+    setTexto("periodoDocumentoRelatorio", `${formatarDataBR(filtros.dataInicio)} a ${formatarDataBR(filtros.dataFim)}`);
+}
+
+
+function atualizarDataEmissao() {
+    setTexto("dataEmissaoRelatorio", new Date().toLocaleDateString("pt-BR"));
+}
+
+
+function renderizarGraficoBarras(idElemento, contagem, formatadorRotulo = formatarTipo) {
+    const elemento = document.getElementById(idElemento);
+
+    if (!elemento) {
+        return;
+    }
+
+    const entradas = Object.entries(contagem || {}).sort(function (a, b) {
+        return b[1] - a[1];
+    });
+
+    if (entradas.length === 0) {
+        elemento.innerHTML = `<p class="mensagem-relatorio">Nenhum dado encontrado.</p>`;
+        return;
+    }
+
+    const maior = Math.max(...entradas.map(function (item) {
+        return item[1];
+    }), 1);
+
+    elemento.innerHTML = entradas.map(function ([rotulo, valor]) {
+        const largura = Math.max((valor / maior) * 100, 5);
+
+        return `
+            <div class="linha-grafico-relatorio">
+                <span class="rotulo-grafico-relatorio">${escaparHtml(formatadorRotulo(rotulo))}</span>
+                <div class="barra-grafico-relatorio">
+                    <div class="preenchimento-grafico-relatorio" style="width:${largura}%"></div>
+                </div>
+                <span class="valor-grafico-relatorio">${valor}</span>
+            </div>
+        `;
+    }).join("");
+}
+
+
+function contarPorCampo(lista, campo) {
+    return (lista || []).reduce(function (acc, item) {
+        const valor = item[campo] || "não informado";
+        acc[valor] = (acc[valor] || 0) + 1;
+        return acc;
+    }, {});
+}
+
+
+function calcularDuracaoMinutos(inicio, fim) {
+    if (!inicio || !fim) {
+        return 0;
+    }
+
+    const [hi, mi] = inicio.split(":").map(Number);
+    const [hf, mf] = fim.split(":").map(Number);
+
+    if (Number.isNaN(hi) || Number.isNaN(hf)) {
+        return 0;
+    }
+
+    const totalInicio = hi * 60 + (mi || 0);
+    const totalFim = hf * 60 + (mf || 0);
+
+    if (totalFim < totalInicio) {
+        return 0;
+    }
+
+    return totalFim - totalInicio;
+}
+
+
+function formatarMinutos(minutos) {
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+
+    if (h === 0) {
+        return `${m}min`;
+    }
+
+    if (m === 0) {
+        return `${h}h`;
+    }
+
+    return `${h}h${String(m).padStart(2, "0")}min`;
+}
+
+
+function formatarDataISO(data) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+}
+
+
+function formatarDataBR(data) {
+    if (!data) {
+        return "-";
+    }
+
+    const partes = data.split("-");
+
+    if (partes.length !== 3) {
+        return data;
+    }
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+
+function formatarTipo(tipo) {
+    const mapa = {
+        aula: "Aula",
+        atendimento_aluno: "Atendimento ao aluno",
+        reuniao_gestao: "Reunião com gestão",
+        apoio_pedagogico: "Apoio pedagógico",
+        ot: "OT",
+        atestado_medico: "Atestado médico",
+        tre: "TRE",
+        ferias: "Férias",
+        feriado_prolongado: "Feriado prolongado",
+        outro: "Outro",
+        enviado: "Enviado",
+        em_analise: "Em análise",
+        respondido: "Respondido",
+        resolvido: "Resolvido",
+        arquivado: "Arquivado",
+        concluido: "Concluído",
+        pendente: "Pendente",
+        cancelado: "Cancelado"
+    };
+
+    return mapa[tipo] || tipo || "Não informado";
+}
+
+
+function formatarStatus(status) {
+    return formatarTipo(status);
+}
+
+
+function formatarItemChecklist(codigo) {
+    const mapa = {
+        frequencia: "Frequência/presença",
+        diario: "Diário e fechamento",
+        busca_ativa: "Busca ativa/acompanhamento",
+        intervencao: "Ações pedagógicas",
+        relatorio: "Relatório PAEET",
+        teste_checklist: "Teste do checklist"
+    };
+
+    return mapa[codigo] || codigo || "Não informado";
+}
+
+
+function formatarCurso(curso) {
+    const mapa = {
+        todos: "Todos",
+        desenvolvimento_sistemas: "Desenvolvimento de Sistemas",
+        vendas: "Vendas",
+        substituicoes: "Substituições"
+    };
+
+    return mapa[curso] || curso || "Todos";
+}
+
+
+function cortarHora(hora) {
+    if (!hora) {
+        return "-";
+    }
+
+    return hora.toString().slice(0, 5);
+}
+
+
+function normalizarTexto(texto) {
+    return (texto || "")
+        .toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+}
+
+
+function normalizarTurma(turma) {
+    return normalizarTexto(turma)
+        .replace("º", "")
+        .replace("°", "")
+        .replace(/\s/g, "");
+}
+
+
+function escaparHtml(texto) {
+    return String(texto ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function setTexto(id, valor) {
+    const elemento = document.getElementById(id);
+
+    if (elemento) {
+        elemento.textContent = valor;
+    }
+}
+
+
+function getValor(id) {
+    const elemento = document.getElementById(id);
+    return elemento ? elemento.value : "";
+}
+
+
+function setValor(id, valor) {
+    const elemento = document.getElementById(id);
+
+    if (elemento) {
+        elemento.value = valor;
+    }
 }

@@ -1,7 +1,22 @@
 /* =====================================================
    CENTRAL PAEET - RIOLANDO CONECTA TÉCNICO
    ARQUIVO: central-paeet.js
+   Versão: 20260614-02
+
+   Funções:
+   - Busca e filtro dos cards
+   - Checklist local no navegador
+   - Salvamento do checklist no Supabase
 ===================================================== */
+
+const SUPABASE_URL_CENTRAL = "https://pwomyoprbvoimqmikvev.supabase.co";
+const SUPABASE_KEY_CENTRAL = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
+
+let bancoCentral = null;
+
+if (window.supabase) {
+    bancoCentral = window.supabase.createClient(SUPABASE_URL_CENTRAL, SUPABASE_KEY_CENTRAL);
+}
 
 document.addEventListener("DOMContentLoaded", iniciarCentralPaeet);
 
@@ -93,7 +108,7 @@ function normalizarTextoCentral(texto) {
 
 
 /* =====================================================
-   CHECKLIST LOCAL
+   CHECKLIST LOCAL + SUPABASE
 ===================================================== */
 
 function carregarChecklistCentral() {
@@ -105,11 +120,113 @@ function carregarChecklistCentral() {
 
         check.checked = salvo === "true";
 
-        check.addEventListener("change", function () {
+        check.addEventListener("change", async function () {
             localStorage.setItem(chave, check.checked ? "true" : "false");
             atualizarStatusChecklistCentral();
+
+            await salvarAcaoChecklistNoServidor(check);
         });
     });
+}
+
+
+async function salvarAcaoChecklistNoServidor(check) {
+    const codigo = check.dataset.check;
+    const descricao = check.dataset.descricao || check.closest("label")?.innerText?.trim() || codigo;
+    const status = check.checked ? "concluido" : "pendente";
+
+    atualizarMensagemServidorChecklist("Salvando ação no servidor...");
+
+    if (!bancoCentral) {
+        atualizarMensagemServidorChecklist("Supabase não carregou. A ação ficou salva apenas neste navegador.", true);
+        return;
+    }
+
+    try {
+        const usuario = await obterUsuarioAtualCentral();
+        const email = usuario?.email || localStorage.getItem("adminEmail") || "nao_identificado@riolandoconecta.local";
+
+        const hoje = formatarDataLocalCentral(new Date());
+        const hora = formatarHoraLocalCentral(new Date());
+
+        const registroExistente = await buscarRegistroChecklistDoDia(email, codigo, hoje);
+
+        if (registroExistente) {
+            const { error } = await bancoCentral
+                .from("acoes_checklist_paeet")
+                .update({
+                    hora_acao: hora,
+                    status: status,
+                    item_descricao: descricao,
+                    professor_nome: "Willyan Vieira da Cruz",
+                    professor_email: email,
+                    origem: "central_paeet"
+                })
+                .eq("id", registroExistente.id);
+
+            if (error) {
+                throw error;
+            }
+
+            atualizarMensagemServidorChecklist("Ação atualizada no servidor com sucesso.");
+            return;
+        }
+
+        const { error } = await bancoCentral
+            .from("acoes_checklist_paeet")
+            .insert({
+                data_acao: hoje,
+                hora_acao: hora,
+                professor_nome: "Willyan Vieira da Cruz",
+                professor_email: email,
+                item_codigo: codigo,
+                item_descricao: descricao,
+                status: status,
+                origem: "central_paeet"
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        atualizarMensagemServidorChecklist("Ação salva no servidor com sucesso.");
+
+    } catch (erro) {
+        console.error("Erro ao salvar checklist PAEET:", erro);
+        atualizarMensagemServidorChecklist(
+            "Não foi possível salvar no servidor. Verifique se a tabela acoes_checklist_paeet foi criada e se o usuário está autenticado.",
+            true
+        );
+    }
+}
+
+
+async function buscarRegistroChecklistDoDia(email, codigo, data) {
+    const { data: registros, error } = await bancoCentral
+        .from("acoes_checklist_paeet")
+        .select("*")
+        .eq("professor_email", email)
+        .eq("item_codigo", codigo)
+        .eq("data_acao", data)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+    if (error) {
+        console.warn("Não foi possível consultar registro existente:", error);
+        return null;
+    }
+
+    return registros && registros.length > 0 ? registros[0] : null;
+}
+
+
+async function obterUsuarioAtualCentral() {
+    try {
+        const { data } = await bancoCentral.auth.getUser();
+        return data?.user || null;
+    } catch (erro) {
+        return null;
+    }
 }
 
 
@@ -135,8 +252,8 @@ function configurarBotaoLimparChecklist() {
         return;
     }
 
-    botao.addEventListener("click", function () {
-        const confirmar = confirm("Deseja limpar o checklist da Central PAEET?");
+    botao.addEventListener("click", async function () {
+        const confirmar = confirm("Deseja limpar o checklist da Central PAEET? Essa ação também registrará os itens como pendentes no servidor.");
 
         if (!confirmar) {
             return;
@@ -144,16 +261,48 @@ function configurarBotaoLimparChecklist() {
 
         const checks = document.querySelectorAll("#checklistCentralPaeet input[type='checkbox']");
 
-        checks.forEach(function (check) {
+        for (const check of checks) {
             check.checked = false;
             localStorage.removeItem(criarChaveChecklist(check.dataset.check));
-        });
+            await salvarAcaoChecklistNoServidor(check);
+        }
 
         atualizarStatusChecklistCentral();
+        atualizarMensagemServidorChecklist("Checklist limpo e atualizado no servidor.");
     });
 }
 
 
 function criarChaveChecklist(nome) {
     return `central_paeet_check_${nome}`;
+}
+
+
+function atualizarMensagemServidorChecklist(mensagem, erro = false) {
+    const elemento = document.getElementById("statusServidorChecklistCentral");
+
+    if (!elemento) {
+        return;
+    }
+
+    elemento.textContent = mensagem;
+    elemento.classList.toggle("erro", erro);
+}
+
+
+function formatarDataLocalCentral(data) {
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
+}
+
+
+function formatarHoraLocalCentral(data) {
+    const hora = String(data.getHours()).padStart(2, "0");
+    const minuto = String(data.getMinutes()).padStart(2, "0");
+    const segundo = String(data.getSeconds()).padStart(2, "0");
+
+    return `${hora}:${minuto}:${segundo}`;
 }

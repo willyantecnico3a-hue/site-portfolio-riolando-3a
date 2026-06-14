@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatórios e Indicadores PAEET</title>
 
-    <!-- CSS da página de relatórios -->
-    <link rel="stylesheet" href="relatorios.css?v=20260614-05">
+    <link rel="stylesheet" href="relatorios.css?v=20260614-06">
 </head>
 
 <body>
@@ -19,18 +18,14 @@
 
             <p>
                 Painel de análise pedagógica do Professor e PAEET Willyan Vieira da Cruz,
-                com dados reais da agenda, portfólios e chamados dos alunos.
+                com dados reais da agenda, portfólios, chamados e acompanhamento das ações PAEET.
             </p>
         </div>
 
         <div class="acoes-topo-relatorio">
-            <a href="admin.html" class="btn-voltar-admin">
-                ⬅ Voltar ao Admin
-            </a>
-
-            <a href="agenda.html" class="btn-voltar-agenda">
-                📅 Agenda
-            </a>
+            <a href="admin.html" class="btn-voltar-admin">⬅ Voltar ao Admin</a>
+            <a href="central-paeet.html" class="btn-voltar-agenda">🎯 Central PAEET</a>
+            <a href="agenda.html" class="btn-voltar-agenda">📅 Agenda</a>
         </div>
     </header>
 
@@ -60,232 +55,394 @@
             </section>
 
 
-            <section class="card-filtros-relatorio">
+            <nav class="abas-relatorio">
+                <button type="button" class="aba-relatorio ativa" data-aba="geral">
+                    📊 Relatório Geral
+                </button>
 
-                <h2>🔎 Filtros do relatório</h2>
+                <button type="button" class="aba-relatorio" data-aba="acompanhamento">
+                    ✅ Acompanhamento do Professor e PAEET
+                </button>
+            </nav>
 
-                <div class="grade-filtros-relatorio">
 
-                    <div>
-                        <label for="filtroPeriodoRelatorio">Período</label>
-                        <select id="filtroPeriodoRelatorio">
-                            <option value="mensal">Mensal</option>
-                            <option value="semanal">Semanal</option>
-                            <option value="bimestral">Bimestral</option>
-                            <option value="semestral">Semestral</option>
-                            <option value="anual">Anual</option>
-                            <option value="personalizado">Personalizado</option>
-                        </select>
+            <section id="conteudoRelatorioGeral" class="conteudo-aba-relatorio ativo">
+
+                <section class="card-filtros-relatorio">
+                    <h2>🔎 Filtros do relatório</h2>
+
+                    <div class="grade-filtros-relatorio">
+
+                        <div>
+                            <label for="filtroPeriodoRelatorio">Período</label>
+                            <select id="filtroPeriodoRelatorio">
+                                <option value="mensal">Mensal</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="bimestral">Bimestral</option>
+                                <option value="trimestral">Trimestral</option>
+                                <option value="semestral">Semestral</option>
+                                <option value="anual">Anual</option>
+                                <option value="personalizado">Personalizado</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="filtroCursoRelatorio">Curso</label>
+                            <select id="filtroCursoRelatorio">
+                                <option value="todos">Todos</option>
+                                <option value="desenvolvimento_sistemas" selected>Desenvolvimento de Sistemas</option>
+                                <option value="vendas">Vendas</option>
+                                <option value="substituicoes">Substituições</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="filtroTurmaRelatorio">Turma</label>
+                            <select id="filtroTurmaRelatorio">
+                                <option value="todas">Todas</option>
+                                <option value="2ºA">2ºA</option>
+                                <option value="3ºA">3ºA</option>
+                                <option value="3ºB">3ºB</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="filtroTipoEventoRelatorio">Tipo de evento</label>
+                            <select id="filtroTipoEventoRelatorio">
+                                <option value="todos">Todos</option>
+                                <option value="aula">Aulas</option>
+                                <option value="atendimento_aluno">Atendimento ao aluno</option>
+                                <option value="reuniao_gestao">Reunião com gestão</option>
+                                <option value="apoio_pedagogico">Apoio pedagógico</option>
+                                <option value="ot">OT</option>
+                                <option value="atestado_medico">Atestado médico</option>
+                                <option value="tre">TRE</option>
+                                <option value="ferias">Férias</option>
+                                <option value="feriado_prolongado">Feriado prolongado</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="dataInicioRelatorio">Data inicial</label>
+                            <input type="date" id="dataInicioRelatorio">
+                        </div>
+
+                        <div>
+                            <label for="dataFimRelatorio">Data final</label>
+                            <input type="date" id="dataFimRelatorio">
+                        </div>
+
                     </div>
 
-                    <div>
-                        <label for="filtroCursoRelatorio">Curso</label>
-                        <select id="filtroCursoRelatorio">
-                            <option value="todos">Todos</option>
-                            <option value="desenvolvimento_sistemas" selected>Desenvolvimento de Sistemas</option>
-                            <option value="vendas">Vendas</option>
-                            <option value="substituicoes">Substituições</option>
-                        </select>
+                    <div class="acoes-relatorio">
+                        <button type="button" id="btnGerarRelatorio">📊 Gerar relatório</button>
+                        <button type="button" id="btnBaixarCsvRelatorio">⬇️ Baixar CSV</button>
+                        <button type="button" id="btnBaixarPdfRelatorio">📄 Baixar PDF</button>
                     </div>
 
-                    <div>
-                        <label for="filtroTurmaRelatorio">Turma</label>
-                        <select id="filtroTurmaRelatorio">
-                            <option value="todas">Todas</option>
-                            <option value="2ºA">2ºA</option>
-                            <option value="3ºA">3ºA</option>
-                            <option value="3ºB">3ºB</option>
-                        </select>
+                    <p id="mensagemRelatorio" class="mensagem-relatorio"></p>
+                </section>
+
+
+                <section class="grade-indicadores-relatorio">
+                    <article class="card-indicador-relatorio">
+                        <span>📚</span>
+                        <h3 id="indicadorAulasLecionadas">0</h3>
+                        <p>Aulas lecionadas</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>📅</span>
+                        <h3 id="indicadorTotalEventos">0</h3>
+                        <p>Eventos no calendário</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>⏱️</span>
+                        <h3 id="indicadorCargaHoraria">0h</h3>
+                        <p>Carga horária registrada</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>🧑‍💻</span>
+                        <h3 id="indicadorPortfolios">0</h3>
+                        <p>Portfólios enviados</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>📨</span>
+                        <h3 id="indicadorChamadosEnviados">0</h3>
+                        <p>Chamados enviados</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>🟡</span>
+                        <h3 id="indicadorChamadosAnalise">0</h3>
+                        <p>Em análise</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>✅</span>
+                        <h3 id="indicadorChamadosRespondidos">0</h3>
+                        <p>Respondidos</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>🟢</span>
+                        <h3 id="indicadorChamadosResolvidos">0</h3>
+                        <p>Resolvidos</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>🗄️</span>
+                        <h3 id="indicadorChamadosArquivados">0</h3>
+                        <p>Arquivados</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio alerta">
+                        <span>⚠️</span>
+                        <h3 id="indicadorIntercorrencias">0</h3>
+                        <p>Intercorrências especiais</p>
+                    </article>
+                </section>
+
+
+                <section class="area-graficos-relatorio">
+                    <div class="card-grafico-relatorio">
+                        <h2>📊 Eventos por tipo</h2>
+                        <div id="graficoEventosPorTipo" class="grafico-barras-relatorio"></div>
                     </div>
 
-                    <div>
-                        <label for="filtroTipoEventoRelatorio">Tipo de evento</label>
-                        <select id="filtroTipoEventoRelatorio">
-                            <option value="todos">Todos</option>
-                            <option value="aula">Aulas</option>
-                            <option value="atendimento_aluno">Atendimento ao aluno</option>
-                            <option value="reuniao_gestao">Reunião com gestão</option>
-                            <option value="apoio_pedagogico">Apoio pedagógico</option>
-                            <option value="ot">OT</option>
-                            <option value="atestado_medico">Atestado médico</option>
-                            <option value="tre">TRE</option>
-                            <option value="ferias">Férias</option>
-                            <option value="feriado_prolongado">Feriado prolongado</option>
-                            <option value="outro">Outro</option>
-                        </select>
+                    <div class="card-grafico-relatorio">
+                        <h2>📨 Chamados por status</h2>
+                        <div id="graficoChamadosStatus" class="grafico-barras-relatorio"></div>
                     </div>
+                </section>
 
-                    <div>
-                        <label for="dataInicioRelatorio">Data inicial</label>
-                        <input type="date" id="dataInicioRelatorio">
+
+                <section class="card-tabela-relatorio card-organizador-eventos-relatorio">
+                    <h2>🗂️ Organizar eventos detalhados</h2>
+
+                    <div class="organizador-relatorio-windows">
+                        <div class="grupo-organizador-relatorio">
+                            <label for="filtroRapidoDataRelatorio">Filtro rápido</label>
+
+                            <select id="filtroRapidoDataRelatorio">
+                                <option value="">Selecionar período rápido</option>
+                                <option value="hoje">Hoje</option>
+                                <option value="ontem">Ontem</option>
+                                <option value="semana_passada">Semana passada</option>
+                                <option value="anteriores_neste_mes">Anteriores neste mês</option>
+                                <option value="ultimo_mes">Último mês</option>
+                            </select>
+                        </div>
+
+                        <div class="grupo-organizador-relatorio">
+                            <label for="btnOrdenarDataRelatorio">Organizar por data</label>
+
+                            <button type="button" id="btnOrdenarDataRelatorio" class="btn-ordenar-data-relatorio" data-ordem="desc">
+                                📅 Data do evento ↓ Mais recentes
+                            </button>
+                        </div>
                     </div>
+                </section>
 
-                    <div>
-                        <label for="dataFimRelatorio">Data final</label>
-                        <input type="date" id="dataFimRelatorio">
+
+                <section class="card-tabela-relatorio">
+                    <h2>📋 Eventos detalhados do período</h2>
+
+                    <div class="tabela-responsiva-relatorio">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Tipo</th>
+                                    <th>Título</th>
+                                    <th>Descrição</th>
+                                    <th>Início</th>
+                                    <th>Fim</th>
+                                    <th>Duração</th>
+                                    <th>Curso</th>
+                                    <th>Turma</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="corpoTabelaEventosRelatorio">
+                                <tr>
+                                    <td colspan="9">Clique em “Gerar relatório” para carregar os dados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-
-                </div>
-
-                <div class="acoes-relatorio">
-                    <button type="button" id="btnGerarRelatorio">
-                        📊 Gerar relatório
-                    </button>
-
-                    <button type="button" id="btnBaixarCsvRelatorio">
-                        ⬇️ Baixar CSV
-                    </button>
-
-                    <button type="button" id="btnBaixarPdfRelatorio">
-                        📄 Baixar PDF
-                    </button>
-                </div>
-
-                <p id="mensagemRelatorio" class="mensagem-relatorio"></p>
+                </section>
 
             </section>
 
 
-            <section class="grade-indicadores-relatorio">
+            <section id="conteudoRelatorioAcompanhamento" class="conteudo-aba-relatorio">
 
-                <article class="card-indicador-relatorio">
-                    <span>📚</span>
-                    <h3 id="indicadorAulasLecionadas">0</h3>
-                    <p>Aulas lecionadas</p>
-                </article>
+                <section class="card-filtros-relatorio">
+                    <h2>✅ Relatório de Acompanhamento do Professor e PAEET</h2>
 
-                <article class="card-indicador-relatorio">
-                    <span>📅</span>
-                    <h3 id="indicadorTotalEventos">0</h3>
-                    <p>Eventos no calendário</p>
-                </article>
+                    <p class="texto-apoio-relatorio">
+                        Esta guia mostra as ações registradas no checklist da Central PAEET, permitindo gerar
+                        relatório diário, semanal, mensal, bimestral, trimestral, semestral ou anual.
+                    </p>
 
-                <article class="card-indicador-relatorio">
-                    <span>⏱️</span>
-                    <h3 id="indicadorCargaHoraria">0h</h3>
-                    <p>Carga horária registrada</p>
-                </article>
+                    <div class="organizador-relatorio-windows organizador-acompanhamento">
+                        <div class="grupo-organizador-relatorio">
+                            <label for="filtroRapidoAcompanhamento">Filtro rápido</label>
 
-                <article class="card-indicador-relatorio">
-                    <span>🧑‍💻</span>
-                    <h3 id="indicadorPortfolios">0</h3>
-                    <p>Portfólios enviados</p>
-                </article>
+                            <select id="filtroRapidoAcompanhamento">
+                                <option value="">Selecionar período rápido</option>
+                                <option value="hoje">Hoje</option>
+                                <option value="ontem">Ontem</option>
+                                <option value="semana_passada">Semana passada</option>
+                                <option value="anteriores_neste_mes">Anteriores neste mês</option>
+                                <option value="ultimo_mes">Último mês</option>
+                            </select>
+                        </div>
 
-                <article class="card-indicador-relatorio">
-                    <span>📨</span>
-                    <h3 id="indicadorChamadosEnviados">0</h3>
-                    <p>Chamados enviados</p>
-                </article>
+                        <div class="grupo-organizador-relatorio">
+                            <label for="btnOrdenarAcompanhamento">Organizar por data</label>
 
-                <article class="card-indicador-relatorio">
-                    <span>🟡</span>
-                    <h3 id="indicadorChamadosAnalise">0</h3>
-                    <p>Em análise</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>✅</span>
-                    <h3 id="indicadorChamadosRespondidos">0</h3>
-                    <p>Respondidos</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>🟢</span>
-                    <h3 id="indicadorChamadosResolvidos">0</h3>
-                    <p>Resolvidos</p>
-                </article>
-
-                <article class="card-indicador-relatorio">
-                    <span>🗄️</span>
-                    <h3 id="indicadorChamadosArquivados">0</h3>
-                    <p>Arquivados</p>
-                </article>
-
-                <article class="card-indicador-relatorio alerta">
-                    <span>⚠️</span>
-                    <h3 id="indicadorIntercorrencias">0</h3>
-                    <p>Intercorrências especiais</p>
-                </article>
-
-            </section>
-
-
-            <section class="area-graficos-relatorio">
-
-                <div class="card-grafico-relatorio">
-                    <h2>📊 Eventos por tipo</h2>
-                    <div id="graficoEventosPorTipo" class="grafico-barras-relatorio"></div>
-                </div>
-
-                <div class="card-grafico-relatorio">
-                    <h2>📨 Chamados por status</h2>
-                    <div id="graficoChamadosStatus" class="grafico-barras-relatorio"></div>
-                </div>
-
-            </section>
-
-
-            <!-- Organizador solicitado: abaixo dos gráficos e antes da tabela detalhada -->
-            <section class="card-tabela-relatorio card-organizador-eventos-relatorio">
-
-                <h2>🗂️ Organizar eventos detalhados</h2>
-
-                <div class="organizador-relatorio-windows">
-
-                    <div class="grupo-organizador-relatorio">
-                        <label for="filtroRapidoDataRelatorio">Filtro rápido</label>
-
-                        <select id="filtroRapidoDataRelatorio">
-                            <option value="">Selecionar período rápido</option>
-                            <option value="hoje">Hoje</option>
-                            <option value="ontem">Ontem</option>
-                            <option value="semana_passada">Semana passada</option>
-                            <option value="anteriores_neste_mes">Anteriores neste mês</option>
-                            <option value="ultimo_mes">Último mês</option>
-                        </select>
+                            <button type="button" id="btnOrdenarAcompanhamento" class="btn-ordenar-data-relatorio" data-ordem="desc">
+                                📅 Data da ação ↓ Mais recentes
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="grupo-organizador-relatorio">
-                        <label for="btnOrdenarDataRelatorio">Organizar por data</label>
+                    <div class="grade-filtros-relatorio">
+                        <div>
+                            <label for="filtroPeriodoAcompanhamento">Período</label>
+                            <select id="filtroPeriodoAcompanhamento">
+                                <option value="diario">Diário</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="mensal" selected>Mensal</option>
+                                <option value="bimestral">Bimestral</option>
+                                <option value="trimestral">Trimestral</option>
+                                <option value="semestral">Semestral</option>
+                                <option value="anual">Anual</option>
+                                <option value="personalizado">Personalizado</option>
+                            </select>
+                        </div>
 
-                        <button type="button" id="btnOrdenarDataRelatorio" class="btn-ordenar-data-relatorio" data-ordem="desc">
-                            📅 Data do evento ↓ Mais recentes
-                        </button>
+                        <div>
+                            <label for="filtroStatusAcompanhamento">Status</label>
+                            <select id="filtroStatusAcompanhamento">
+                                <option value="todos">Todos</option>
+                                <option value="concluido">Concluído</option>
+                                <option value="pendente">Pendente</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="filtroItemAcompanhamento">Item do checklist</label>
+                            <select id="filtroItemAcompanhamento">
+                                <option value="todos">Todos</option>
+                                <option value="frequencia">Frequência/presença</option>
+                                <option value="diario">Diário e fechamento</option>
+                                <option value="busca_ativa">Busca ativa/acompanhamento</option>
+                                <option value="intervencao">Ações pedagógicas</option>
+                                <option value="relatorio">Relatório PAEET</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="dataInicioAcompanhamento">Data inicial</label>
+                            <input type="date" id="dataInicioAcompanhamento">
+                        </div>
+
+                        <div>
+                            <label for="dataFimAcompanhamento">Data final</label>
+                            <input type="date" id="dataFimAcompanhamento">
+                        </div>
                     </div>
 
-                </div>
+                    <div class="acoes-relatorio">
+                        <button type="button" id="btnGerarAcompanhamento">✅ Gerar acompanhamento</button>
+                        <button type="button" id="btnBaixarCsvAcompanhamento">⬇️ Baixar CSV</button>
+                        <button type="button" id="btnBaixarPdfAcompanhamento">📄 Baixar PDF</button>
+                    </div>
 
-            </section>
+                    <p id="mensagemAcompanhamento" class="mensagem-relatorio"></p>
+                </section>
 
 
-            <section class="card-tabela-relatorio">
+                <section class="grade-indicadores-relatorio indicadores-acompanhamento">
+                    <article class="card-indicador-relatorio">
+                        <span>✅</span>
+                        <h3 id="indicadorAcoesTotal">0</h3>
+                        <p>Total de ações</p>
+                    </article>
 
-                <h2>📋 Eventos detalhados do período</h2>
+                    <article class="card-indicador-relatorio">
+                        <span>🟢</span>
+                        <h3 id="indicadorAcoesConcluidas">0</h3>
+                        <p>Ações concluídas</p>
+                    </article>
 
-                <div class="tabela-responsiva-relatorio">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Tipo</th>
-                                <th>Título</th>
-                                <th>Descrição</th>
-                                <th>Início</th>
-                                <th>Fim</th>
-                                <th>Duração</th>
-                                <th>Curso</th>
-                                <th>Turma</th>
-                            </tr>
-                        </thead>
+                    <article class="card-indicador-relatorio alerta">
+                        <span>🟡</span>
+                        <h3 id="indicadorAcoesPendentes">0</h3>
+                        <p>Ações pendentes</p>
+                    </article>
 
-                        <tbody id="corpoTabelaEventosRelatorio">
-                            <tr>
-                                <td colspan="9">Clique em “Gerar relatório” para carregar os dados.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                    <article class="card-indicador-relatorio">
+                        <span>📅</span>
+                        <h3 id="indicadorDiasAcompanhamento">0</h3>
+                        <p>Dias com registro</p>
+                    </article>
+
+                    <article class="card-indicador-relatorio">
+                        <span>🏆</span>
+                        <h3 id="indicadorItemMaisRealizado">-</h3>
+                        <p>Item mais registrado</p>
+                    </article>
+                </section>
+
+
+                <section class="area-graficos-relatorio">
+                    <div class="card-grafico-relatorio">
+                        <h2>✅ Ações por status</h2>
+                        <div id="graficoAcoesPorStatus" class="grafico-barras-relatorio"></div>
+                    </div>
+
+                    <div class="card-grafico-relatorio">
+                        <h2>📌 Ações por item do checklist</h2>
+                        <div id="graficoAcoesPorItem" class="grafico-barras-relatorio"></div>
+                    </div>
+                </section>
+
+
+                <section class="card-tabela-relatorio">
+                    <h2>📋 Registros de acompanhamento PAEET</h2>
+
+                    <div class="tabela-responsiva-relatorio">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Hora</th>
+                                    <th>Item</th>
+                                    <th>Status</th>
+                                    <th>Professor</th>
+                                    <th>E-mail</th>
+                                    <th>Origem</th>
+                                    <th>Observação</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="corpoTabelaAcompanhamentoPaeet">
+                                <tr>
+                                    <td colspan="8">Clique em “Gerar acompanhamento” para carregar os dados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
 
             </section>
 
@@ -294,11 +451,8 @@
     </main>
 
 
-    <!-- O Supabase precisa carregar antes do relatorios.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- JavaScript da página de relatórios -->
-    <script src="relatorios.js?v=20260614-05"></script>
+    <script src="relatorios.js?v=20260614-06"></script>
 
 </body>
 </html>
