@@ -2,7 +2,9 @@
    AGENDA PEDAGÓGICA INTERATIVA
    HTML + CSS + JAVASCRIPT PURO + SUPABASE
 
-   VERSÃO LIMPA:
+   VERSÃO CORRIGIDA COM PERFIS:
+   - Admin pode criar, editar e excluir eventos.
+   - Professor e coordenação podem visualizar a agenda sem editar.
    - Remove todas as tentativas de modal flutuante/sobreposto.
    - Mantém o formulário dentro do modal do dia.
    - Botão EDITAR volta a funcionar.
@@ -34,6 +36,8 @@ let eventoEmEdicaoId = null;
 let eventoParaExcluirId = null;
 let eventoParaExcluirObjeto = null;
 let usuarioFezSwipeNoCalendario = false;
+let perfilAcessoAgenda = null;
+let agendaSomenteLeitura = false;
 
 
 /* =====================================================
@@ -113,34 +117,23 @@ async function carregarPerfilUsuario() {
             curso: "todos"
         };
 
-        console.log("Agenda aberta sem login. Perfil visitante aplicado.");
+        perfilAcessoAgenda = null;
+        agendaSomenteLeitura = true;
+
+        console.log("Agenda aberta sem login. Perfil visitante aplicado em modo visualização.");
         return;
     }
 
     const usuario = userData.user;
+    const emailUsuario = usuario.email ? usuario.email.toLowerCase() : "";
 
-    console.log("Usuário logado na agenda:", usuario.email);
+    console.log("Usuário logado na agenda:", emailUsuario);
 
-    const { data: perfil, error: erroPerfil } = await banco
-        .from("perfis")
-        .select("id, nome, email, funcao, curso")
-        .eq("id", usuario.id)
-        .maybeSingle();
-
-    if (erroPerfil) {
-        console.log("Erro ao buscar perfil:", erroPerfil);
-    }
-
-    if (perfil) {
-        perfilUsuario = perfil;
-        console.log("Perfil encontrado na tabela perfis:", perfilUsuario);
-        return;
-    }
-
+    // 1º - Admin tem prioridade para liberar edição total
     const { data: admin, error: erroAdmin } = await banco
         .from("admins")
         .select("email")
-        .eq("email", usuario.email)
+        .ilike("email", emailUsuario)
         .maybeSingle();
 
     if (erroAdmin) {
@@ -156,10 +149,71 @@ async function carregarPerfilUsuario() {
             curso: "todos"
         };
 
+        perfilAcessoAgenda = {
+            user_id: usuario.id,
+            nome: usuario.email,
+            email: usuario.email,
+            perfil: "admin",
+            ativo: true
+        };
+
+        agendaSomenteLeitura = false;
+
         console.log("Usuário reconhecido como admin pela tabela admins:", perfilUsuario);
         return;
     }
 
+    // 2º - Perfil limitado de professor/coordenação
+    const { data: perfilAcesso, error: erroPerfilAcesso } = await banco
+        .from("perfis_acesso")
+        .select("*")
+        .ilike("email", emailUsuario)
+        .eq("ativo", true)
+        .maybeSingle();
+
+    if (erroPerfilAcesso) {
+        console.log("Erro ao buscar perfil em perfis_acesso:", erroPerfilAcesso);
+    }
+
+    if (perfilAcesso) {
+        perfilAcessoAgenda = perfilAcesso;
+
+        perfilUsuario = {
+            id: usuario.id,
+            nome: perfilAcesso.nome || usuario.email,
+            email: usuario.email,
+            funcao: perfilAcesso.perfil,
+            curso: perfilAcesso.curso || "todos"
+        };
+
+        agendaSomenteLeitura =
+            perfilAcesso.perfil === "professor" ||
+            perfilAcesso.perfil === "coordenacao";
+
+        console.log("Perfil encontrado em perfis_acesso:", perfilUsuario);
+        return;
+    }
+
+    // 3º - Compatibilidade com tabela antiga perfis
+    const { data: perfil, error: erroPerfil } = await banco
+        .from("perfis")
+        .select("id, nome, email, funcao, curso")
+        .eq("id", usuario.id)
+        .maybeSingle();
+
+    if (erroPerfil) {
+        console.log("Erro ao buscar perfil:", erroPerfil);
+    }
+
+    if (perfil) {
+        perfilUsuario = perfil;
+        agendaSomenteLeitura = perfil.funcao !== "admin";
+
+        console.log("Perfil encontrado na tabela perfis:", perfilUsuario);
+        return;
+    }
+
+    // 4º - Usuário autenticado, mas sem permissão administrativa
     perfilUsuario = {
         id: usuario.id,
         nome: usuario.email,
@@ -167,6 +221,9 @@ async function carregarPerfilUsuario() {
         funcao: "visitante",
         curso: "todos"
     };
+
+    perfilAcessoAgenda = null;
+    agendaSomenteLeitura = true;
 
     console.log("Usuário logado sem perfil específico. Tratado como visitante:", perfilUsuario);
 }
@@ -177,9 +234,7 @@ async function carregarPerfilUsuario() {
 ===================================================== */
 
 function configurarPermissoesDaTela() {
-    const usuarioEhAdmin =
-        perfilUsuario &&
-        perfilUsuario.funcao === "admin";
+    const usuarioEhAdmin = usuarioPodeEditarAgenda();
 
     if (areaFiltroAdmin) {
         areaFiltroAdmin.style.display = "block";
@@ -199,11 +254,82 @@ function configurarPermissoesDaTela() {
         areaConfiguracaoExpedientePaeet.style.display = usuarioEhAdmin ? "block" : "none";
     }
 
+    if (!usuarioEhAdmin) {
+        agendaSomenteLeitura = true;
+        aplicarModoSomenteLeituraAgenda();
+    } else {
+        agendaSomenteLeitura = false;
+        document.body.classList.remove("modo-somente-leitura-agenda");
+
+        const aviso = document.getElementById("avisoAgendaSomenteLeitura");
+
+        if (aviso) {
+            aviso.style.display = "none";
+        }
+    }
+
     console.log(
         usuarioEhAdmin
             ? "Agenda em modo admin: criação, edição e exclusão liberados."
-            : "Agenda em modo público: edição desativada."
+            : "Agenda em modo visualização: criação, edição e exclusão bloqueadas."
     );
+}
+
+function usuarioPodeEditarAgenda() {
+    return Boolean(
+        perfilUsuario &&
+        perfilUsuario.funcao === "admin"
+    );
+}
+
+function usuarioPodeVisualizarAgenda() {
+    return Boolean(
+        perfilUsuario &&
+        ["admin", "professor", "coordenacao", "visitante"].includes(perfilUsuario.funcao)
+    );
+}
+
+function aplicarModoSomenteLeituraAgenda() {
+    document.body.classList.add("modo-somente-leitura-agenda");
+
+    const aviso = document.getElementById("avisoAgendaSomenteLeitura");
+
+    if (aviso) {
+        aviso.style.display = "block";
+
+        if (perfilUsuario && (perfilUsuario.funcao === "professor" || perfilUsuario.funcao === "coordenacao")) {
+            aviso.innerHTML = `
+                <strong>Modo visualização:</strong>
+                professores e coordenação podem consultar a agenda, mas não podem criar,
+                editar ou excluir eventos.
+            `;
+        } else {
+            aviso.innerHTML = `
+                <strong>Modo visualização:</strong>
+                para criar, editar ou excluir eventos, entre com uma conta administradora.
+            `;
+        }
+    }
+
+    const seletores = [
+        "#btnAbrirFormEvento",
+        "#formEvento",
+        "#btnExcluirSomenteEste",
+        "#btnExcluirEsteEProximos",
+        "#btnExcluirTodaSerie",
+        "#areaConfiguracaoExpedientePaeet",
+        ".btn-editar-evento",
+        ".btn-editar-evento-modal",
+        ".btn-excluir-evento",
+        ".btn-excluir-evento-modal",
+        ".acoes-evento-admin"
+    ];
+
+    seletores.forEach(function (seletor) {
+        document.querySelectorAll(seletor).forEach(function (elemento) {
+            elemento.style.display = "none";
+        });
+    });
 }
 
 
@@ -422,6 +548,10 @@ function renderizarCalendario() {
         gradeCalendario.appendChild(cardDia);
     }
 
+    if (!usuarioPodeEditarAgenda()) {
+        aplicarModoSomenteLeituraAgenda();
+    }
+
     console.log("Calendário renderizado com sucesso.");
 }
 
@@ -453,9 +583,7 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
         listaEventosDia.innerHTML = "";
 
         eventosOrdenados.forEach(function (evento) {
-            const usuarioPodeEditar =
-                perfilUsuario &&
-                perfilUsuario.funcao === "admin";
+            const usuarioPodeEditar = usuarioPodeEditarAgenda();
 
             listaEventosDia.innerHTML += `
                 <div class="card-evento-dia card-evento-dia-google">
@@ -539,6 +667,10 @@ function abrirModalDoDia(dataISO, eventosDoDia) {
         formEvento.style.display = "none";
     }
 
+    if (!usuarioPodeEditarAgenda()) {
+        aplicarModoSomenteLeituraAgenda();
+    }
+
     modalDia.classList.add("aberto");
 }
 
@@ -580,6 +712,11 @@ function configurarCliqueDosBotoesDinamicos() {
             event.preventDefault();
             event.stopPropagation();
 
+            if (!usuarioPodeEditarAgenda()) {
+                alert("Este acesso permite apenas visualizar a agenda.");
+                return;
+            }
+
             const idEvento = botao.dataset.eventoId;
 
             console.log("Botão editar clicado. ID:", idEvento);
@@ -596,6 +733,11 @@ function configurarCliqueDosBotoesDinamicos() {
         ) {
             event.preventDefault();
             event.stopPropagation();
+
+            if (!usuarioPodeEditarAgenda()) {
+                alert("Este acesso permite apenas visualizar a agenda.");
+                return;
+            }
 
             const idEvento = botao.dataset.eventoId;
 
@@ -623,9 +765,7 @@ function abrirDetalheEvento(idEvento) {
         return;
     }
 
-    const usuarioPodeEditar =
-        perfilUsuario &&
-        perfilUsuario.funcao === "admin";
+    const usuarioPodeEditar = usuarioPodeEditarAgenda();
 
     conteudoDetalheEvento.innerHTML = `
         <div class="detalhe-card-evento">
@@ -676,6 +816,10 @@ function abrirDetalheEvento(idEvento) {
         </div>
     `;
 
+    if (!usuarioPodeEditarAgenda()) {
+        aplicarModoSomenteLeituraAgenda();
+    }
+
     modalDetalheEvento.classList.add("aberto");
 }
 
@@ -697,8 +841,8 @@ function prepararEdicaoEvento(idEvento) {
         return;
     }
 
-    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas o administrador pode editar eventos.");
+    if (!usuarioPodeEditarAgenda()) {
+        alert("Este acesso permite apenas visualizar a agenda. Somente o administrador pode editar eventos.");
         return;
     }
 
@@ -758,8 +902,8 @@ function prepararEdicaoEvento(idEvento) {
 ===================================================== */
 
 function excluirEvento(idEvento) {
-    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas o administrador pode excluir eventos.");
+    if (!usuarioPodeEditarAgenda()) {
+        alert("Este acesso permite apenas visualizar a agenda. Somente o administrador pode excluir eventos.");
         return;
     }
 
@@ -858,8 +1002,8 @@ if (formEvento) {
     formEvento.addEventListener("submit", async function (event) {
         event.preventDefault();
 
-        if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-            alert("Apenas o administrador pode criar ou editar eventos.");
+        if (!usuarioPodeEditarAgenda()) {
+            alert("Este acesso permite apenas visualizar a agenda. Somente o administrador pode criar ou editar eventos.");
             return;
         }
 
@@ -1240,6 +1384,11 @@ if (btnExcluirTodaSerie) {
 }
 
 async function excluirSomenteEsteEvento() {
+    if (!usuarioPodeEditarAgenda()) {
+        alert("Este acesso permite apenas visualizar a agenda. Somente o administrador pode excluir eventos.");
+        return;
+    }
+
     if (!eventoParaExcluirId) {
         return;
     }
@@ -1268,6 +1417,11 @@ async function excluirSomenteEsteEvento() {
 }
 
 async function excluirEsteEProximosEventos() {
+    if (!usuarioPodeEditarAgenda()) {
+        alert("Este acesso permite apenas visualizar a agenda. Somente o administrador pode excluir eventos.");
+        return;
+    }
+
     if (!eventoParaExcluirObjeto) {
         return;
     }
@@ -1316,6 +1470,11 @@ async function excluirEsteEProximosEventos() {
 }
 
 async function excluirTodaSerieEventos() {
+    if (!usuarioPodeEditarAgenda()) {
+        alert("Este acesso permite apenas visualizar a agenda. Somente o administrador pode excluir eventos.");
+        return;
+    }
+
     if (!eventoParaExcluirObjeto) {
         return;
     }
@@ -2269,8 +2428,8 @@ async function salvarConfiguracaoExpedientePaeet() {
     const campoInicio = document.getElementById("inicioExpedientePaeet");
     const campoFim = document.getElementById("fimExpedientePaeet");
 
-    if (!perfilUsuario || perfilUsuario.funcao !== "admin") {
-        alert("Apenas o administrador pode alterar o expediente.");
+    if (!usuarioPodeEditarAgenda()) {
+        alert("Este acesso permite apenas visualizar a agenda. Somente o administrador pode alterar o expediente.");
         return;
     }
 
@@ -3015,3 +3174,7 @@ window.prepararEdicaoEvento = prepararEdicaoEvento;
 window.excluirEvento = excluirEvento;
 window.fecharAlertaVisualAgenda = fecharAlertaVisualAgenda;
 window.preencherNovoEventoComDisponibilidade = preencherNovoEventoComDisponibilidade;
+
+// Funções auxiliares expostas para depuração e botões inline
+window.usuarioPodeEditarAgenda = usuarioPodeEditarAgenda;
+window.aplicarModoSomenteLeituraAgenda = aplicarModoSomenteLeituraAgenda;

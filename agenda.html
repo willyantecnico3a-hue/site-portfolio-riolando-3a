@@ -14,9 +14,9 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Agenda Pedagógica</title>
+    <title>Agenda Pedagógica | Riolando Conecta Técnico</title>
 
-<link rel="stylesheet" href="agenda.css?v=20260613-03">
+<link rel="stylesheet" href="agenda.css?v=20260615-PERFIS-02">
     <style>
         /* =====================================================
            DISPONIBILIDADE DO PROFESSOR PAEET
@@ -644,12 +644,20 @@
 
         <div id="listaEventosDia"></div>
 
+
+        <div id="avisoAgendaSomenteLeitura" class="aviso-agenda-leitura" style="display:none;">
+            <strong>Modo visualização:</strong>
+            professores e coordenação podem consultar a agenda, mas não podem criar,
+            editar ou excluir eventos.
+        </div>
+
         <button id="btnAbrirFormEvento" class="btn-criar-evento" type="button" style="display:none;">
             + Criar evento neste dia
         </button>
 
 
         <!-- FORMULÁRIO DE CADASTRO/EDIÇÃO DO EVENTO -->
+        <!-- Formulário de eventos: no perfil professor/coordenação, o agenda.js oculta esta área automaticamente. -->
         <form id="formEvento" class="form-evento" style="display:none;">
 
             <h3 id="tituloFormularioEvento">Novo Evento</h3>
@@ -851,7 +859,7 @@
     <!-- Supabase precisa carregar antes do agenda.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="logs-sistema.js?v=20260614-01"></script>
-    <script src="agenda.js?v=20260614-01"></script>
+    <script src="agenda.js?v=20260615-PERFIS-02"></script>
 
     <!-- Registro do Service Worker para o PWA -->
     <script>

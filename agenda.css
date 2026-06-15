@@ -2647,3 +2647,124 @@ button {
     margin-top: 12px !important;
 }
 
+
+/* =====================================================
+   MODO SOMENTE LEITURA - PROFESSOR / COORDENAÇÃO
+   Professores e coordenação podem visualizar a agenda,
+   mas não podem criar, editar ou excluir eventos.
+===================================================== */
+
+.aviso-agenda-leitura {
+    max-width: 1400px;
+    margin: 0 auto 16px auto;
+    padding: 15px 18px;
+    border-radius: 16px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border: 2px solid #bfdbfe;
+    border-left: 7px solid #1e40af;
+    font-weight: 800;
+    line-height: 1.5;
+    box-shadow: 0 10px 24px rgba(30, 64, 175, 0.12);
+}
+
+.aviso-agenda-leitura strong {
+    color: #1e40af;
+}
+
+body.modo-somente-leitura-agenda .aviso-agenda-leitura {
+    display: block !important;
+}
+
+/* Oculta criação e formulário de eventos para professor/coordenação */
+body.modo-somente-leitura-agenda #btnAbrirFormEvento,
+body.modo-somente-leitura-agenda .btn-criar-evento,
+body.modo-somente-leitura-agenda #formEvento,
+body.modo-somente-leitura-agenda .form-evento,
+body.modo-somente-leitura-agenda .area-repeticao-evento,
+body.modo-somente-leitura-agenda #areaConfiguracaoExpedientePaeet,
+body.modo-somente-leitura-agenda .configuracao-expediente-paeet,
+body.modo-somente-leitura-agenda .area-botao-expediente {
+    display: none !important;
+}
+
+/* Oculta botões de editar/excluir em cards, modais e telas dinâmicas */
+body.modo-somente-leitura-agenda .btn-editar-evento,
+body.modo-somente-leitura-agenda .btn-editar-evento-modal,
+body.modo-somente-leitura-agenda .btn-excluir-evento,
+body.modo-somente-leitura-agenda .btn-excluir-evento-modal,
+body.modo-somente-leitura-agenda #btnExcluirEvento,
+body.modo-somente-leitura-agenda #btnExcluirSomenteEste,
+body.modo-somente-leitura-agenda #btnExcluirEsteEProximos,
+body.modo-somente-leitura-agenda #btnExcluirTodaSerie,
+body.modo-somente-leitura-agenda #btnSalvarEvento,
+body.modo-somente-leitura-agenda #modalConfirmarExclusao,
+body.modo-somente-leitura-agenda .modal-confirmar-exclusao,
+body.modo-somente-leitura-agenda .acoes-evento-admin {
+    display: none !important;
+}
+
+/* Mantém botões de visualização funcionando normalmente */
+body.modo-somente-leitura-agenda .btn-ver-detalhes-evento,
+body.modo-somente-leitura-agenda #btnFecharModal,
+body.modo-somente-leitura-agenda #btnFecharDetalheEvento {
+    display: inline-flex !important;
+}
+
+/* Sinal visual para o usuário saber que está em consulta */
+body.modo-somente-leitura-agenda .topo-agenda {
+    border-bottom: 6px solid #1e40af;
+}
+
+body.modo-somente-leitura-agenda .calendario {
+    border: 2px solid #bfdbfe;
+}
+
+body.modo-somente-leitura-agenda .dia-calendario:hover {
+    background-color: #eff6ff;
+    border-color: #1e40af;
+}
+
+/* Remove cursor de edição, mantendo cursor de consulta */
+body.modo-somente-leitura-agenda .dia-calendario,
+body.modo-somente-leitura-agenda .evento-mini,
+body.modo-somente-leitura-agenda .evento-google-resumo {
+    cursor: pointer;
+}
+
+/* Aviso dentro dos modais, quando usado pelo JavaScript */
+.mensagem-agenda-somente-leitura {
+    margin: 12px 0;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #eff6ff;
+    color: #1e40af;
+    border-left: 6px solid #1e40af;
+    font-weight: 800;
+}
+
+/* Ajustes mobile para o aviso */
+@media (max-width: 700px) {
+    .aviso-agenda-leitura {
+        margin: 0 12px 14px 12px;
+        padding: 14px;
+        font-size: 14px;
+    }
+}
+
+/* Impressão: remove aviso e botões administrativos */
+@media print {
+    .aviso-agenda-leitura,
+    .mensagem-agenda-somente-leitura,
+    #btnAbrirFormEvento,
+    #formEvento,
+    .form-evento,
+    .btn-editar-evento,
+    .btn-editar-evento-modal,
+    .btn-excluir-evento,
+    .btn-excluir-evento-modal,
+    #areaConfiguracaoExpedientePaeet {
+        display: none !important;
+    }
+}
+

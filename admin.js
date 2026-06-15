@@ -1,6 +1,7 @@
 // =====================================================
 // PAINEL ADMINISTRATIVO - PORTAL DE AULAS E PORTFÓLIOS
 // Professor Willyan Vieira
+// VERSÃO CORRIGIDA: login admin + professor + coordenação com acesso limitado
 // =====================================================
 
 
@@ -23,7 +24,12 @@ console.log("Painel admin conectado ao Supabase.");
 const btnLoginAdmin = document.getElementById("btnLoginAdmin");
 const areaAdmin = document.getElementById("areaAdmin");
 const secaoLoginAdmin = document.getElementById("secaoLoginAdmin");
+const areaProfessorLimitado = document.getElementById("areaProfessorLimitado");
+const btnSairProfessorLimitado = document.getElementById("btnSairProfessorLimitado");
+const tituloPainelProfessorLimitado = document.getElementById("tituloPainelProfessorLimitado");
 const mensagemLogin = document.getElementById("mensagemLogin");
+
+let perfilAcessoLogado = null;
 
 let aulaEmEdicaoId = null;
 let turmaEmEdicaoId = null;
@@ -47,11 +53,17 @@ const perfilPadraoAdmin = {
 
 // =====================================================
 // 4. LOGIN / SESSÃO
+// Admin: acesso completo.
+// Professor/Coordenação: acesso limitado a Acompanhamento PAEET e Agenda em modo visualização.
 // =====================================================
 
 function mostrarPainelAdminLogado() {
     if (areaAdmin) {
         areaAdmin.style.display = "block";
+    }
+
+    if (areaProfessorLimitado) {
+        areaProfessorLimitado.style.display = "none";
     }
 
     if (secaoLoginAdmin) {
@@ -61,9 +73,35 @@ function mostrarPainelAdminLogado() {
     carregarPerfilAdminEditavel();
 }
 
+function mostrarPainelProfessorLimitado(perfil) {
+    if (areaAdmin) {
+        areaAdmin.style.display = "none";
+    }
+
+    if (secaoLoginAdmin) {
+        secaoLoginAdmin.style.display = "none";
+    }
+
+    if (areaProfessorLimitado) {
+        areaProfessorLimitado.style.display = "block";
+    }
+
+    if (tituloPainelProfessorLimitado) {
+        if (perfil && perfil.perfil === "coordenacao") {
+            tituloPainelProfessorLimitado.textContent = "Área da Coordenação";
+        } else {
+            tituloPainelProfessorLimitado.textContent = "Área do Professor";
+        }
+    }
+}
+
 function mostrarTelaLoginAdmin() {
     if (areaAdmin) {
         areaAdmin.style.display = "none";
+    }
+
+    if (areaProfessorLimitado) {
+        areaProfessorLimitado.style.display = "none";
     }
 
     if (secaoLoginAdmin) {
@@ -73,8 +111,11 @@ function mostrarTelaLoginAdmin() {
 
 if (btnLoginAdmin) {
     btnLoginAdmin.addEventListener("click", async function () {
-        const email = document.getElementById("emailAdmin").value.trim();
-        const senha = document.getElementById("senhaAdmin").value.trim();
+        const emailCampo = document.getElementById("emailAdmin");
+        const senhaCampo = document.getElementById("senhaAdmin");
+
+        const email = emailCampo ? emailCampo.value.trim().toLowerCase() : "";
+        const senha = senhaCampo ? senhaCampo.value.trim() : "";
 
         if (!email || !senha) {
             if (mensagemLogin) {
@@ -110,11 +151,11 @@ if (btnLoginAdmin) {
             return;
         }
 
-        const adminAutorizado = await verificarSeUsuarioEAdmin(usuario.email);
+        const perfil = await carregarPerfilAcessoSistema(usuario);
 
-        if (!adminAutorizado) {
+        if (!perfil) {
             if (mensagemLogin) {
-                mensagemLogin.textContent = "Este usuário não tem permissão de administrador.";
+                mensagemLogin.textContent = "Este usuário não possui permissão ativa no sistema.";
             }
 
             await banco.auth.signOut();
@@ -122,20 +163,37 @@ if (btnLoginAdmin) {
             return;
         }
 
-        if (mensagemLogin) {
-            mensagemLogin.textContent = "Login administrativo realizado com sucesso!";
+        perfilAcessoLogado = perfil;
+        localStorage.setItem("perfilAcesso", JSON.stringify(perfil));
+        localStorage.setItem("adminEmail", usuario.email || email);
+
+        if (perfil.trocar_senha_obrigatorio === true && perfil.perfil !== "admin") {
+            const senhaAlterada = await solicitarTrocaSenhaProvisoria(perfil);
+
+            if (!senhaAlterada) {
+                if (mensagemLogin) {
+                    mensagemLogin.textContent = "A troca de senha é obrigatória para continuar.";
+                }
+
+                await banco.auth.signOut();
+                mostrarTelaLoginAdmin();
+                return;
+            }
         }
 
-        mostrarPainelAdminLogado();
-        carregarDadosIniciaisAdmin();
+        aplicarAcessoPorPerfil(perfil);
     });
 }
 
 async function verificarSeUsuarioEAdmin(emailUsuario) {
+    if (!emailUsuario) {
+        return false;
+    }
+
     const { data, error } = await banco
         .from("admins")
         .select("email")
-        .eq("email", emailUsuario)
+        .ilike("email", emailUsuario)
         .maybeSingle();
 
     if (error) {
@@ -143,7 +201,130 @@ async function verificarSeUsuarioEAdmin(emailUsuario) {
         return false;
     }
 
-    return !!data;
+    return Boolean(data);
+}
+
+async function carregarPerfilAcessoSistema(usuario) {
+    if (!usuario || !usuario.email) {
+        return null;
+    }
+
+    const email = usuario.email.toLowerCase();
+
+    const adminAutorizado = await verificarSeUsuarioEAdmin(email);
+
+    if (adminAutorizado) {
+        return {
+            user_id: usuario.id,
+            nome: usuario.email,
+            email: usuario.email,
+            perfil: "admin",
+            trocar_senha_obrigatorio: false,
+            ativo: true
+        };
+    }
+
+    const { data: perfil, error } = await banco
+        .from("perfis_acesso")
+        .select("*")
+        .ilike("email", email)
+        .eq("ativo", true)
+        .maybeSingle();
+
+    if (error) {
+        console.log("Erro ao buscar perfil em perfis_acesso:", error);
+        return null;
+    }
+
+    if (!perfil) {
+        return null;
+    }
+
+    if (!["professor", "coordenacao"].includes(perfil.perfil)) {
+        return null;
+    }
+
+    return {
+        ...perfil,
+        user_id: perfil.user_id || usuario.id,
+        email: perfil.email || usuario.email
+    };
+}
+
+async function solicitarTrocaSenhaProvisoria(perfil) {
+    alert("Este é o primeiro acesso ou sua senha ainda é provisória. Você precisa criar uma nova senha para continuar.");
+
+    const novaSenha = prompt("Digite uma nova senha com pelo menos 6 caracteres:");
+
+    if (!novaSenha || novaSenha.length < 6) {
+        alert("A nova senha precisa ter pelo menos 6 caracteres.");
+        return false;
+    }
+
+    const confirmarSenha = prompt("Confirme a nova senha:");
+
+    if (novaSenha !== confirmarSenha) {
+        alert("As senhas digitadas não conferem.");
+        return false;
+    }
+
+    const { error: erroSenha } = await banco.auth.updateUser({
+        password: novaSenha
+    });
+
+    if (erroSenha) {
+        alert("Erro ao alterar senha: " + erroSenha.message);
+        return false;
+    }
+
+    const { error: erroPerfil } = await banco
+        .from("perfis_acesso")
+        .update({
+            trocar_senha_obrigatorio: false,
+            user_id: perfil.user_id || null
+        })
+        .ilike("email", perfil.email);
+
+    if (erroPerfil) {
+        console.log("Senha foi alterada, mas houve erro ao atualizar perfis_acesso:", erroPerfil);
+    }
+
+    perfil.trocar_senha_obrigatorio = false;
+
+    alert("Senha alterada com sucesso.");
+    return true;
+}
+
+function aplicarAcessoPorPerfil(perfil) {
+    if (!perfil) {
+        mostrarTelaLoginAdmin();
+        return;
+    }
+
+    if (perfil.perfil === "admin") {
+        if (mensagemLogin) {
+            mensagemLogin.textContent = "Login administrativo realizado com sucesso!";
+        }
+
+        mostrarPainelAdminLogado();
+        carregarDadosIniciaisAdmin();
+        return;
+    }
+
+    if (perfil.perfil === "professor" || perfil.perfil === "coordenacao") {
+        if (mensagemLogin) {
+            mensagemLogin.textContent = "Login realizado com acesso limitado.";
+        }
+
+        mostrarPainelProfessorLimitado(perfil);
+        return;
+    }
+
+    if (mensagemLogin) {
+        mensagemLogin.textContent = "Perfil sem permissão para acessar o sistema.";
+    }
+
+    mostrarTelaLoginAdmin();
 }
 
 async function verificarSessaoAtual() {
@@ -154,19 +335,40 @@ async function verificarSessaoAtual() {
         return;
     }
 
-    const adminAutorizado = await verificarSeUsuarioEAdmin(data.user.email);
+    const perfil = await carregarPerfilAcessoSistema(data.user);
 
-    if (adminAutorizado) {
+    if (!perfil) {
+        await banco.auth.signOut();
+        localStorage.removeItem("perfilAcesso");
+        mostrarTelaLoginAdmin();
+        return;
+    }
+
+    perfilAcessoLogado = perfil;
+    localStorage.setItem("perfilAcesso", JSON.stringify(perfil));
+    localStorage.setItem("adminEmail", data.user.email || perfil.email);
+
+    if (perfil.perfil === "admin") {
         if (mensagemLogin) {
             mensagemLogin.textContent = "Sessão administrativa ativa.";
         }
 
         mostrarPainelAdminLogado();
         carregarDadosIniciaisAdmin();
-    } else {
-        await banco.auth.signOut();
-        mostrarTelaLoginAdmin();
+        return;
     }
+
+    if (perfil.perfil === "professor" || perfil.perfil === "coordenacao") {
+        if (mensagemLogin) {
+            mensagemLogin.textContent = "Sessão limitada ativa.";
+        }
+
+        mostrarPainelProfessorLimitado(perfil);
+        return;
+    }
+
+    await banco.auth.signOut();
+    mostrarTelaLoginAdmin();
 }
 
 function carregarDadosIniciaisAdmin() {
@@ -184,32 +386,46 @@ function carregarDadosIniciaisAdmin() {
 function configurarBotaoSairAdmin() {
     const btnSairAdmin = document.getElementById("btnSairAdmin");
 
-    if (!btnSairAdmin) {
-        return;
+    if (btnSairAdmin) {
+        btnSairAdmin.addEventListener("click", async function () {
+            await banco.auth.signOut();
+            localStorage.removeItem("perfilAcesso");
+
+            mostrarTelaLoginAdmin();
+
+            if (mensagemLogin) {
+                mensagemLogin.textContent = "Você saiu do painel administrativo.";
+            }
+
+            limparCampoSeExistir("emailAdmin");
+            limparCampoSeExistir("senhaAdmin");
+
+            const listaAdminPortfolios = document.getElementById("listaAdminPortfolios");
+
+            if (listaAdminPortfolios) {
+                listaAdminPortfolios.innerHTML = "";
+            }
+
+            fecharTodasAsTelasAdmin();
+        });
     }
 
-    btnSairAdmin.addEventListener("click", async function () {
-        await banco.auth.signOut();
+    if (btnSairProfessorLimitado) {
+        btnSairProfessorLimitado.addEventListener("click", async function () {
+            await banco.auth.signOut();
+            localStorage.removeItem("perfilAcesso");
 
-        mostrarTelaLoginAdmin();
+            mostrarTelaLoginAdmin();
 
-        if (mensagemLogin) {
-            mensagemLogin.textContent = "Você saiu do painel administrativo.";
-        }
+            if (mensagemLogin) {
+                mensagemLogin.textContent = "Você saiu do acesso limitado.";
+            }
 
-        limparCampoSeExistir("emailAdmin");
-        limparCampoSeExistir("senhaAdmin");
-
-        const listaAdminPortfolios = document.getElementById("listaAdminPortfolios");
-
-        if (listaAdminPortfolios) {
-            listaAdminPortfolios.innerHTML = "";
-        }
-
-        fecharTodasAsTelasAdmin();
-    });
+            limparCampoSeExistir("emailAdmin");
+            limparCampoSeExistir("senhaAdmin");
+        });
+    }
 }
-
 
 // =====================================================
 // 5. PERFIL ADMINISTRATIVO
@@ -518,6 +734,26 @@ function fecharTodasAsTelasAdmin() {
     });
 }
 
+
+function usuarioLogadoEhAdminCompleto() {
+    if (perfilAcessoLogado && perfilAcessoLogado.perfil) {
+        return perfilAcessoLogado.perfil === "admin";
+    }
+
+    const perfilSalvo = localStorage.getItem("perfilAcesso");
+
+    if (!perfilSalvo) {
+        return false;
+    }
+
+    try {
+        const perfil = JSON.parse(perfilSalvo);
+        return perfil && perfil.perfil === "admin";
+    } catch (erro) {
+        return false;
+    }
+}
+
 function configurarMenuSobrepostoAdmin() {
     const btnAbrirMenu = document.getElementById("btnAbrirMenuAdmin");
     const btnFecharMenu = document.getElementById("btnFecharMenuAdmin");
@@ -540,6 +776,13 @@ function configurarMenuSobrepostoAdmin() {
 
     itensMenu.forEach(function (item) {
         item.addEventListener("click", function () {
+            if (!usuarioLogadoEhAdminCompleto()) {
+                alert("Este perfil não possui acesso ao painel administrativo completo.");
+                fecharMenuAdmin();
+                mostrarPainelProfessorLimitado(perfilAcessoLogado || { perfil: "professor" });
+                return;
+            }
+
             const telaEscolhida = item.dataset.tela;
 
             fecharTodasAsTelasAdmin();
