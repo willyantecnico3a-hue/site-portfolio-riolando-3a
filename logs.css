@@ -1,40 +1,612 @@
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at top left,rgba(37,99,235,.16),transparent 30%),radial-gradient(circle at bottom right,rgba(15,118,110,.17),transparent 28%),linear-gradient(135deg,#e0f2fe,#ecfdf5,#f8fafc);color:#0f172a}.topo-logs{max-width:1300px;margin:26px auto 18px;padding:28px;border-radius:28px;background:linear-gradient(135deg,#1e3a8a,#0f766e);color:white;box-shadow:0 24px 60px rgba(15,23,42,.22);display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.selo-logs{display:inline-flex;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);font-weight:900;font-size:13px}.topo-logs h1{margin:14px 0 10px;font-size:36px;letter-spacing:-.6px}.topo-logs p{margin:0;max-width:780px;line-height:1.6;color:rgba(255,255,255,.92)}.acoes-topo-logs{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.btn-topo-logs{display:inline-flex;align-items:center;justify-content:center;padding:12px 15px;border-radius:14px;background:#fff;color:#1e40af;text-decoration:none;font-weight:900;box-shadow:0 10px 22px rgba(15,23,42,.16);transition:.2s}.btn-topo-logs:hover{transform:translateY(-1px)}.btn-central{color:#0f766e}.btn-relatorio{color:#7c2d12}.container-logs{max-width:1300px;margin:0 auto 44px;padding:0 16px 40px}.bloqueio-logs{padding:28px;border-radius:24px;background:#fff;border-left:7px solid #dc2626;box-shadow:0 18px 40px rgba(15,23,42,.12)}.bloqueio-logs h2{color:#991b1b}.bloqueio-logs a{display:inline-flex;margin-top:10px;color:#fff;background:#dc2626;padding:12px 16px;border-radius:14px;text-decoration:none;font-weight:900}.card-resumo-logs{background:#fff;border-radius:24px;padding:24px;border-left:7px solid #1e40af;box-shadow:0 16px 38px rgba(15,23,42,.10);margin-bottom:22px;display:flex;gap:18px;justify-content:space-between;align-items:flex-start}.card-resumo-logs h2{margin:0 0 8px;color:#1e40af}.card-resumo-logs p{margin:0;color:#475569;line-height:1.6}.status-login-logs{min-width:260px;padding:14px;border-radius:18px;background:#eff6ff;border:1px solid #bfdbfe}.status-login-logs span{display:block;color:#1e40af;font-weight:900;font-size:13px;margin-bottom:5px}.status-login-logs strong{color:#0f172a;word-break:break-word}.grade-indicadores-logs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-bottom:22px}.card-indicador-logs{background:#fff;border-radius:22px;padding:20px;border-left:7px solid #1e40af;box-shadow:0 14px 34px rgba(15,23,42,.10);min-height:140px}.card-indicador-logs span{font-size:28px}.card-indicador-logs h3{margin:12px 0 4px;font-size:34px;color:#1e40af;line-height:1}.card-indicador-logs p{margin:0;color:#475569;font-weight:800;font-size:14px}.card-indicador-logs.alerta{border-left-color:#f97316;background:#fff7ed}.card-indicador-logs.alerta h3{color:#c2410c}.card-filtros-logs,.card-grafico-logs,.card-tabela-logs{background:#fff;border-radius:24px;padding:24px;box-shadow:0 16px 38px rgba(15,23,42,.10);margin-bottom:22px}.card-filtros-logs{border-left:7px solid #0f766e}.card-filtros-logs h2,.card-tabela-logs h2{margin:0 0 18px;color:#0f766e}.organizador-logs-windows{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;padding:18px;border-radius:20px;background:linear-gradient(135deg,#f8fafc,#ecfeff);border:1px solid #cbd5e1}.grupo-organizador-logs label,.grade-filtros-logs label{display:block;font-weight:900;margin-bottom:8px;color:#0f172a}.grupo-organizador-logs select,.grade-filtros-logs select,.grade-filtros-logs input{width:100%;padding:13px;border-radius:14px;border:2px solid #cbd5e1;background:#f8fafc;color:#0f172a;font-size:15px;font-family:inherit}.grupo-organizador-logs select:focus,.grade-filtros-logs select:focus,.grade-filtros-logs input:focus{outline:none;border-color:#0f766e;box-shadow:0 0 0 4px rgba(15,118,110,.12);background:#fff}.btn-ordenar-logs{width:100%;padding:13px;border-radius:14px;border:2px solid #0f766e;background:#fff;color:#0f766e;font-size:15px;font-weight:900;cursor:pointer;text-align:left;transition:.2s}.btn-ordenar-logs:hover{background:#ccfbf1;transform:translateY(-1px)}.grade-filtros-logs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.acoes-logs{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.acoes-logs button{border:none;border-radius:15px;padding:13px 17px;font-weight:900;cursor:pointer;color:#fff;background:#0f766e;box-shadow:0 10px 22px rgba(15,118,110,.22);transition:.2s}.acoes-logs button:hover{transform:translateY(-1px)}#btnLimparFiltrosLogs{background:#475569}#btnBaixarCsvLogs{background:#1e40af}#btnBaixarPdfLogs{background:#dc2626}.mensagem-logs{margin-top:14px;color:#0f766e;font-weight:900}.area-graficos-logs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-bottom:22px}.card-grafico-logs{border-left:7px solid #1e40af}.card-grafico-logs h2{margin:0 0 18px;color:#1e40af}.grafico-barras-logs{display:flex;flex-direction:column;gap:12px}.linha-grafico-logs{display:grid;grid-template-columns:145px 1fr 48px;align-items:center;gap:10px}.rotulo-grafico-logs{font-weight:800;color:#334155;font-size:13px}.barra-grafico-logs{height:18px;border-radius:999px;background:#e2e8f0;overflow:hidden}.preenchimento-grafico-logs{height:100%;border-radius:999px;background:linear-gradient(135deg,#1e40af,#0f766e)}.valor-grafico-logs{text-align:right;font-weight:900;color:#1e40af}.card-tabela-logs{border-left:7px solid #0f766e}.tabela-logs-responsiva{overflow-x:auto;border-radius:16px;border:1px solid #cbd5e1}.tabela-logs-responsiva table{width:100%;min-width:1250px;border-collapse:collapse}.tabela-logs-responsiva th,.tabela-logs-responsiva td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;vertical-align:top;font-size:13px}.tabela-logs-responsiva th{background:#0f766e;color:#fff;position:sticky;top:0;z-index:1}.tabela-logs-responsiva tr:nth-child(even) td{background:#f8fafc}.tabela-logs-responsiva tr:hover td{background:#ecfeff}.badge-log{display:inline-flex;padding:6px 10px;border-radius:999px;font-weight:900;font-size:12px}.badge-sucesso{background:#dcfce7;color:#166534}.badge-alerta{background:#fef3c7;color:#92400e}.badge-erro{background:#fee2e2;color:#991b1b}.btn-detalhes-log{border:none;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:900;cursor:pointer;background:#dbeafe;color:#1e40af}.modal-log{position:fixed;inset:0;background:rgba(15,23,42,.70);display:none;align-items:center;justify-content:center;padding:18px;z-index:9999}.modal-log.aberto{display:flex}.modal-log-card{width:min(980px,96vw);max-height:88vh;overflow:auto;background:#fff;border-radius:22px;padding:22px;position:relative;box-shadow:0 28px 80px rgba(0,0,0,.28)}.modal-log-card h2{margin:0 0 16px;color:#1e40af}.modal-log-card pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;border-radius:16px;padding:16px;font-size:13px;line-height:1.5}.btn-fechar-modal-log{position:absolute;right:16px;top:14px;width:36px;height:36px;border:none;border-radius:999px;background:#fee2e2;color:#991b1b;font-size:24px;font-weight:900;cursor:pointer}@media print{body{background:white!important}.topo-logs,.card-filtros-logs,.area-graficos-logs,.acoes-logs,.status-login-logs,.btn-detalhes-log{display:none!important}.container-logs{max-width:100%;padding:0;margin:0}.card-resumo-logs,.card-indicador-logs,.card-tabela-logs{box-shadow:none!important;break-inside:avoid}.tabela-logs-responsiva{overflow:visible}}@media(max-width:1180px){.grade-indicadores-logs{grid-template-columns:repeat(3,minmax(0,1fr))}.grade-filtros-logs{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:850px){.topo-logs{flex-direction:column;margin:12px;padding:22px}.topo-logs h1{font-size:28px}.container-logs{padding:0 10px 30px}.card-resumo-logs{flex-direction:column}.organizador-logs-windows,.grade-indicadores-logs,.grade-filtros-logs,.area-graficos-logs{grid-template-columns:1fr}.acoes-topo-logs,.acoes-topo-logs a,.acoes-logs button{width:100%}.btn-topo-logs{width:100%}.linha-grafico-logs{grid-template-columns:110px 1fr 40px}}@media(max-width:520px){.topo-logs h1{font-size:24px}.card-filtros-logs,.card-resumo-logs,.card-tabela-logs,.card-grafico-logs{padding:18px;border-radius:18px}.card-indicador-logs h3{font-size:30px}.linha-grafico-logs{grid-template-columns:1fr;gap:6px}.valor-grafico-logs{text-align:left}}
-const SUPABASE_URL_LOGS="https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY_LOGS="sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
-let bancoLogs=null,usuarioAdminLogs=null,logsCarregados=[];
-if(window.supabase){bancoLogs=window.supabase.createClient(SUPABASE_URL_LOGS,SUPABASE_KEY_LOGS)}
-document.addEventListener("DOMContentLoaded",iniciarLogsSistema);
-async function iniciarLogsSistema(){const ok=await verificarAcessoAdministradorLogs();if(!ok)return;configurarEventosLogs();definirPeriodoPadraoLogs();await carregarLogsSistema()}
-async function verificarAcessoAdministradorLogs(){try{if(!bancoLogs){bloquearLogsSemPermissao("Erro ao carregar conexão com o Supabase.");return false}const{data:sessaoData,error:erroSessao}=await bancoLogs.auth.getSession();if(erroSessao||!sessaoData||!sessaoData.session){bloquearLogsSemPermissao("Você precisa estar logado como administrador para acessar os logs do sistema.");return false}const usuario=sessaoData.session.user;if(!usuario||!usuario.email){bloquearLogsSemPermissao("Usuário administrativo não identificado.");return false}const email=usuario.email.toLowerCase();const{data:admin,error:erroAdmin}=await bancoLogs.from("admins").select("email").ilike("email",email).limit(1);if(erroAdmin||!admin||admin.length===0){bloquearLogsSemPermissao("Este usuário não possui permissão administrativa.");return false}usuarioAdminLogs=usuario;localStorage.setItem("adminEmail",email);setTexto("emailAdminLogs",email);const areaBloqueio=document.getElementById("areaBloqueioLogs");const areaLogs=document.getElementById("areaLogsSistema");if(areaBloqueio)areaBloqueio.style.display="none";if(areaLogs)areaLogs.style.display="block";return true}catch(erro){console.error("Erro ao verificar permissão administrativa:",erro);bloquearLogsSemPermissao("Erro ao validar acesso administrativo.");return false}}
-function bloquearLogsSemPermissao(mensagem){const areaBloqueio=document.getElementById("areaBloqueioLogs");const areaLogs=document.getElementById("areaLogsSistema");if(areaLogs)areaLogs.style.display="none";if(areaBloqueio){areaBloqueio.style.display="block";areaBloqueio.innerHTML=`<h2>🔒 Acesso restrito</h2><p>${escaparHtml(mensagem)}</p><p>Faça login com uma conta administrativa para continuar.</p><a href="admin.html">Voltar para o login administrativo</a>`}setTimeout(()=>{window.location.href="admin.html"},2500)}
-function configurarEventosLogs(){document.getElementById("btnGerarLogs")?.addEventListener("click",carregarLogsSistema);document.getElementById("btnLimparFiltrosLogs")?.addEventListener("click",limparFiltrosLogs);document.getElementById("btnBaixarCsvLogs")?.addEventListener("click",baixarCsvLogs);document.getElementById("btnBaixarPdfLogs")?.addEventListener("click",()=>window.print());document.getElementById("filtroPeriodoLogs")?.addEventListener("change",()=>{if(getValor("filtroPeriodoLogs")!=="personalizado")aplicarPeriodoLogs()});document.getElementById("filtroRapidoLogs")?.addEventListener("change",aplicarFiltroRapidoLogs);document.getElementById("btnOrdenarLogs")?.addEventListener("click",alternarOrdemLogs);document.getElementById("buscaLogs")?.addEventListener("input",renderizarTabelaLogs);document.getElementById("filtroUsuarioLogs")?.addEventListener("input",renderizarTabelaLogs);document.getElementById("btnFecharModalLog")?.addEventListener("click",fecharModalDetalhesLog);const modal=document.getElementById("modalDetalhesLog");if(modal){modal.addEventListener("click",e=>{if(e.target===modal)fecharModalDetalhesLog()})}}
-function definirPeriodoPadraoLogs(){setValor("filtroPeriodoLogs","mensal");aplicarPeriodoLogs()}
-function aplicarPeriodoLogs(){const periodo=getValor("filtroPeriodoLogs")||"mensal";const intervalo=calcularIntervaloPorPeriodo(periodo);setValor("dataInicioLogs",intervalo.inicio);setValor("dataFimLogs",intervalo.fim)}
-function aplicarFiltroRapidoLogs(){const filtroRapido=getValor("filtroRapidoLogs");if(!filtroRapido)return;const intervalo=calcularIntervaloRapido(filtroRapido);setValor("filtroPeriodoLogs","personalizado");setValor("dataInicioLogs",intervalo.inicio);setValor("dataFimLogs",intervalo.fim);carregarLogsSistema()}
-function limparFiltrosLogs(){setValor("filtroRapidoLogs","");setValor("filtroPeriodoLogs","mensal");setValor("filtroModuloLogs","todos");setValor("filtroStatusLogs","todos");setValor("filtroTabelaLogs","todos");setValor("filtroUsuarioLogs","");setValor("buscaLogs","");aplicarPeriodoLogs();carregarLogsSistema()}
-function obterFiltrosLogs(){let dataInicio=getValor("dataInicioLogs"),dataFim=getValor("dataFimLogs");if(!dataInicio||!dataFim){aplicarPeriodoLogs();dataInicio=getValor("dataInicioLogs");dataFim=getValor("dataFimLogs")}return{dataInicio,dataFim,modulo:getValor("filtroModuloLogs")||"todos",status:getValor("filtroStatusLogs")||"todos",tabela:getValor("filtroTabelaLogs")||"todos",usuario:normalizarTexto(getValor("filtroUsuarioLogs")),busca:normalizarTexto(getValor("buscaLogs"))}}
-async function carregarLogsSistema(){const mensagem=document.getElementById("mensagemLogs");try{if(!bancoLogs)throw new Error("Supabase não carregou.");const filtros=obterFiltrosLogs();if(mensagem)mensagem.textContent="Carregando logs do sistema...";const inicioISO=`${filtros.dataInicio}T00:00:00`;const fimISO=`${filtros.dataFim}T23:59:59`;let consulta=bancoLogs.from("logs_sistema").select("*").gte("created_at",inicioISO).lte("created_at",fimISO).order("created_at",{ascending:false}).limit(1000);if(filtros.modulo!=="todos")consulta=consulta.eq("modulo",filtros.modulo);if(filtros.status!=="todos")consulta=consulta.eq("status",filtros.status);if(filtros.tabela!=="todos")consulta=consulta.eq("tabela_afetada",filtros.tabela);const{data,error}=await consulta;if(error)throw error;logsCarregados=ordenarLogs(data||[]);renderizarIndicadoresLogs(logsCarregados);renderizarGraficosLogs(logsCarregados);renderizarTabelaLogs();if(mensagem)mensagem.textContent=`${logsCarregados.length} log(s) carregado(s).`}catch(erro){console.error("Erro ao carregar logs:",erro);if(mensagem)mensagem.textContent="Erro ao carregar logs. Verifique se a tabela logs_sistema existe e se há permissão administrativa.";const corpo=document.getElementById("corpoTabelaLogs");if(corpo)corpo.innerHTML=`<tr><td colspan="9">Erro ao carregar logs.</td></tr>`}}
-function renderizarTabelaLogs(){const corpo=document.getElementById("corpoTabelaLogs");if(!corpo)return;const filtros=obterFiltrosLogs();let lista=[...logsCarregados];if(filtros.usuario){lista=lista.filter(log=>normalizarTexto(`${log.usuario_email||""} ${log.usuario_nome||""} ${log.usuario_funcao||""}`).includes(filtros.usuario))}if(filtros.busca){lista=lista.filter(log=>normalizarTexto(`${log.descricao||""} ${log.acao||""} ${log.tipo_evento||""} ${log.modulo||""} ${log.origem_pagina||""} ${log.tabela_afetada||""} ${log.registro_id||""} ${JSON.stringify(log.detalhes||{})}`).includes(filtros.busca))}renderizarIndicadoresLogs(lista);renderizarGraficosLogs(lista);if(!lista.length){corpo.innerHTML=`<tr><td colspan="9">Nenhum log encontrado para os filtros selecionados.</td></tr>`;return}corpo.innerHTML=lista.map(log=>`<tr><td><strong>${formatarDataHoraBR(log.created_at)}</strong><br><small>${escaparHtml(log.data_log||"")} ${cortarHora(log.hora_log||"")}</small></td><td><strong>${escaparHtml(log.usuario_email||"Não identificado")}</strong><br><small>${escaparHtml(log.usuario_nome||"-")} • ${escaparHtml(log.usuario_funcao||"-")}</small></td><td>${escaparHtml(formatarModulo(log.modulo))}</td><td><strong>${escaparHtml(formatarAcao(log.acao))}</strong><br><small>${escaparHtml(log.tipo_evento||"-")}</small></td><td>${escaparHtml(log.tabela_afetada||"-")}</td><td>${escaparHtml(log.registro_id||"-")}</td><td><span class="badge-log badge-${escaparHtml(log.status||"sucesso")}">${escaparHtml(formatarStatus(log.status))}</span></td><td>${escaparHtml(resumirTexto(log.descricao||"-",160))}</td><td><button type="button" class="btn-detalhes-log" onclick="abrirDetalhesLog('${log.id}')">Ver</button></td></tr>`).join("")}
-function renderizarIndicadoresLogs(lista){const hoje=formatarDataISO(new Date());const total=lista.length;const logsHoje=lista.filter(log=>log.data_log===hoje).length;const sucesso=lista.filter(log=>log.status==="sucesso").length;const alertaErro=lista.filter(log=>log.status==="alerta"||log.status==="erro").length;const usuarios=new Set(lista.map(log=>log.usuario_email||log.usuario_nome).filter(Boolean)).size;setTexto("indicadorTotalLogs",total);setTexto("indicadorLogsHoje",logsHoje);setTexto("indicadorLogsSucesso",sucesso);setTexto("indicadorLogsAlertaErro",alertaErro);setTexto("indicadorUsuariosLogs",usuarios)}
-function renderizarGraficosLogs(lista){renderizarGraficoBarrasLogs("graficoLogsPorModulo",contarPorCampo(lista,"modulo"),formatarModulo);renderizarGraficoBarrasLogs("graficoLogsPorAcao",contarPorCampo(lista,"acao"),formatarAcao)}
-function renderizarGraficoBarrasLogs(idElemento,contagem,formatadorRotulo){const elemento=document.getElementById(idElemento);if(!elemento)return;const entradas=Object.entries(contagem||{}).sort((a,b)=>b[1]-a[1]).slice(0,10);if(!entradas.length){elemento.innerHTML=`<p class="mensagem-logs">Nenhum dado encontrado.</p>`;return}const maior=Math.max(...entradas.map(item=>item[1]),1);elemento.innerHTML=entradas.map(([rotulo,valor])=>{const largura=Math.max((valor/maior)*100,5);return`<div class="linha-grafico-logs"><span class="rotulo-grafico-logs">${escaparHtml(formatadorRotulo(rotulo))}</span><div class="barra-grafico-logs"><div class="preenchimento-grafico-logs" style="width:${largura}%"></div></div><span class="valor-grafico-logs">${valor}</span></div>`}).join("")}
-function abrirDetalhesLog(id){const log=logsCarregados.find(item=>String(item.id)===String(id));if(!log){alert("Log não encontrado.");return}const modal=document.getElementById("modalDetalhesLog");const conteudo=document.getElementById("conteudoDetalhesLog");if(!modal||!conteudo)return;conteudo.textContent=JSON.stringify(log,null,2);modal.classList.add("aberto")}
-function fecharModalDetalhesLog(){document.getElementById("modalDetalhesLog")?.classList.remove("aberto")}
-function baixarCsvLogs(){const filtros=obterFiltrosLogs();let lista=[...logsCarregados];if(filtros.usuario)lista=lista.filter(log=>normalizarTexto(`${log.usuario_email||""} ${log.usuario_nome||""}`).includes(filtros.usuario));if(filtros.busca)lista=lista.filter(log=>normalizarTexto(JSON.stringify(log)).includes(filtros.busca));const linhas=[["Data/Hora","Data","Hora","Usuário","Nome","Função","Página","Módulo","Ação","Tipo Evento","Tabela","Registro ID","Status","Descrição","Dados anteriores","Dados novos","Detalhes"]];lista.forEach(log=>{linhas.push([formatarDataHoraBR(log.created_at),log.data_log||"",cortarHora(log.hora_log||""),log.usuario_email||"",log.usuario_nome||"",log.usuario_funcao||"",log.origem_pagina||"",log.modulo||"",log.acao||"",log.tipo_evento||"",log.tabela_afetada||"",log.registro_id||"",log.status||"",log.descricao||"",JSON.stringify(log.dados_anteriores||{}),JSON.stringify(log.dados_novos||{}),JSON.stringify(log.detalhes||{})])});const conteudo=linhas.map(linha=>linha.map(campo=>`"${String(campo??"").replace(/"/g,'""')}"`).join(";")).join("\n");const blob=new Blob(["\ufeff"+conteudo],{type:"text/csv;charset=utf-8;"});const link=document.createElement("a");link.href=URL.createObjectURL(blob);link.download="logs_sistema_riolandoconecta.csv";link.click();URL.revokeObjectURL(link.href)}
-function alternarOrdemLogs(){const botao=document.getElementById("btnOrdenarLogs");if(!botao)return;const ordemAtual=botao.dataset.ordem||"desc";const novaOrdem=ordemAtual==="desc"?"asc":"desc";botao.dataset.ordem=novaOrdem;botao.textContent=novaOrdem==="desc"?"📅 Data do log ↓ Mais recentes":"📅 Data do log ↑ Mais antigos";logsCarregados=ordenarLogs(logsCarregados||[]);renderizarTabelaLogs()}
-function ordenarLogs(lista){const botao=document.getElementById("btnOrdenarLogs");const ordem=botao?botao.dataset.ordem||"desc":"desc";return[...lista].sort((a,b)=>{const dataA=new Date(a.created_at||"1900-01-01T00:00:00");const dataB=new Date(b.created_at||"1900-01-01T00:00:00");return ordem==="asc"?dataA-dataB:dataB-dataA})}
-function calcularIntervaloPorPeriodo(periodo){const hoje=new Date();let inicio=new Date(hoje),fim=new Date(hoje);if(periodo==="diario"){inicio=new Date(hoje);fim=new Date(hoje)}else if(periodo==="semanal"){const diaSemana=hoje.getDay();const dif=diaSemana===0?-6:1-diaSemana;inicio=new Date(hoje);inicio.setDate(hoje.getDate()+dif);fim=new Date(inicio);fim.setDate(inicio.getDate()+6)}else if(periodo==="bimestral"){inicio=new Date(hoje);inicio.setMonth(hoje.getMonth()-1);inicio.setDate(1)}else if(periodo==="trimestral"){inicio=new Date(hoje);inicio.setMonth(hoje.getMonth()-2);inicio.setDate(1)}else if(periodo==="semestral"){inicio=new Date(hoje);inicio.setMonth(hoje.getMonth()-5);inicio.setDate(1)}else if(periodo==="anual"){inicio=new Date(hoje.getFullYear(),0,1);fim=new Date(hoje.getFullYear(),11,31)}else{inicio=new Date(hoje.getFullYear(),hoje.getMonth(),1);fim=new Date(hoje.getFullYear(),hoje.getMonth()+1,0)}return{inicio:formatarDataISO(inicio),fim:formatarDataISO(fim)}}
-function calcularIntervaloRapido(filtroRapido){const hoje=new Date();let inicio=new Date(hoje),fim=new Date(hoje);if(filtroRapido==="hoje"){inicio=new Date(hoje);fim=new Date(hoje)}if(filtroRapido==="ontem"){inicio=new Date(hoje);inicio.setDate(hoje.getDate()-1);fim=new Date(inicio)}if(filtroRapido==="semana_passada"){const diaSemana=hoje.getDay();const dif=diaSemana===0?-6:1-diaSemana;const segundaAtual=new Date(hoje);segundaAtual.setDate(hoje.getDate()+dif);inicio=new Date(segundaAtual);inicio.setDate(segundaAtual.getDate()-7);fim=new Date(inicio);fim.setDate(inicio.getDate()+6)}if(filtroRapido==="anteriores_neste_mes"){inicio=new Date(hoje.getFullYear(),hoje.getMonth(),1);fim=new Date(hoje);fim.setDate(hoje.getDate()-1);if(fim<inicio)fim=new Date(hoje)}if(filtroRapido==="ultimo_mes"){inicio=new Date(hoje);inicio.setDate(hoje.getDate()-29);fim=new Date(hoje)}return{inicio:formatarDataISO(inicio),fim:formatarDataISO(fim)}}
-function contarPorCampo(lista,campo){return(lista||[]).reduce((acc,item)=>{const valor=item[campo]||"não informado";acc[valor]=(acc[valor]||0)+1;return acc},{})}
-function formatarDataISO(data){const ano=data.getFullYear();const mes=String(data.getMonth()+1).padStart(2,"0");const dia=String(data.getDate()).padStart(2,"0");return`${ano}-${mes}-${dia}`}
-function formatarDataHoraBR(valor){if(!valor)return"-";try{return new Date(valor).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo",day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"})}catch(e){return valor}}
-function cortarHora(hora){if(!hora)return"-";return hora.toString().slice(0,8)}
-function formatarModulo(modulo){const mapa={agenda:"Agenda",portfolio:"Portfólio",chamados:"Chamados",central_paeet:"Central PAEET",acompanhamento_paeet:"Acompanhamento PAEET",relatorios:"Relatórios",admin:"Admin",geral:"Geral","não informado":"Não informado"};return mapa[modulo]||modulo||"Não informado"}
-function formatarAcao(acao){const mapa={criar_evento:"Criar evento",editar_evento:"Editar evento",excluir_evento:"Excluir evento",excluir_eventos_futuros:"Excluir eventos futuros",excluir_serie_eventos:"Excluir série",criar_portfolio:"Criar portfólio",enviar_chamado:"Enviar chamado",preencher_checklist:"Preencher checklist",criar_acompanhamento:"Criar acompanhamento",editar_acompanhamento:"Editar acompanhamento",excluir_acompanhamento:"Excluir acompanhamento",acao_nao_informada:"Ação não informada"};return mapa[acao]||acao||"Não informado"}
-function formatarStatus(status){const mapa={sucesso:"Sucesso",alerta:"Alerta",erro:"Erro"};return mapa[status]||status||"Sucesso"}
-function resumirTexto(texto,limite){const valor=String(texto||"");return valor.length<=limite?valor:valor.slice(0,limite)+"..."}
-function normalizarTexto(texto){return(texto||"").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim()}
-function escaparHtml(texto){return String(texto??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
-function getValor(id){const el=document.getElementById(id);return el?el.value:""}
-function setValor(id,valor){const el=document.getElementById(id);if(el)el.value=valor}
-function setTexto(id,valor){const el=document.getElementById(id);if(el)el.textContent=valor}
+/* =====================================================
+   LOGS DO SISTEMA - RIOLANDO CONECTA TÉCNICO
+   ARQUIVO: logs.css
+   Versão formatada e indentada
+   Função: estilo da tela administrativa de auditoria/logs.
+===================================================== */
+
+* {
+    box-sizing:border-box
+}
+html {
+    scroll-behavior:smooth
+}
+body {
+    margin:0;
+    font-family:"Segoe UI",
+    Arial,
+    sans-serif;
+    background:radial-gradient(circle at top left,
+    rgba(37,
+    99,
+    235,
+    .16),
+    transparent 30%),
+    radial-gradient(circle at bottom right,
+    rgba(15,
+    118,
+    110,
+    .17),
+    transparent 28%),
+    linear-gradient(135deg,
+    #e0f2fe,
+    #ecfdf5,
+    #f8fafc);
+    color:#0f172a
+}
+.topo-logs {
+    max-width:1300px;
+    margin:26px auto 18px;
+    padding:28px;
+    border-radius:28px;
+    background:linear-gradient(135deg,
+    #1e3a8a,
+    #0f766e);
+    color:white;
+    box-shadow:0 24px 60px rgba(15,
+    23,
+    42,
+    .22);
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    align-items:flex-start
+}
+.selo-logs {
+    display:inline-flex;
+    padding:8px 14px;
+    border-radius:999px;
+    background:rgba(255,
+    255,
+    255,
+    .18);
+    border:1px solid rgba(255,
+    255,
+    255,
+    .35);
+    font-weight:900;
+    font-size:13px
+}
+.topo-logs h1 {
+    margin:14px 0 10px;
+    font-size:36px;
+    letter-spacing:-.6px
+}
+.topo-logs p {
+    margin:0;
+    max-width:780px;
+    line-height:1.6;
+    color:rgba(255,
+    255,
+    255,
+    .92)
+}
+.acoes-topo-logs {
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end
+}
+.btn-topo-logs {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 15px;
+    border-radius:14px;
+    background:#fff;
+    color:#1e40af;
+    text-decoration:none;
+    font-weight:900;
+    box-shadow:0 10px 22px rgba(15,
+    23,
+    42,
+    .16);
+    transition:.2s
+}
+.btn-topo-logs:hover {
+    transform:translateY(-1px)
+}
+.btn-central {
+    color:#0f766e
+}
+.btn-relatorio {
+    color:#7c2d12
+}
+.container-logs {
+    max-width:1300px;
+    margin:0 auto 44px;
+    padding:0 16px 40px
+}
+.bloqueio-logs {
+    padding:28px;
+    border-radius:24px;
+    background:#fff;
+    border-left:7px solid #dc2626;
+    box-shadow:0 18px 40px rgba(15,
+    23,
+    42,
+    .12)
+}
+.bloqueio-logs h2 {
+    color:#991b1b
+}
+.bloqueio-logs a {
+    display:inline-flex;
+    margin-top:10px;
+    color:#fff;
+    background:#dc2626;
+    padding:12px 16px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:900
+}
+.card-resumo-logs {
+    background:#fff;
+    border-radius:24px;
+    padding:24px;
+    border-left:7px solid #1e40af;
+    box-shadow:0 16px 38px rgba(15,
+    23,
+    42,
+    .10);
+    margin-bottom:22px;
+    display:flex;
+    gap:18px;
+    justify-content:space-between;
+    align-items:flex-start
+}
+.card-resumo-logs h2 {
+    margin:0 0 8px;
+    color:#1e40af
+}
+.card-resumo-logs p {
+    margin:0;
+    color:#475569;
+    line-height:1.6
+}
+.status-login-logs {
+    min-width:260px;
+    padding:14px;
+    border-radius:18px;
+    background:#eff6ff;
+    border:1px solid #bfdbfe
+}
+.status-login-logs span {
+    display:block;
+    color:#1e40af;
+    font-weight:900;
+    font-size:13px;
+    margin-bottom:5px
+}
+.status-login-logs strong {
+    color:#0f172a;
+    word-break:break-word
+}
+.grade-indicadores-logs {
+    display:grid;
+    grid-template-columns:repeat(5,
+    minmax(0,
+    1fr));
+    gap:16px;
+    margin-bottom:22px
+}
+.card-indicador-logs {
+    background:#fff;
+    border-radius:22px;
+    padding:20px;
+    border-left:7px solid #1e40af;
+    box-shadow:0 14px 34px rgba(15,
+    23,
+    42,
+    .10);
+    min-height:140px
+}
+.card-indicador-logs span {
+    font-size:28px
+}
+.card-indicador-logs h3 {
+    margin:12px 0 4px;
+    font-size:34px;
+    color:#1e40af;
+    line-height:1
+}
+.card-indicador-logs p {
+    margin:0;
+    color:#475569;
+    font-weight:800;
+    font-size:14px
+}
+.card-indicador-logs.alerta {
+    border-left-color:#f97316;
+    background:#fff7ed
+}
+.card-indicador-logs.alerta h3 {
+    color:#c2410c
+}
+.card-filtros-logs,
+.card-grafico-logs,
+.card-tabela-logs {
+    background:#fff;
+    border-radius:24px;
+    padding:24px;
+    box-shadow:0 16px 38px rgba(15,
+    23,
+    42,
+    .10);
+    margin-bottom:22px
+}
+.card-filtros-logs {
+    border-left:7px solid #0f766e
+}
+.card-filtros-logs h2,
+.card-tabela-logs h2 {
+    margin:0 0 18px;
+    color:#0f766e
+}
+.organizador-logs-windows {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-bottom:22px;
+    padding:18px;
+    border-radius:20px;
+    background:linear-gradient(135deg,
+    #f8fafc,
+    #ecfeff);
+    border:1px solid #cbd5e1
+}
+.grupo-organizador-logs label,
+.grade-filtros-logs label {
+    display:block;
+    font-weight:900;
+    margin-bottom:8px;
+    color:#0f172a
+}
+.grupo-organizador-logs select,
+.grade-filtros-logs select,
+.grade-filtros-logs input {
+    width:100%;
+    padding:13px;
+    border-radius:14px;
+    border:2px solid #cbd5e1;
+    background:#f8fafc;
+    color:#0f172a;
+    font-size:15px;
+    font-family:inherit
+}
+.grupo-organizador-logs select:focus,
+.grade-filtros-logs select:focus,
+.grade-filtros-logs input:focus {
+    outline:none;
+    border-color:#0f766e;
+    box-shadow:0 0 0 4px rgba(15,
+    118,
+    110,
+    .12);
+    background:#fff
+}
+.btn-ordenar-logs {
+    width:100%;
+    padding:13px;
+    border-radius:14px;
+    border:2px solid #0f766e;
+    background:#fff;
+    color:#0f766e;
+    font-size:15px;
+    font-weight:900;
+    cursor:pointer;
+    text-align:left;
+    transition:.2s
+}
+.btn-ordenar-logs:hover {
+    background:#ccfbf1;
+    transform:translateY(-1px)
+}
+.grade-filtros-logs {
+    display:grid;
+    grid-template-columns:repeat(4,
+    minmax(0,
+    1fr));
+    gap:16px
+}
+.acoes-logs {
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:20px
+}
+.acoes-logs button {
+    border:none;
+    border-radius:15px;
+    padding:13px 17px;
+    font-weight:900;
+    cursor:pointer;
+    color:#fff;
+    background:#0f766e;
+    box-shadow:0 10px 22px rgba(15,
+    118,
+    110,
+    .22);
+    transition:.2s
+}
+.acoes-logs button:hover {
+    transform:translateY(-1px)
+}
+#btnLimparFiltrosLogs {
+    background:#475569
+}
+#btnBaixarCsvLogs {
+    background:#1e40af
+}
+#btnBaixarPdfLogs {
+    background:#dc2626
+}
+.mensagem-logs {
+    margin-top:14px;
+    color:#0f766e;
+    font-weight:900
+}
+.area-graficos-logs {
+    display:grid;
+    grid-template-columns:repeat(2,
+    minmax(0,
+    1fr));
+    gap:18px;
+    margin-bottom:22px
+}
+.card-grafico-logs {
+    border-left:7px solid #1e40af
+}
+.card-grafico-logs h2 {
+    margin:0 0 18px;
+    color:#1e40af
+}
+.grafico-barras-logs {
+    display:flex;
+    flex-direction:column;
+    gap:12px
+}
+.linha-grafico-logs {
+    display:grid;
+    grid-template-columns:145px 1fr 48px;
+    align-items:center;
+    gap:10px
+}
+.rotulo-grafico-logs {
+    font-weight:800;
+    color:#334155;
+    font-size:13px
+}
+.barra-grafico-logs {
+    height:18px;
+    border-radius:999px;
+    background:#e2e8f0;
+    overflow:hidden
+}
+.preenchimento-grafico-logs {
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(135deg,
+    #1e40af,
+    #0f766e)
+}
+.valor-grafico-logs {
+    text-align:right;
+    font-weight:900;
+    color:#1e40af
+}
+.card-tabela-logs {
+    border-left:7px solid #0f766e
+}
+.tabela-logs-responsiva {
+    overflow-x:auto;
+    border-radius:16px;
+    border:1px solid #cbd5e1
+}
+.tabela-logs-responsiva table {
+    width:100%;
+    min-width:1250px;
+    border-collapse:collapse
+}
+.tabela-logs-responsiva th,
+.tabela-logs-responsiva td {
+    padding:12px;
+    text-align:left;
+    border-bottom:1px solid #e2e8f0;
+    vertical-align:top;
+    font-size:13px
+}
+.tabela-logs-responsiva th {
+    background:#0f766e;
+    color:#fff;
+    position:sticky;
+    top:0;
+    z-index:1
+}
+.tabela-logs-responsiva tr:nth-child(even) td {
+    background:#f8fafc
+}
+.tabela-logs-responsiva tr:hover td {
+    background:#ecfeff
+}
+.badge-log {
+    display:inline-flex;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:12px
+}
+.badge-sucesso {
+    background:#dcfce7;
+    color:#166534
+}
+.badge-alerta {
+    background:#fef3c7;
+    color:#92400e
+}
+.badge-erro {
+    background:#fee2e2;
+    color:#991b1b
+}
+.btn-detalhes-log {
+    border:none;
+    border-radius:10px;
+    padding:8px 10px;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+    background:#dbeafe;
+    color:#1e40af
+}
+.modal-log {
+    position:fixed;
+    inset:0;
+    background:rgba(15,
+    23,
+    42,
+    .70);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:9999
+}
+.modal-log.aberto {
+    display:flex
+}
+.modal-log-card {
+    width:min(980px,
+    96vw);
+    max-height:88vh;
+    overflow:auto;
+    background:#fff;
+    border-radius:22px;
+    padding:22px;
+    position:relative;
+    box-shadow:0 28px 80px rgba(0,
+    0,
+    0,
+    .28)
+}
+.modal-log-card h2 {
+    margin:0 0 16px;
+    color:#1e40af
+}
+.modal-log-card pre {
+    white-space:pre-wrap;
+    word-break:break-word;
+    background:#0f172a;
+    color:#e2e8f0;
+    border-radius:16px;
+    padding:16px;
+    font-size:13px;
+    line-height:1.5
+}
+.btn-fechar-modal-log {
+    position:absolute;
+    right:16px;
+    top:14px;
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:999px;
+    background:#fee2e2;
+    color:#991b1b;
+    font-size:24px;
+    font-weight:900;
+    cursor:pointer
+}
+@media print {
+    body {
+        background:white!important
+    }
+.topo-logs,
+    .card-filtros-logs,
+    .area-graficos-logs,
+    .acoes-logs,
+    .status-login-logs,
+    .btn-detalhes-log {
+        display:none!important
+    }
+.container-logs {
+        max-width:100%;
+        padding:0;
+        margin:0
+    }
+.card-resumo-logs,
+    .card-indicador-logs,
+    .card-tabela-logs {
+        box-shadow:none!important;
+        break-inside:avoid
+    }
+.tabela-logs-responsiva {
+        overflow:visible
+    }
+}
+@media(max-width:1180px) {
+    .grade-indicadores-logs {
+        grid-template-columns:repeat(3,
+        minmax(0,
+        1fr))
+    }
+.grade-filtros-logs {
+        grid-template-columns:repeat(2,
+        minmax(0,
+        1fr))
+    }
+}
+@media(max-width:850px) {
+    .topo-logs {
+        flex-direction:column;
+        margin:12px;
+        padding:22px
+    }
+.topo-logs h1 {
+        font-size:28px
+    }
+.container-logs {
+        padding:0 10px 30px
+    }
+.card-resumo-logs {
+        flex-direction:column
+    }
+.organizador-logs-windows,
+    .grade-indicadores-logs,
+    .grade-filtros-logs,
+    .area-graficos-logs {
+        grid-template-columns:1fr
+    }
+.acoes-topo-logs,
+    .acoes-topo-logs a,
+    .acoes-logs button {
+        width:100%
+    }
+.btn-topo-logs {
+        width:100%
+    }
+.linha-grafico-logs {
+        grid-template-columns:110px 1fr 40px
+    }
+}
+@media(max-width:520px) {
+    .topo-logs h1 {
+        font-size:24px
+    }
+.card-filtros-logs,
+    .card-resumo-logs,
+    .card-tabela-logs,
+    .card-grafico-logs {
+        padding:18px;
+        border-radius:18px
+    }
+.card-indicador-logs h3 {
+        font-size:30px
+    }
+.linha-grafico-logs {
+        grid-template-columns:1fr;
+        gap:6px
+    }
+.valor-grafico-logs {
+        text-align:left
+    }
+}
