@@ -1,6 +1,7 @@
 // =====================================================
 // PORTAL DE AULAS E PORTFÓLIOS - PÁGINA DO ALUNO
 // HTML + CSS + JAVASCRIPT PURO + SUPABASE
+// VERSÃO CORRIGIDA: portfólio vinculado à turma, telefone, e-mail, RA e logs
 // =====================================================
 
 
@@ -825,75 +826,193 @@ function abrirResumoAulaLinhaTempo(idAula) {
 
 // =====================================================
 // 18. BOTÃO: CADASTRAR PORTFÓLIO
+// Agora salva também turma, RA, e-mail e telefone do aluno.
+// Campos aceitos no HTML:
+// - nomeAluno
+// - telefoneAluno
+// - emailAluno
+// - turmaAluno OU portfolioTurmaAluno
+// - raAluno OU portfolioRaAluno
+// - linkSiteAluno
+// - linkVideoAluno
+// - autorizacaoAluno
 // =====================================================
 
 const btnCadastrarPortfolio = document.getElementById("btnCadastrarPortfolio");
 
 if (btnCadastrarPortfolio) {
-    btnCadastrarPortfolio.addEventListener("click", async function () {
-        if (!banco) {
-            alert("Supabase não está conectado. Verifique a chave e o script CDN.");
-            return;
-        }
+    btnCadastrarPortfolio.addEventListener("click", cadastrarPortfolioAluno);
+}
 
-        const nome = document.getElementById("nomeAluno").value.trim();
-        const telefone = document.getElementById("telefoneAluno").value.trim();
-        const email = document.getElementById("emailAluno").value.trim();
-        const site = document.getElementById("linkSiteAluno").value.trim();
-        const video = document.getElementById("linkVideoAluno").value.trim();
-        const autorizado = document.getElementById("autorizacaoAluno").checked;
+async function cadastrarPortfolioAluno() {
+    if (!banco) {
+        alert("Supabase não está conectado. Verifique a chave e o script CDN.");
+        return;
+    }
 
-        if (!nome || !email || !site || !autorizado) {
-            alert("Preencha nome, e-mail, link do site e marque a autorização.");
-            return;
-        }
+    const nome = obterValorCampoPublico("nomeAluno").trim();
+    const telefone = obterValorCampoPublico("telefoneAluno").trim();
+    const email = obterValorCampoPublico("emailAluno").trim();
+    const turma = obterTurmaPortfolioAluno();
+    const ra = obterRaPortfolioAluno();
+    const site = obterValorCampoPublico("linkSiteAluno").trim();
+    const video = obterValorCampoPublico("linkVideoAluno").trim();
 
-        if (!linkPareceSeguro(site)) {
-            alert("O link do site precisa começar com https:// e não pode conter conteúdo proibido.");
-            return;
-        }
+    const autorizacao = document.getElementById("autorizacaoAluno");
+    const autorizado = autorizacao ? autorizacao.checked : false;
 
-        if (video && !linkPareceSeguro(video)) {
-            alert("O link do vídeo precisa começar com https:// e não pode conter conteúdo proibido.");
-            return;
-        }
+    if (!nome || !email || !site || !autorizado) {
+        alert("Preencha nome, e-mail, link do site e marque a autorização.");
+        return;
+    }
 
-        const { error } = await banco
-            .from("portfolio_alunos")
-            .insert([
-                {
-                    nome_aluno: nome,
-                    telefone: telefone,
-                    email: email,
-                    link_site: site,
-                    link_video: video,
-                    autorizado: true,
-                    aprovado: false
-                }
-            ]);
+    if (!turma) {
+        alert("Selecione ou informe a turma do aluno antes de enviar o portfólio.");
+        return;
+    }
 
-        if (error) {
-            alert("Erro ao salvar: " + error.message);
-            console.log("Erro Supabase:", error);
-            return;
-        }
+    if (!linkPareceSeguro(site)) {
+        alert("O link do site precisa começar com https:// e não pode conter conteúdo proibido.");
+        return;
+    }
 
-        alert("Portfólio enviado com sucesso! Aguarde aprovação do professor.");
+    if (video && !linkPareceSeguro(video)) {
+        alert("O link do vídeo precisa começar com https:// e não pode conter conteúdo proibido.");
+        return;
+    }
 
-        document.getElementById("nomeAluno").value = "";
-        document.getElementById("telefoneAluno").value = "";
-        document.getElementById("emailAluno").value = "";
-        document.getElementById("linkSiteAluno").value = "";
-        document.getElementById("linkVideoAluno").value = "";
-        document.getElementById("autorizacaoAluno").checked = false;
+    let usuarioLogado = null;
 
-        mostrarSecaoAluno("areaAulaDia");
+    try {
+        const { data: userData } = await banco.auth.getUser();
+        usuarioLogado = userData && userData.user ? userData.user : null;
+    } catch (erroUsuario) {
+        console.log("Não foi possível identificar usuário logado:", erroUsuario);
+    }
+
+    const dadosPortfolio = {
+        nome_aluno: nome,
+
+        // Campos antigos, mantidos para compatibilidade
+        telefone: telefone,
+        email: email,
+
+        // Campos novos para relatórios por turma/aluno
+        aluno_id: usuarioLogado ? usuarioLogado.id : null,
+        aluno_email: email,
+        aluno_telefone: telefone,
+        aluno_turma: turma,
+        aluno_ra: ra,
+
+        link_site: site,
+        link_video: video || null,
+        autorizado: true,
+        aprovado: false
+    };
+
+    const { data, error } = await banco
+        .from("portfolio_alunos")
+        .insert([dadosPortfolio])
+        .select()
+        .single();
+
+    if (error) {
+        alert("Erro ao salvar: " + error.message);
+        console.log("Erro Supabase:", error);
+        return;
+    }
+
+    await registrarLogSeguroSistema({
+        modulo: "portfolio",
+        acao: "criar_portfolio",
+        tipo_evento: "aluno_postou_portfolio",
+        tabela_afetada: "portfolio_alunos",
+        registro_id: data && data.id ? String(data.id) : null,
+        descricao: `Aluno ${nome} postou um novo portfólio no site.`,
+        dados_novos: dadosPortfolio
     });
+
+    alert("Portfólio enviado com sucesso! Aguarde aprovação do professor.");
+
+    limparCampoPublico("nomeAluno");
+    limparCampoPublico("telefoneAluno");
+    limparCampoPublico("emailAluno");
+    limparCampoPublico("turmaAluno");
+    limparCampoPublico("portfolioTurmaAluno");
+    limparCampoPublico("raAluno");
+    limparCampoPublico("portfolioRaAluno");
+    limparCampoPublico("linkSiteAluno");
+    limparCampoPublico("linkVideoAluno");
+
+    if (autorizacao) {
+        autorizacao.checked = false;
+    }
+
+    mostrarSecaoAluno("areaAulaDia");
+}
+
+
+function obterTurmaPortfolioAluno() {
+    const campoTurmaDireto = document.getElementById("turmaAluno") || document.getElementById("portfolioTurmaAluno");
+
+    if (campoTurmaDireto && campoTurmaDireto.value) {
+        return campoTurmaDireto.value.trim();
+    }
+
+    const selectTurmaPagina = document.getElementById("selectTurma");
+
+    if (selectTurmaPagina && selectTurmaPagina.value) {
+        const optionSelecionada = selectTurmaPagina.options[selectTurmaPagina.selectedIndex];
+
+        if (optionSelecionada && optionSelecionada.dataset.nome) {
+            return optionSelecionada.dataset.nome.trim();
+        }
+
+        if (optionSelecionada && optionSelecionada.textContent) {
+            return optionSelecionada.textContent.split("-")[0].trim();
+        }
+    }
+
+    return "";
+}
+
+
+function obterRaPortfolioAluno() {
+    const campoRa = document.getElementById("raAluno") || document.getElementById("portfolioRaAluno");
+
+    if (campoRa && campoRa.value) {
+        return campoRa.value.trim();
+    }
+
+    return "";
+}
+
+
+function obterValorCampoPublico(idCampo) {
+    const campo = document.getElementById(idCampo);
+
+    if (!campo) {
+        return "";
+    }
+
+    return campo.value || "";
+}
+
+
+async function registrarLogSeguroSistema(config) {
+    try {
+        if (typeof registrarLogSistema === "function") {
+            await registrarLogSistema(config);
+        }
+    } catch (erro) {
+        console.warn("Não foi possível registrar log do sistema:", erro);
+    }
 }
 
 
 // =====================================================
 // 19. BOTÃO: CARREGAR PORTFÓLIOS PUBLICADOS
+// Agora exibe telefone, e-mail, turma e RA quando disponíveis.
 // =====================================================
 
 const btnCarregarPortfolios = document.getElementById("btnCarregarPortfolios");
@@ -918,7 +1037,22 @@ async function carregarPortfoliosPublicados() {
 
     const { data, error } = await banco
         .from("portfolio_alunos")
-        .select("nome_aluno, telefone, email, link_site, link_video, criado_em")
+        .select(`
+            id,
+            nome_aluno,
+            telefone,
+            email,
+            aluno_telefone,
+            aluno_email,
+            aluno_turma,
+            aluno_ra,
+            link_site,
+            link_video,
+            autorizado,
+            aprovado,
+            criado_em,
+            created_at
+        `)
         .eq("autorizado", true)
         .eq("aprovado", true)
         .order("criado_em", { ascending: false });
@@ -936,13 +1070,22 @@ async function carregarPortfoliosPublicados() {
     areaPortfolios.innerHTML = "";
 
     data.forEach(function (aluno) {
+        const telefoneAluno = aluno.aluno_telefone || aluno.telefone || "Não informado";
+        const emailAluno = aluno.aluno_email || aluno.email || "Não informado";
+        const turmaAluno = aluno.aluno_turma || "Não informada";
+        const raAluno = aluno.aluno_ra || "Não informado";
+
         areaPortfolios.innerHTML += `
             <div class="card-publicado">
-                <h3>${escaparHTML(aluno.nome_aluno)}</h3>
+                <h3>${escaparHTML(aluno.nome_aluno || "Aluno sem nome")}</h3>
 
-                <p><strong>Telefone:</strong> ${escaparHTML(aluno.telefone || "Não informado")}</p>
+                <p><strong>Turma:</strong> ${escaparHTML(turmaAluno)}</p>
 
-                <p><strong>E-mail:</strong> ${escaparHTML(aluno.email || "Não informado")}</p>
+                <p><strong>RA:</strong> ${escaparHTML(raAluno)}</p>
+
+                <p><strong>Telefone:</strong> ${escaparHTML(telefoneAluno)}</p>
+
+                <p><strong>E-mail:</strong> ${escaparHTML(emailAluno)}</p>
 
                 <p>
                     <strong>Site:</strong>
@@ -1197,20 +1340,22 @@ async function enviarSolicitacaoAjudaAluno() {
         mensagem.textContent = "Enviando sua solicitação...";
     }
 
-    const { error } = await banco
+    const dadosChamado = {
+        nome_aluno: nome,
+        turma: turma,
+        curso: curso,
+        disciplina: disciplina,
+        dificuldade: dificuldade,
+        mensagem: mensagemAluno,
+        contato: contato,
+        status: "aguardando"
+    };
+
+    const { data, error } = await banco
         .from("solicitacoes_ajuda")
-        .insert([
-            {
-                nome_aluno: nome,
-                turma: turma,
-                curso: curso,
-                disciplina: disciplina,
-                dificuldade: dificuldade,
-                mensagem: mensagemAluno,
-                contato: contato,
-                status: "aguardando"
-            }
-        ]);
+        .insert([dadosChamado])
+        .select()
+        .single();
 
     if (error) {
         if (mensagem) {
@@ -1220,6 +1365,16 @@ async function enviarSolicitacaoAjudaAluno() {
         console.log("Erro ao enviar solicitação de ajuda:", error);
         return;
     }
+
+    await registrarLogSeguroSistema({
+        modulo: "chamados",
+        acao: "enviar_chamado",
+        tipo_evento: "aluno_enviou_chamado",
+        tabela_afetada: "solicitacoes_ajuda",
+        registro_id: data && data.id ? String(data.id) : null,
+        descricao: `Aluno ${nome} enviou uma solicitação de ajuda.`,
+        dados_novos: dadosChamado
+    });
 
     if (mensagem) {
         mensagem.textContent = "Pedido de ajuda enviado com sucesso! O professor irá analisar sua solicitação.";
