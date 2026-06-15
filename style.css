@@ -2668,3 +2668,22 @@ body::after {
         transform: translateY(0);
     }
 }
+
+#turmaAluno,
+#raAluno {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #1d4ed8;
+    border-radius: 10px;
+    font-size: 16px;
+    background: #ffffff;
+    color: #111827;
+    margin-bottom: 16px;
+}
+
+#turmaAluno:focus,
+#raAluno:focus {
+    outline: none;
+    border-color: #0f766e;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}

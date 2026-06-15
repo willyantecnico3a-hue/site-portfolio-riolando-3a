@@ -366,7 +366,10 @@
             <form id="formAjudaAluno" class="form-ajuda-aluno" style="display:none;">
 
                 <label for="ajudaNomeAluno">Nome do aluno</label>
-                <input type="text" id="ajudaNomeAluno" placeholder="Digite seu nome completo">
+                <!-- =====================================================
+             SEÇÃO 4: PORTFÓLIOS PUBLICADOS
+             Fica oculta e só aparece ao clicar no card
+        ====================================================== -->type="text" id="ajudaNomeAluno" placeholder="Digite seu nome completo">
 
                 <label for="ajudaTurmaAluno">Turma</label>
                 <input type="text" id="ajudaTurmaAluno" placeholder="Ex: 3ºA">
@@ -489,6 +492,8 @@
                     placeholder="Digite seu nome completo"
                 >
 
+
+
                 <label for="telefoneAluno">Telefone</label>
                 <input
                     type="text"
@@ -502,6 +507,21 @@
                     id="emailAluno"
                     placeholder="Digite seu e-mail"
                 >
+
+<label for="turmaAluno">Turma</label>
+<select id="turmaAluno" required>
+    <option value="">Selecione a turma</option>
+    <option value="2ºA">2ºA - Desenvolvimento de Sistemas</option>
+    <option value="3ºA">3ºA - Desenvolvimento de Sistemas</option>
+    <option value="3ºB">3ºB - Desenvolvimento de Sistemas</option>
+</select>
+
+                <label for="raAluno">RA do aluno</label>
+                <input 
+                    type="text" 
+                    id="raAluno" 
+                    placeholder="Digite o RA do aluno"
+>
 
                 <label for="linkSiteAluno">Link do projeto criado</label>
                 <input
