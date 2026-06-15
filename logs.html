@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logs do Sistema | Riolando Conecta Técnico</title>
+  <link rel="stylesheet" href="logs.css?v=20260614-01" />
+</head>
+<body>
+  <header class="topo-logs">
+    <div>
+      <span class="selo-logs">Auditoria do Sistema</span>
+      <h1>🧾 Logs do Sistema</h1>
+      <p>Central de auditoria do Riolando Conecta Técnico para acompanhar ações, alterações, registros, erros operacionais e movimentações realizadas por usuários no site.</p>
+    </div>
+    <div class="acoes-topo-logs">
+      <a href="admin.html" class="btn-topo-logs">⬅ Voltar ao Admin</a>
+      <a href="central-paeet.html" class="btn-topo-logs btn-central">🎯 Central PAEET</a>
+      <a href="relatorios.html" class="btn-topo-logs btn-relatorio">📊 Relatórios</a>
+    </div>
+  </header>
+
+  <main class="container-logs">
+    <section id="areaBloqueioLogs" class="bloqueio-logs" style="display:none;">
+      <h2>🔒 Acesso restrito</h2>
+      <p>Esta página é exclusiva para administradores.</p>
+      <a href="admin.html">Voltar para o login administrativo</a>
+    </section>
+
+    <section id="areaLogsSistema" style="display:none;">
+      <section class="card-resumo-logs">
+        <div>
+          <h2>📌 Painel de monitoramento</h2>
+          <p>Esta tela exibe os registros salvos na tabela <strong>logs_sistema</strong>, permitindo identificar quem fez uma ação, quando fez, em qual módulo, em qual tabela e qual foi o impacto da alteração.</p>
+        </div>
+        <div class="status-login-logs">
+          <span>Administrador logado</span>
+          <strong id="emailAdminLogs">Carregando...</strong>
+        </div>
+      </section>
+
+      <section class="grade-indicadores-logs">
+        <article class="card-indicador-logs"><span>🧾</span><h3 id="indicadorTotalLogs">0</h3><p>Total de logs</p></article>
+        <article class="card-indicador-logs"><span>📅</span><h3 id="indicadorLogsHoje">0</h3><p>Logs de hoje</p></article>
+        <article class="card-indicador-logs"><span>✅</span><h3 id="indicadorLogsSucesso">0</h3><p>Sucesso</p></article>
+        <article class="card-indicador-logs alerta"><span>⚠️</span><h3 id="indicadorLogsAlertaErro">0</h3><p>Alertas/erros</p></article>
+        <article class="card-indicador-logs"><span>👤</span><h3 id="indicadorUsuariosLogs">0</h3><p>Usuários distintos</p></article>
+      </section>
+
+      <section class="card-filtros-logs">
+        <h2>🔎 Filtros organizadores</h2>
+        <div class="organizador-logs-windows">
+          <div class="grupo-organizador-logs">
+            <label for="filtroRapidoLogs">Filtro rápido</label>
+            <select id="filtroRapidoLogs">
+              <option value="">Selecionar período rápido</option>
+              <option value="hoje">Hoje</option>
+              <option value="ontem">Ontem</option>
+              <option value="semana_passada">Semana passada</option>
+              <option value="anteriores_neste_mes">Anteriores neste mês</option>
+              <option value="ultimo_mes">Último mês</option>
+            </select>
+          </div>
+          <div class="grupo-organizador-logs">
+            <label for="btnOrdenarLogs">Organizar por data</label>
+            <button type="button" id="btnOrdenarLogs" class="btn-ordenar-logs" data-ordem="desc">📅 Data do log ↓ Mais recentes</button>
+          </div>
+        </div>
+
+        <div class="grade-filtros-logs">
+          <div><label for="filtroPeriodoLogs">Período</label><select id="filtroPeriodoLogs"><option value="diario">Diário</option><option value="semanal">Semanal</option><option value="mensal" selected>Mensal</option><option value="bimestral">Bimestral</option><option value="trimestral">Trimestral</option><option value="semestral">Semestral</option><option value="anual">Anual</option><option value="personalizado">Personalizado</option></select></div>
+          <div><label for="dataInicioLogs">Data inicial</label><input type="date" id="dataInicioLogs" /></div>
+          <div><label for="dataFimLogs">Data final</label><input type="date" id="dataFimLogs" /></div>
+          <div><label for="filtroModuloLogs">Módulo</label><select id="filtroModuloLogs"><option value="todos">Todos</option><option value="agenda">Agenda</option><option value="portfolio">Portfólio</option><option value="chamados">Chamados</option><option value="central_paeet">Central PAEET</option><option value="acompanhamento_paeet">Acompanhamento PAEET</option><option value="relatorios">Relatórios</option><option value="admin">Admin</option><option value="geral">Geral</option></select></div>
+          <div><label for="filtroStatusLogs">Status</label><select id="filtroStatusLogs"><option value="todos">Todos</option><option value="sucesso">Sucesso</option><option value="alerta">Alerta</option><option value="erro">Erro</option></select></div>
+          <div><label for="filtroTabelaLogs">Tabela afetada</label><select id="filtroTabelaLogs"><option value="todos">Todas</option><option value="eventos">eventos</option><option value="portfolio_alunos">portfolio_alunos</option><option value="solicitacoes_ajuda">solicitacoes_ajuda</option><option value="acompanhamento_alunos">acompanhamento_alunos</option><option value="acoes_checklist_paeet">acoes_checklist_paeet</option><option value="logs_sistema">logs_sistema</option></select></div>
+          <div><label for="filtroUsuarioLogs">Usuário/e-mail</label><input type="search" id="filtroUsuarioLogs" placeholder="Digite e-mail ou nome" /></div>
+          <div><label for="buscaLogs">Busca geral</label><input type="search" id="buscaLogs" placeholder="Buscar descrição, ação, página..." /></div>
+        </div>
+
+        <div class="acoes-logs">
+          <button type="button" id="btnGerarLogs">🧾 Gerar logs</button>
+          <button type="button" id="btnLimparFiltrosLogs">🧹 Limpar filtros</button>
+          <button type="button" id="btnBaixarCsvLogs">⬇️ Baixar CSV</button>
+          <button type="button" id="btnBaixarPdfLogs">📄 Baixar PDF</button>
+        </div>
+        <p id="mensagemLogs" class="mensagem-logs"></p>
+      </section>
+
+      <section class="area-graficos-logs">
+        <div class="card-grafico-logs"><h2>📊 Logs por módulo</h2><div id="graficoLogsPorModulo" class="grafico-barras-logs"></div></div>
+        <div class="card-grafico-logs"><h2>⚙️ Logs por ação</h2><div id="graficoLogsPorAcao" class="grafico-barras-logs"></div></div>
+      </section>
+
+      <section class="card-tabela-logs">
+        <h2>📋 Registros detalhados</h2>
+        <div class="tabela-logs-responsiva">
+          <table>
+            <thead><tr><th>Data/hora</th><th>Usuário</th><th>Módulo</th><th>Ação</th><th>Tabela</th><th>Registro</th><th>Status</th><th>Descrição</th><th>Detalhes</th></tr></thead>
+            <tbody id="corpoTabelaLogs"><tr><td colspan="9">Clique em “Gerar logs” para carregar os registros.</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="modalDetalhesLog" class="modal-log">
+    <div class="modal-log-card">
+      <button type="button" id="btnFecharModalLog" class="btn-fechar-modal-log">×</button>
+      <h2>🔍 Detalhes do log</h2>
+      <pre id="conteudoDetalhesLog"></pre>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="logs.js?v=20260614-01"></script>
+</body>
+</html>
