@@ -15,9 +15,9 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Painel Administrativo</title>
+    <title>Painel Administrativo | Acesso Professor e Coordenação</title>
 
-<link rel="stylesheet" href="style.css?v=20260612-04">
+<link rel="stylesheet" href="style.css?v=20260615-PERFIS-02">
     <style>
         /* =============================
            BASE DO PAINEL ADMIN
@@ -1358,6 +1358,123 @@ body > p {
         height: 88px;
     }
 }
+
+        /* =============================
+           PAINEL LIMITADO - PROFESSOR / COORDENAÇÃO
+        ============================= */
+
+        .painel-professor-limitado {
+            max-width: 1100px;
+            margin: 24px auto;
+            padding: 26px;
+            background: linear-gradient(135deg, #ffffff, #f0fdfa);
+            border-radius: 24px;
+            border-left: 7px solid #1e40af;
+            box-shadow: 0 16px 38px rgba(15, 23, 42, 0.14);
+        }
+
+        .painel-professor-limitado .admin-topo-minimalista {
+            position: static;
+            box-shadow: none;
+            border-left-color: #1e40af;
+            background: #eff6ff;
+        }
+
+        .painel-professor-limitado .admin-topo-minimalista h2 {
+            color: #1e40af;
+        }
+
+        .aviso-acesso-limitado {
+            margin: 16px 0 22px;
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #ecfeff;
+            border-left: 6px solid #0f766e;
+            color: #0f172a;
+            line-height: 1.6;
+        }
+
+        .aviso-acesso-limitado strong {
+            color: #0f766e;
+        }
+
+        .grade-menu-limitado {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .card-acesso-limitado {
+            display: block;
+            padding: 22px;
+            border-radius: 20px;
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-left: 7px solid #0f766e;
+            color: #0f172a;
+            text-decoration: none;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.10);
+            transition: 0.2s ease;
+        }
+
+        .card-acesso-limitado:hover {
+            transform: translateY(-2px);
+            border-color: #1e40af;
+            background: #f8fafc;
+        }
+
+        .card-acesso-limitado h3 {
+            margin: 0 0 10px;
+            color: #0f766e;
+            font-size: 22px;
+        }
+
+        .card-acesso-limitado p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.5;
+        }
+
+        .card-acesso-limitado.agenda-leitura {
+            border-left-color: #1e40af;
+        }
+
+        .card-acesso-limitado.agenda-leitura h3 {
+            color: #1e40af;
+        }
+
+        .lista-permissoes-limitadas {
+            margin: 18px 0 0;
+            padding: 16px 18px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+        }
+
+        .lista-permissoes-limitadas h3 {
+            margin-top: 0;
+            color: #0f766e;
+        }
+
+        .lista-permissoes-limitadas ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 800px) {
+            .grade-menu-limitado {
+                grid-template-columns: 1fr;
+            }
+
+            .painel-professor-limitado {
+                margin: 12px;
+                padding: 18px;
+            }
+        }
+
     </style>
 </head>
 
@@ -1377,7 +1494,7 @@ body > p {
         <h1>Painel Educacional PAEET</h1>
 
         <p>
-            Área exclusiva para o professor gerenciar aulas, turmas, materiais, portfólios, acompanhamento PAEET e chamados dos alunos.
+            Área de acesso administrativo, professores convidados e coordenação. Cada perfil visualizará apenas as áreas permitidas.
         </p>
 <section id="secaoLoginAdmin" class="painel-admin login-admin-moderno">
 
@@ -1409,21 +1526,21 @@ body > p {
         <section class="card-login-admin-professor">
 
             <h2>
-                Login do Administrador
+                Login Administrativo / Professor / Coordenação
             </h2>
 
             <p>
-                Acesso exclusivo para professor, gestão e responsáveis pelo gerenciamento do portal.
+                Use o e-mail cadastrado e a senha provisória ou definitiva. Administradores têm acesso completo; professores e coordenação acessam apenas as áreas liberadas.
             </p>
 
             <label for="emailAdmin">
-                E-mail do administrador
+                E-mail do usuário
             </label>
 
             <input
                 type="email"
                 id="emailAdmin"
-                placeholder="Digite seu e-mail administrativo"
+                placeholder="Digite seu e-mail cadastrado"
                 autocomplete="email"
             >
 
@@ -1439,7 +1556,7 @@ body > p {
             >
 
             <button id="btnLoginAdmin" type="button" class="btn-login-admin-destaque">
-                Entrar no Painel
+                Entrar no Sistema
             </button>
 
             <p id="mensagemLogin" class="mensagem-login-admin"></p>
@@ -2628,11 +2745,79 @@ Aluno Teste,aluno.teste@aluno.com,3ºA,desenvolvimento_sistemas,Riolando@2026</t
     </section>
 
 
+
+
+    <!-- =============================
+         ÁREA LIMITADA - PROFESSOR / COORDENAÇÃO
+         Esta área é exibida pelo admin.js quando o perfil logado
+         for professor ou coordenacao.
+    ============================== -->
+    <section id="areaProfessorLimitado" class="painel-professor-limitado" style="display:none;">
+
+        <div class="admin-topo-minimalista">
+
+            <h2 id="tituloPainelProfessorLimitado">
+                Área do Professor / Coordenação
+            </h2>
+
+            <a href="index.html" class="botao-inicio-admin">
+                🏠 Início
+            </a>
+
+            <button id="btnSairProfessorLimitado" class="botao-inicio-admin" type="button">
+                🚪 Sair
+            </button>
+
+        </div>
+
+        <div class="aviso-acesso-limitado">
+            <strong>Acesso limitado ativo.</strong>
+            Professores e coordenação podem contribuir com o acompanhamento e recuperação
+            de aprendizagem dos estudantes. A agenda fica disponível apenas para consulta,
+            sem permissão para criar, editar ou excluir eventos.
+        </div>
+
+        <div class="grade-menu-limitado">
+
+            <a href="acompanhamento.html" class="card-acesso-limitado">
+                <h3>🧑‍🎓 Acompanhamento PAEET</h3>
+                <p>
+                    Registrar e acompanhar dificuldades, evidências, intervenções,
+                    encaminhamentos, resultados observados e recuperação de aprendizagem.
+                </p>
+            </a>
+
+            <a href="agenda.html" class="card-acesso-limitado agenda-leitura">
+                <h3>📅 Agenda Escolar / PAEET</h3>
+                <p>
+                    Visualizar eventos, aulas, reuniões, formações e compromissos.
+                    Este perfil não pode criar, editar ou excluir eventos.
+                </p>
+            </a>
+
+        </div>
+
+        <div class="lista-permissoes-limitadas">
+            <h3>Permissões deste acesso</h3>
+
+            <ul>
+                <li>✅ Acessar a página de acompanhamento PAEET.</li>
+                <li>✅ Contribuir com registros de acompanhamento e recuperação de aprendizagem.</li>
+                <li>✅ Visualizar a agenda escolar/PAEET.</li>
+                <li>❌ Não acessar o painel administrativo completo.</li>
+                <li>❌ Não criar, editar ou excluir eventos da agenda.</li>
+                <li>❌ Não acessar relatórios administrativos completos e logs do sistema.</li>
+            </ul>
+        </div>
+
+    </section>
+
+
     <!-- Biblioteca do Supabase precisa carregar antes do admin.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Arquivo com as funções do painel administrativo -->
-    <script src="admin.js?v=20260612-05"></script>
+    <script src="admin.js?v=20260615-PERFIS-02"></script>
 
     <script>
         if ("serviceWorker" in navigator) {
