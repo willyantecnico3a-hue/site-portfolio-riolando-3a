@@ -1050,8 +1050,7 @@ async function carregarPortfoliosPublicados() {
             link_video,
             autorizado,
             aprovado,
-            criado_em,
-            created_at
+            criado_em
         `)
         .eq("autorizado", true)
         .eq("aprovado", true)
@@ -1059,6 +1058,7 @@ async function carregarPortfoliosPublicados() {
 
     if (error) {
         areaPortfolios.innerHTML = `<p>Erro ao carregar portfólios: ${error.message}</p>`;
+        console.log("Erro ao carregar portfólios:", error);
         return;
     }
 
@@ -1074,6 +1074,7 @@ async function carregarPortfoliosPublicados() {
         const emailAluno = aluno.aluno_email || aluno.email || "Não informado";
         const turmaAluno = aluno.aluno_turma || "Não informada";
         const raAluno = aluno.aluno_ra || "Não informado";
+        const dataEnvio = aluno.criado_em ? formatarDataHoraPortfolio(aluno.criado_em) : "Data não informada";
 
         areaPortfolios.innerHTML += `
             <div class="card-publicado">
@@ -1086,6 +1087,8 @@ async function carregarPortfoliosPublicados() {
                 <p><strong>Telefone:</strong> ${escaparHTML(telefoneAluno)}</p>
 
                 <p><strong>E-mail:</strong> ${escaparHTML(emailAluno)}</p>
+
+                <p><strong>Enviado em:</strong> ${escaparHTML(dataEnvio)}</p>
 
                 <p>
                     <strong>Site:</strong>
@@ -1136,6 +1139,25 @@ function formatarHorarioAluno(horario) {
     }
 
     return horario.substring(0, 5);
+}
+
+
+function formatarDataHoraPortfolio(dataTexto) {
+    if (!dataTexto) {
+        return "Data não informada";
+    }
+
+    try {
+        return new Date(dataTexto).toLocaleString("pt-BR", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    } catch (erro) {
+        return dataTexto;
+    }
 }
 
 
@@ -1418,12 +1440,16 @@ function limparCampoPublico(idCampo) {
         );
     }
 
-    const btnAbrirAjudaAluno = document.getElementById("btnAbrirAjudaAluno");
+    const btnAbrirAjudaAlunoHome = document.getElementById("btnAbrirAjudaAluno");
     const btnAcompanharChamadosAluno = document.getElementById("btnAcompanharChamadosAluno");
     const btnAreaAluno = document.getElementById("btnAreaAluno");
+    const formAjudaPublico = document.getElementById("formAjudaAluno");
 
-    if (btnAbrirAjudaAluno) {
-        btnAbrirAjudaAluno.addEventListener("click", function () {
+    // Evita conflito:
+    // Se existir formulário público na home, o botão só abre/fecha o formulário.
+    // Se não existir formulário, o botão redireciona para a área do aluno.
+    if (btnAbrirAjudaAlunoHome && !formAjudaPublico) {
+        btnAbrirAjudaAlunoHome.addEventListener("click", function () {
             irParaAreaAluno("abrirChamado");
         });
     }
