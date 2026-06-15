@@ -382,3 +382,28 @@ body {
     .card-resumo-acompanhamento { padding: 18px; border-radius: 18px; }
     .card-indicador-acompanhamento h3 { font-size: 30px; }
 }
+
+
+/* =====================================================
+   BOTÕES E IMPRESSÃO DO FEEDBACK DETALHADO PAEET
+===================================================== */
+
+.btn-feedback-acompanhamento {
+    background: linear-gradient(135deg, #7c3aed, #1e40af) !important;
+    color: #ffffff !important;
+}
+
+.btn-feedback-individual {
+    background: #f3e8ff !important;
+    color: #6d28d9 !important;
+}
+
+.btn-feedback-individual:hover {
+    filter: brightness(0.96);
+}
+
+@media print {
+    .btn-feedback-individual {
+        display: none !important;
+    }
+}
