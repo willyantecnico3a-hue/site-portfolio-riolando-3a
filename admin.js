@@ -168,7 +168,7 @@ if (btnLoginAdmin) {
         localStorage.setItem("adminEmail", usuario.email || email);
 
         if (perfil.trocar_senha_obrigatorio === true && perfil.perfil !== "admin") {
-            const senhaAlterada = await solicitarTrocaSenhaProvisoria(perfil);
+            const senhaAlterada = await solicitarTrocaSenhaProvisoria(perfil, senha);
 
             if (!senhaAlterada) {
                 if (mensagemLogin) {
@@ -251,7 +251,7 @@ async function carregarPerfilAcessoSistema(usuario) {
     };
 }
 
-async function solicitarTrocaSenhaProvisoria(perfil) {
+async function solicitarTrocaSenhaProvisoria(perfil, senhaAtualDigitada) {
     alert("Este é o primeiro acesso ou sua senha ainda é provisória. Você precisa criar uma nova senha para continuar.");
 
     const novaSenha = prompt("Digite uma nova senha com pelo menos 6 caracteres:");
@@ -269,6 +269,7 @@ async function solicitarTrocaSenhaProvisoria(perfil) {
     }
 
     const { error: erroSenha } = await banco.auth.updateUser({
+        current_password: senhaAtualDigitada,
         password: novaSenha
     });
 
