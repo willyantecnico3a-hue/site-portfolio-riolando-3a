@@ -106,8 +106,17 @@ async function verificarAcessoAdministradorAcompanhamento() {
         }
 
         if (perfil.trocar_senha_obrigatorio === true) {
-            bloquearAcompanhamentoSemPermissao("Este usuário ainda precisa trocar a senha provisória no login administrativo.");
-            return false;
+            console.warn(
+                "Perfil ainda marcado com trocar_senha_obrigatorio=true. " +
+                "O acesso ao Acompanhamento PAEET será liberado porque o usuário já está autenticado."
+            );
+
+            // Tenta corrigir automaticamente a marcação no Supabase.
+            // Se a RLS bloquear este update, o acesso continua liberado.
+            await bancoAcompanhamento
+                .from("perfis_acesso")
+                .update({ trocar_senha_obrigatorio: false })
+                .ilike("email", email);
         }
 
         usuarioAdminAcompanhamento = usuario;
@@ -307,7 +316,7 @@ async function salvarAcompanhamento() {
 
     } catch (erro) {
         console.error("Erro ao salvar acompanhamento:", erro);
-        if (mensagem) mensagem.textContent = "Erro ao salvar. Verifique se a tabela acompanhamento_alunos existe e se o perfil possui permissão no Supabase.";
+        if (mensagem) mensagem.textContent = "Erro ao salvar. Verifique se as policies da tabela acompanhamento_alunos permitem professor/coordenacao.";
     }
 }
 
