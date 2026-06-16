@@ -1,7 +1,7 @@
 /* =====================================================
    ACOMPANHAMENTO PAEET - RIOLANDO CONECTA TÉCNICO
    ARQUIVO: acompanhamento.js
-   Protegido por login administrativo
+   Protegido por login com perfil: admin, professor e coordenacao
 ===================================================== */
 
 const SUPABASE_URL_ACOMP = "https://pwomyoprbvoimqmikvev.supabase.co";
@@ -9,6 +9,7 @@ const SUPABASE_KEY_ACOMP = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 let bancoAcompanhamento = null;
 let usuarioAdminAcompanhamento = null;
+let perfilAcessoAcompanhamento = null;
 let registrosAcompanhamento = [];
 
 if (window.supabase) {
@@ -45,14 +46,14 @@ async function verificarAcessoAdministradorAcompanhamento() {
         const { data: sessaoData, error: erroSessao } = await bancoAcompanhamento.auth.getSession();
 
         if (erroSessao || !sessaoData || !sessaoData.session) {
-            bloquearAcompanhamentoSemPermissao("Você precisa estar logado como administrador para acessar o acompanhamento PAEET.");
+            bloquearAcompanhamentoSemPermissao("Você precisa estar logado para acessar o acompanhamento PAEET.");
             return false;
         }
 
         const usuario = sessaoData.session.user;
 
         if (!usuario || !usuario.email) {
-            bloquearAcompanhamentoSemPermissao("Usuário administrativo não identificado.");
+            bloquearAcompanhamentoSemPermissao("Usuário não identificado.");
             return false;
         }
 
@@ -62,29 +63,139 @@ async function verificarAcessoAdministradorAcompanhamento() {
             .from("admins")
             .select("email")
             .ilike("email", email)
-            .limit(1);
+            .maybeSingle();
 
-        if (erroAdmin || !admin || admin.length === 0) {
-            bloquearAcompanhamentoSemPermissao("Este usuário não possui permissão administrativa.");
+        if (erroAdmin) {
+            console.log("Erro ao verificar admin:", erroAdmin);
+        }
+
+        if (admin) {
+            usuarioAdminAcompanhamento = usuario;
+
+            perfilAcessoAcompanhamento = {
+                user_id: usuario.id,
+                nome: usuario.email,
+                email: usuario.email,
+                perfil: "admin",
+                ativo: true
+            };
+
+            localStorage.setItem("adminEmail", email);
+            localStorage.setItem("perfilAcesso", JSON.stringify(perfilAcessoAcompanhamento));
+
+            setTexto("emailAdminAcompanhamento", `${email} — Administrador`);
+
+            liberarAreaAcompanhamento();
+            return true;
+        }
+
+        const { data: perfil, error: erroPerfil } = await bancoAcompanhamento
+            .from("perfis_acesso")
+            .select("id, user_id, nome, email, perfil, trocar_senha_obrigatorio, ativo")
+            .ilike("email", email)
+            .eq("ativo", true)
+            .maybeSingle();
+
+        if (erroPerfil) {
+            console.log("Erro ao verificar perfil em perfis_acesso:", erroPerfil);
+        }
+
+        if (!perfil || !["professor", "coordenacao"].includes(perfil.perfil)) {
+            bloquearAcompanhamentoSemPermissao("Este usuário não possui permissão ativa para acessar o Acompanhamento PAEET.");
+            return false;
+        }
+
+        if (perfil.trocar_senha_obrigatorio === true) {
+            bloquearAcompanhamentoSemPermissao("Este usuário ainda precisa trocar a senha provisória no login administrativo.");
             return false;
         }
 
         usuarioAdminAcompanhamento = usuario;
+
+        perfilAcessoAcompanhamento = {
+            ...perfil,
+            user_id: perfil.user_id || usuario.id,
+            email: perfil.email || usuario.email
+        };
+
         localStorage.setItem("adminEmail", email);
-        setTexto("emailAdminAcompanhamento", email);
+        localStorage.setItem("perfilAcesso", JSON.stringify(perfilAcessoAcompanhamento));
 
-        const areaBloqueio = document.getElementById("areaBloqueioAcompanhamento");
-        const areaAcompanhamento = document.getElementById("areaAcompanhamento");
+        const nomePerfil = perfil.nome || usuario.email;
+        const tipoPerfil = perfil.perfil === "coordenacao" ? "Coordenação" : "Professor";
 
-        if (areaBloqueio) areaBloqueio.style.display = "none";
-        if (areaAcompanhamento) areaAcompanhamento.style.display = "block";
+        setTexto("emailAdminAcompanhamento", `${nomePerfil} — ${tipoPerfil} — ${email}`);
 
+        liberarAreaAcompanhamento();
         return true;
 
     } catch (erro) {
-        console.error("Erro ao verificar permissão administrativa:", erro);
-        bloquearAcompanhamentoSemPermissao("Erro ao validar acesso administrativo.");
+        console.error("Erro ao verificar permissão do acompanhamento:", erro);
+        bloquearAcompanhamentoSemPermissao("Erro ao validar acesso ao Acompanhamento PAEET.");
         return false;
+    }
+}
+
+function liberarAreaAcompanhamento() {
+    const areaBloqueio = document.getElementById("areaBloqueioAcompanhamento");
+    const areaAcompanhamento = document.getElementById("areaAcompanhamento");
+
+    if (areaBloqueio) areaBloqueio.style.display = "none";
+    if (areaAcompanhamento) areaAcompanhamento.style.display = "block";
+
+    aplicarPermissoesVisuaisAcompanhamento();
+}
+
+function usuarioPodeExcluirAcompanhamento() {
+    return Boolean(
+        perfilAcessoAcompanhamento &&
+        perfilAcessoAcompanhamento.perfil === "admin"
+    );
+}
+
+function usuarioPodeEditarAcompanhamento() {
+    return Boolean(
+        perfilAcessoAcompanhamento &&
+        ["admin", "professor", "coordenacao"].includes(perfilAcessoAcompanhamento.perfil)
+    );
+}
+
+function aplicarPermissoesVisuaisAcompanhamento() {
+    const avisoId = "avisoPermissaoAcompanhamento";
+    let aviso = document.getElementById(avisoId);
+
+    if (!aviso) {
+        aviso = document.createElement("div");
+        aviso.id = avisoId;
+        aviso.style.margin = "14px 0";
+        aviso.style.padding = "14px 16px";
+        aviso.style.borderRadius = "14px";
+        aviso.style.background = "#eff6ff";
+        aviso.style.borderLeft = "6px solid #1e40af";
+        aviso.style.color = "#1e3a8a";
+        aviso.style.fontWeight = "800";
+
+        const areaAcompanhamento = document.getElementById("areaAcompanhamento");
+
+        if (areaAcompanhamento) {
+            areaAcompanhamento.prepend(aviso);
+        }
+    }
+
+    if (!perfilAcessoAcompanhamento) {
+        aviso.textContent = "";
+        aviso.style.display = "none";
+        return;
+    }
+
+    aviso.style.display = "block";
+
+    if (perfilAcessoAcompanhamento.perfil === "admin") {
+        aviso.textContent = "Acesso administrativo: você pode cadastrar, editar e excluir acompanhamentos.";
+    } else if (perfilAcessoAcompanhamento.perfil === "coordenacao") {
+        aviso.textContent = "Acesso da coordenação: você pode cadastrar e editar acompanhamentos. A exclusão é restrita ao administrador.";
+    } else {
+        aviso.textContent = "Acesso do professor: você pode cadastrar e editar acompanhamentos. A exclusão é restrita ao administrador.";
     }
 }
 
@@ -99,14 +210,14 @@ function bloquearAcompanhamentoSemPermissao(mensagem) {
         areaBloqueio.innerHTML = `
             <h2>🔒 Acesso restrito</h2>
             <p>${escaparHtml(mensagem)}</p>
-            <p>Faça login com uma conta administrativa para continuar.</p>
+            <p>Faça login com uma conta autorizada: administrador, professor ou coordenação.</p>
             <a href="admin.html">Voltar para o login administrativo</a>
         `;
     }
 
     setTimeout(function () {
         window.location.href = "admin.html";
-    }, 2500);
+    }, 3500);
 }
 
 /* =====================================================
@@ -151,6 +262,11 @@ async function salvarAcompanhamento() {
     const mensagem = document.getElementById("mensagemFormularioAcompanhamento");
 
     try {
+        if (!usuarioPodeEditarAcompanhamento()) {
+            if (mensagem) mensagem.textContent = "Seu perfil não possui permissão para salvar acompanhamentos.";
+            return;
+        }
+
         const dados = obterDadosFormularioAcompanhamento();
 
         if (!dados.nome_aluno || !dados.turma || !dados.curso || !dados.data_registro) {
@@ -191,7 +307,7 @@ async function salvarAcompanhamento() {
 
     } catch (erro) {
         console.error("Erro ao salvar acompanhamento:", erro);
-        if (mensagem) mensagem.textContent = "Erro ao salvar. Verifique se a tabela acompanhamento_alunos existe e se há permissão administrativa.";
+        if (mensagem) mensagem.textContent = "Erro ao salvar. Verifique se a tabela acompanhamento_alunos existe e se o perfil possui permissão no Supabase.";
     }
 }
 
@@ -311,7 +427,11 @@ function renderizarTabelaAcompanhamento() {
                     <div class="botoes-tabela-acompanhamento">
                         <button type="button" class="btn-feedback-individual" onclick="imprimirFeedbackAcompanhamento('${registro.id}')">Feedback</button>
                         <button type="button" class="btn-editar-registro" onclick="editarRegistroAcompanhamento('${registro.id}')">Editar</button>
-                        <button type="button" class="btn-excluir-registro" onclick="excluirRegistroAcompanhamento('${registro.id}')">Excluir</button>
+                        ${
+                            usuarioPodeExcluirAcompanhamento()
+                            ? `<button type="button" class="btn-excluir-registro" onclick="excluirRegistroAcompanhamento('${registro.id}')">Excluir</button>`
+                            : ""
+                        }
                     </div>
                 </td>
             </tr>
@@ -328,6 +448,11 @@ function renderizarIndicadoresAcompanhamento(lista) {
 }
 
 function editarRegistroAcompanhamento(id) {
+    if (!usuarioPodeEditarAcompanhamento()) {
+        alert("Seu perfil não possui permissão para editar acompanhamentos.");
+        return;
+    }
+
     const registro = registrosAcompanhamento.find(item => item.id === id);
     if (!registro) return alert("Registro não encontrado.");
 
@@ -356,6 +481,11 @@ function editarRegistroAcompanhamento(id) {
 }
 
 async function excluirRegistroAcompanhamento(id) {
+    if (!usuarioPodeExcluirAcompanhamento()) {
+        alert("Somente o administrador pode excluir acompanhamentos.");
+        return;
+    }
+
     if (!confirm("Deseja realmente excluir este acompanhamento? Essa ação não poderá ser desfeita.")) return;
     const mensagem = document.getElementById("mensagemListaAcompanhamento");
 
@@ -1000,3 +1130,9 @@ function setTexto(id, valor) {
 window.editarRegistroAcompanhamento = editarRegistroAcompanhamento;
 window.excluirRegistroAcompanhamento = excluirRegistroAcompanhamento;
 window.imprimirFeedbackAcompanhamento = imprimirFeedbackAcompanhamento;
+
+
+// Funções auxiliares de permissão expostas para depuração
+window.usuarioPodeExcluirAcompanhamento = usuarioPodeExcluirAcompanhamento;
+window.usuarioPodeEditarAcompanhamento = usuarioPodeEditarAcompanhamento;
+window.aplicarPermissoesVisuaisAcompanhamento = aplicarPermissoesVisuaisAcompanhamento;
