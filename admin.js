@@ -1025,6 +1025,114 @@ function limparFormularioTurma() {
 }
 
 
+
+
+// =====================================================
+// CADASTRAR NOVA DISCIPLINA
+// Correção: botão "+ Cadastrar Disciplina" agora salva no Supabase.
+// Campos esperados no admin.html:
+// - novaDisciplinaNome
+// - novaDisciplinaCurso
+// - novaDisciplinaDescricao
+// - btnCadastrarDisciplina
+// - mensagemDisciplinaAdmin
+// =====================================================
+
+const btnCadastrarDisciplina = document.getElementById("btnCadastrarDisciplina");
+
+if (btnCadastrarDisciplina) {
+    btnCadastrarDisciplina.addEventListener("click", salvarNovaDisciplinaAdmin);
+}
+
+async function salvarNovaDisciplinaAdmin() {
+    const mensagem = document.getElementById("mensagemDisciplinaAdmin");
+
+    try {
+        if (!usuarioLogadoEhAdminCompleto()) {
+            if (mensagem) {
+                mensagem.textContent = "Apenas administradores podem cadastrar disciplinas.";
+            }
+
+            alert("Apenas administradores podem cadastrar disciplinas.");
+            return;
+        }
+
+        const nome = pegarValorCampo("novaDisciplinaNome").trim();
+        const curso = pegarValorCampo("novaDisciplinaCurso").trim();
+        const descricao = pegarValorCampo("novaDisciplinaDescricao").trim();
+
+        if (!nome) {
+            if (mensagem) {
+                mensagem.textContent = "Preencha o nome da disciplina.";
+            }
+
+            alert("Preencha o nome da disciplina.");
+            return;
+        }
+
+        if (!curso) {
+            if (mensagem) {
+                mensagem.textContent = "Preencha o curso relacionado.";
+            }
+
+            alert("Preencha o curso relacionado.");
+            return;
+        }
+
+        if (mensagem) {
+            mensagem.textContent = "Cadastrando disciplina...";
+        }
+
+        const dadosDisciplina = {
+            nome_disciplina: nome,
+            curso: curso,
+            descricao: descricao,
+            ativo: true
+        };
+
+        const { error } = await banco
+            .from("disciplinas")
+            .insert([dadosDisciplina]);
+
+        if (error) {
+            console.log("Erro ao cadastrar disciplina:", error);
+
+            if (mensagem) {
+                mensagem.textContent = "Erro ao cadastrar disciplina: " + error.message;
+            }
+
+            alert("Erro ao cadastrar disciplina: " + error.message);
+            return;
+        }
+
+        if (mensagem) {
+            mensagem.textContent = "Disciplina cadastrada com sucesso!";
+        }
+
+        alert("Disciplina cadastrada com sucesso!");
+
+        limparCampoSeExistir("novaDisciplinaNome");
+        limparCampoSeExistir("novaDisciplinaCurso");
+        limparCampoSeExistir("novaDisciplinaDescricao");
+
+        await carregarDisciplinasAdmin();
+
+        if (typeof carregarDisciplinasFiltroAulasAdmin === "function") {
+            await carregarDisciplinasFiltroAulasAdmin();
+        }
+
+    } catch (erro) {
+        console.log("Erro inesperado ao cadastrar disciplina:", erro);
+
+        if (mensagem) {
+            mensagem.textContent = "Erro inesperado ao cadastrar disciplina.";
+        }
+
+        alert("Erro inesperado ao cadastrar disciplina. Verifique o console.");
+    }
+}
+
+
 // =====================================================
 // LISTAR TURMAS CADASTRADAS PARA EDIÇÃO
 // =====================================================
