@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f8fafc">
+    <title>Horários dos Professores | Riolando Conecta Técnico</title>
+    <link rel="stylesheet" href="horario-tv.css">
+</head>
+<body>
+    <main class="painel-tv-horarios">
+        <header class="topo-tv-horarios">
+            <div>
+                <h1>Riolando Conecta Técnico</h1>
+                <p>Painel de Horários dos Professores</p>
+            </div>
+
+            <div class="relogio-tv">
+                <span id="diaSemanaAtualTv">Carregando...</span>
+                <strong id="horaAtualTv">--:--</strong>
+            </div>
+        </header>
+
+        <section class="faixa-status-tv">
+            <div>
+                <span>Agora em aula</span>
+                <strong id="totalAulasAgoraTv">0</strong>
+            </div>
+
+            <div>
+                <span>Próximo horário</span>
+                <strong id="proximoHorarioResumoTv">--:--</strong>
+            </div>
+        </section>
+
+        <section class="conteudo-tv-horarios">
+            <div>
+                <h2>Aulas em andamento</h2>
+                <div id="listaAulasAgoraTv" class="grade-aulas-tv">
+                    <p class="mensagem-tv">Carregando horários...</p>
+                </div>
+            </div>
+
+            <aside class="proximo-horario-tv">
+                <h2>Próximo horário</h2>
+                <div id="proximoHorarioTv">
+                    <p class="mensagem-tv">Consultando...</p>
+                </div>
+            </aside>
+        </section>
+
+        <footer class="rodape-tv-horarios">
+            <span id="mensagemStatusTv">Conectando ao Supabase...</span>
+            <span>Atualizado às <strong id="ultimaAtualizacaoTv">--:--</strong></span>
+        </footer>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="horario-tv.js"></script>
+</body>
+</html>

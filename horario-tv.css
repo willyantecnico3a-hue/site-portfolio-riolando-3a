@@ -1,0 +1,233 @@
+:root {
+    color-scheme: light;
+    --fundo: #f8fafc;
+    --texto: #0f172a;
+    --muted: #475569;
+    --linha: #cbd5e1;
+    --azul: #1d4ed8;
+    --verde: #047857;
+    --amarelo: #b45309;
+    --branco: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.painel-tv-horarios {
+    min-height: 100vh;
+    padding: 32px;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 24px;
+}
+
+.topo-tv-horarios,
+.faixa-status-tv,
+.conteudo-tv-horarios,
+.rodape-tv-horarios {
+    width: min(1840px, 100%);
+    margin: 0 auto;
+}
+
+.topo-tv-horarios {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 28px;
+    border-bottom: 4px solid var(--linha);
+    padding-bottom: 20px;
+}
+
+.topo-tv-horarios h1 {
+    margin: 0;
+    font-size: 56px;
+    line-height: 1;
+    color: var(--verde);
+}
+
+.topo-tv-horarios p {
+    margin: 12px 0 0;
+    font-size: 30px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.relogio-tv {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.relogio-tv span {
+    display: block;
+    font-size: 28px;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.relogio-tv strong {
+    display: block;
+    font-size: 86px;
+    line-height: 1;
+    color: var(--azul);
+}
+
+.faixa-status-tv {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.faixa-status-tv div,
+.card-aula-tv,
+.proximo-horario-tv {
+    background: var(--branco);
+    border: 3px solid var(--linha);
+    border-left: 10px solid var(--verde);
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.faixa-status-tv div {
+    padding: 20px 24px;
+}
+
+.faixa-status-tv span {
+    display: block;
+    font-size: 24px;
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.faixa-status-tv strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 52px;
+    color: var(--texto);
+}
+
+.conteudo-tv-horarios {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(360px, 0.8fr);
+    gap: 24px;
+    min-height: 0;
+}
+
+.conteudo-tv-horarios h2,
+.proximo-horario-tv h2 {
+    margin: 0 0 16px;
+    font-size: 34px;
+    color: var(--texto);
+}
+
+.grade-aulas-tv {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.card-aula-tv {
+    padding: 24px;
+}
+
+.card-aula-tv h3 {
+    margin: 0 0 12px;
+    font-size: 34px;
+    color: var(--verde);
+}
+
+.card-aula-tv .horario {
+    display: inline-block;
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: #dbeafe;
+    color: #1e3a8a;
+    border-radius: 6px;
+    font-size: 26px;
+    font-weight: 800;
+}
+
+.info-aula-tv {
+    display: grid;
+    gap: 10px;
+    font-size: 25px;
+}
+
+.info-aula-tv strong {
+    color: var(--texto);
+}
+
+.proximo-horario-tv {
+    padding: 24px;
+    border-left-color: var(--amarelo);
+}
+
+.proximo-horario-tv .card-aula-tv {
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+.mensagem-tv {
+    margin: 0;
+    padding: 28px;
+    background: var(--branco);
+    border: 3px dashed var(--linha);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.rodape-tv-horarios {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    border-top: 3px solid var(--linha);
+    padding-top: 16px;
+    color: var(--muted);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+    .painel-tv-horarios {
+        padding: 20px;
+    }
+
+    .topo-tv-horarios,
+    .conteudo-tv-horarios,
+    .faixa-status-tv {
+        grid-template-columns: 1fr;
+    }
+
+    .topo-tv-horarios {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .relogio-tv {
+        text-align: left;
+    }
+
+    .grade-aulas-tv {
+        grid-template-columns: 1fr;
+    }
+
+    .topo-tv-horarios h1 {
+        font-size: 40px;
+    }
+
+    .relogio-tv strong {
+        font-size: 64px;
+    }
+}

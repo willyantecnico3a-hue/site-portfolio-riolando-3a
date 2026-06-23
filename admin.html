@@ -1721,6 +1721,11 @@ body > p {
                 <span>Turmas, disciplinas e estrutura</span>
             </button>
 
+            <button class="item-menu-admin menu-horarios-professores" data-tela="telaHorariosProfessores" type="button">
+                Horários dos Professores
+                <span>Gerenciar grade de aulas para a TV</span>
+            </button>
+
             <button class="item-menu-admin" data-tela="telaEditarPerfilAdmin" type="button">
                 👤 Perfil Admin
                 <span>Editar foto, função, escola e frase</span>
@@ -2689,6 +2694,145 @@ Aluno Teste,aluno.teste@aluno.com,3ºA,desenvolvimento_sistemas,Riolando@2026</t
 
 
         <!-- =============================
+             TELA HORARIOS DOS PROFESSORES
+        ============================== -->
+        <section id="telaHorariosProfessores" class="tela-admin-sobreposta">
+
+            <div class="barra-tela-admin">
+
+                <button class="btnVoltarMenuAdmin" type="button">
+                    ← Voltar
+                </button>
+
+                <a href="horario-tv.html" class="botao-inicio-admin" target="_blank" rel="noopener">
+                    Abrir TV
+                </a>
+
+            </div>
+
+            <h2>Horários dos Professores</h2>
+
+            <p>
+                Cadastre, edite, inative, exclua ou importe a grade exibida na tela pública da TV.
+            </p>
+
+            <section class="card-admin-form">
+                <h3>Cadastrar ou editar horário</h3>
+
+                <label for="horarioProfessorDia">Dia da semana</label>
+                <select id="horarioProfessorDia">
+                    <option value="">Selecione o dia</option>
+                    <option value="segunda">Segunda-feira</option>
+                    <option value="terca">Terça-feira</option>
+                    <option value="quarta">Quarta-feira</option>
+                    <option value="quinta">Quinta-feira</option>
+                    <option value="sexta">Sexta-feira</option>
+                </select>
+
+                <label for="horarioProfessorInicio">Horário de início</label>
+                <input type="time" id="horarioProfessorInicio">
+
+                <label for="horarioProfessorFim">Horário de fim</label>
+                <input type="time" id="horarioProfessorFim">
+
+                <label for="horarioProfessorTurma">Turma</label>
+                <input type="text" id="horarioProfessorTurma" placeholder="Ex: 1ºA">
+
+                <label for="horarioProfessorNome">Professor</label>
+                <input type="text" id="horarioProfessorNome" placeholder="Ex: Adriana">
+
+                <label for="horarioProfessorDisciplina">Disciplina</label>
+                <input type="text" id="horarioProfessorDisciplina" placeholder="Opcional">
+
+                <label for="horarioProfessorAmbiente">Ambiente / sala</label>
+                <input type="text" id="horarioProfessorAmbiente" placeholder="Opcional">
+
+                <label for="horarioProfessorAtivo">Status</label>
+                <select id="horarioProfessorAtivo">
+                    <option value="true">Ativo</option>
+                    <option value="false">Inativo</option>
+                </select>
+
+                <button type="button" id="btnSalvarHorarioProfessor">
+                    Salvar horário
+                </button>
+
+                <button type="button" id="btnCancelarEdicaoHorarioProfessor">
+                    Cancelar edição
+                </button>
+
+                <p id="mensagemHorariosProfessores"></p>
+            </section>
+
+            <section class="card-admin-form">
+                <h3>Importar horários por CSV</h3>
+
+                <p class="texto-ajuda">
+                    Use as colunas: <strong>dia_semana,horario_inicio,horario_fim,turma,professor,disciplina,ambiente</strong>
+                </p>
+
+                <textarea readonly rows="4">dia_semana,horario_inicio,horario_fim,turma,professor,disciplina,ambiente
+segunda,14:30,15:20,1ºA,Adriana,Componente Técnico,Sala 01</textarea>
+
+                <label for="arquivoCsvHorariosProfessores">Selecionar arquivo CSV</label>
+                <input type="file" id="arquivoCsvHorariosProfessores" accept=".csv,text/csv">
+
+                <button type="button" id="btnImportarCsvHorariosProfessores">
+                    Importar horários
+                </button>
+
+                <div id="resultadoImportacaoHorariosProfessores" class="resultado-importacao-alunos-admin">
+                    <p>Nenhum arquivo importado ainda.</p>
+                </div>
+            </section>
+
+            <section class="card-admin-lista">
+                <div class="cabecalho-lista-paeet">
+                    <h3>Horários cadastrados</h3>
+
+                    <button type="button" id="btnCarregarHorariosProfessores">
+                        Atualizar lista
+                    </button>
+                </div>
+
+                <div class="filtros-solicitacoes-ajuda-admin">
+                    <div>
+                        <label for="filtroHorarioProfessorDia">Dia</label>
+                        <select id="filtroHorarioProfessorDia">
+                            <option value="">Todos</option>
+                            <option value="segunda">Segunda-feira</option>
+                            <option value="terca">Terça-feira</option>
+                            <option value="quarta">Quarta-feira</option>
+                            <option value="quinta">Quinta-feira</option>
+                            <option value="sexta">Sexta-feira</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="filtroHorarioProfessorNome">Professor</label>
+                        <input type="text" id="filtroHorarioProfessorNome" placeholder="Digite parte do nome">
+                    </div>
+
+                    <div>
+                        <label for="filtroHorarioProfessorTurma">Turma</label>
+                        <input type="text" id="filtroHorarioProfessorTurma" placeholder="Ex: 1ºA">
+                    </div>
+                </div>
+
+                <div class="acoes-filtros-aulas-admin">
+                    <button type="button" id="btnFiltrarHorariosProfessores">Filtrar</button>
+                    <button type="button" id="btnLimparFiltrosHorariosProfessores">Limpar filtros</button>
+                </div>
+
+                <div id="listaHorariosProfessores">
+                    <p>Clique em atualizar lista para carregar os horários.</p>
+                </div>
+            </section>
+
+        </section>
+
+
+        <!-- =============================
              TELA 5: EDITAR PERFIL ADMIN
         ============================== -->
         <section id="telaEditarPerfilAdmin" class="tela-admin-sobreposta">
@@ -2835,4 +2979,3 @@ Aluno Teste,aluno.teste@aluno.com,3ºA,desenvolvimento_sistemas,Riolando@2026</t
 
 </body>
 </html>
-

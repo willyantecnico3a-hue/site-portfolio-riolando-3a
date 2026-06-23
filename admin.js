@@ -36,6 +36,7 @@ let turmaEmEdicaoId = null;
 let alunoPaeetEmEdicaoId = null;
 let alunoSelecionadoAtendimentoId = null;
 let nomeAlunoSelecionadoAtendimento = "";
+let horarioProfessorEmEdicaoId = null;
 
 
 // =====================================================
@@ -70,7 +71,19 @@ function mostrarPainelAdminLogado() {
         secaoLoginAdmin.style.display = "none";
     }
 
-    carregarPerfilAdminEditavel();
+    if (usuarioLogadoEhAdminCompleto()) {
+        carregarPerfilAdminEditavel();
+    } else {
+        aplicarPerfilAdminNaTela({
+            ...perfilPadraoAdmin,
+            nome_funcao: "Coordenação",
+            email: perfilAcessoLogado && perfilAcessoLogado.email
+                ? perfilAcessoLogado.email
+                : perfilPadraoAdmin.email
+        });
+    }
+
+    aplicarVisibilidadeMenuPorPerfil();
 }
 
 function mostrarPainelProfessorLimitado(perfil) {
@@ -302,17 +315,23 @@ function aplicarAcessoPorPerfil(perfil) {
         return;
     }
 
-    if (perfil.perfil === "admin") {
+    if (perfil.perfil === "admin" || perfil.perfil === "coordenacao") {
         if (mensagemLogin) {
-            mensagemLogin.textContent = "Login administrativo realizado com sucesso!";
+            mensagemLogin.textContent = perfil.perfil === "admin"
+                ? "Login administrativo realizado com sucesso!"
+                : "Login da coordenação realizado com sucesso!";
         }
 
         mostrarPainelAdminLogado();
-        carregarDadosIniciaisAdmin();
+        if (perfil.perfil === "admin") {
+            carregarDadosIniciaisAdmin();
+        } else if (typeof carregarHorariosProfessoresAdmin === "function") {
+            carregarHorariosProfessoresAdmin();
+        }
         return;
     }
 
-    if (perfil.perfil === "professor" || perfil.perfil === "coordenacao") {
+    if (perfil.perfil === "professor") {
         if (mensagemLogin) {
             mensagemLogin.textContent = "Login realizado com acesso limitado.";
         }
@@ -349,17 +368,21 @@ async function verificarSessaoAtual() {
     localStorage.setItem("perfilAcesso", JSON.stringify(perfil));
     localStorage.setItem("adminEmail", data.user.email || perfil.email);
 
-    if (perfil.perfil === "admin") {
+    if (perfil.perfil === "admin" || perfil.perfil === "coordenacao") {
         if (mensagemLogin) {
             mensagemLogin.textContent = "Sessão administrativa ativa.";
         }
 
         mostrarPainelAdminLogado();
-        carregarDadosIniciaisAdmin();
+        if (perfil.perfil === "admin") {
+            carregarDadosIniciaisAdmin();
+        } else if (typeof carregarHorariosProfessoresAdmin === "function") {
+            carregarHorariosProfessoresAdmin();
+        }
         return;
     }
 
-    if (perfil.perfil === "professor" || perfil.perfil === "coordenacao") {
+    if (perfil.perfil === "professor") {
         if (mensagemLogin) {
             mensagemLogin.textContent = "Sessão limitada ativa.";
         }
@@ -664,6 +687,12 @@ function configurarPerfilAdminEditavel() {
     btnEditarPerfilAdmin.onclick = function (event) {
         event.preventDefault();
         event.stopPropagation();
+
+        if (!usuarioLogadoEhAdminCompleto()) {
+            alert("Este perfil não possui acesso à edição do perfil administrativo.");
+            return;
+        }
+
         abrirTelaEditarPerfilAdmin();
     };
 }
@@ -755,6 +784,51 @@ function usuarioLogadoEhAdminCompleto() {
     }
 }
 
+function usuarioLogadoPodeGerenciarHorarios() {
+    if (perfilAcessoLogado && perfilAcessoLogado.perfil) {
+        return perfilAcessoLogado.perfil === "admin" || perfilAcessoLogado.perfil === "coordenacao";
+    }
+
+    const perfilSalvo = localStorage.getItem("perfilAcesso");
+
+    if (!perfilSalvo) {
+        return false;
+    }
+
+    try {
+        const perfil = JSON.parse(perfilSalvo);
+        return perfil && (perfil.perfil === "admin" || perfil.perfil === "coordenacao");
+    } catch (erro) {
+        return false;
+    }
+}
+
+function aplicarVisibilidadeMenuPorPerfil() {
+    const ehAdmin = usuarioLogadoEhAdminCompleto();
+    const podeGerenciarHorarios = usuarioLogadoPodeGerenciarHorarios();
+    const itensTelaAdmin = document.querySelectorAll(".item-menu-admin[data-tela]");
+    const itensSomenteAdmin = document.querySelectorAll(".somente-admin");
+    const btnEditarPerfilAdmin = document.getElementById("btnEditarPerfilAdmin");
+
+    itensTelaAdmin.forEach(function (item) {
+        const tela = item.dataset.tela;
+
+        if (ehAdmin || (podeGerenciarHorarios && tela === "telaHorariosProfessores")) {
+            item.style.display = "";
+        } else {
+            item.style.display = "none";
+        }
+    });
+
+    itensSomenteAdmin.forEach(function (item) {
+        item.style.display = ehAdmin ? "" : "none";
+    });
+
+    if (btnEditarPerfilAdmin) {
+        btnEditarPerfilAdmin.style.display = ehAdmin ? "" : "none";
+    }
+}
+
 function configurarMenuSobrepostoAdmin() {
     const btnAbrirMenu = document.getElementById("btnAbrirMenuAdmin");
     const btnFecharMenu = document.getElementById("btnFecharMenuAdmin");
@@ -777,7 +851,7 @@ function configurarMenuSobrepostoAdmin() {
 
     itensMenu.forEach(function (item) {
         item.addEventListener("click", function () {
-            if (!usuarioLogadoEhAdminCompleto()) {
+            if (!usuarioLogadoEhAdminCompleto() && !(item.dataset.tela === "telaHorariosProfessores" && usuarioLogadoPodeGerenciarHorarios())) {
                 alert("Este perfil não possui acesso ao painel administrativo completo.");
                 fecharMenuAdmin();
                 mostrarPainelProfessorLimitado(perfilAcessoLogado || { perfil: "professor" });
@@ -816,6 +890,12 @@ if (telaEscolhida === "telaGestaoAlunos") {
         carregarAlunosGestaoAdmin();
     }
 }
+
+            if (telaEscolhida === "telaHorariosProfessores") {
+                if (typeof carregarHorariosProfessoresAdmin === "function") {
+                    carregarHorariosProfessoresAdmin();
+                }
+            }
 
             if (telaEscolhida === "telaPortfolios") {
                 carregarPortfoliosAdmin();
@@ -2920,7 +3000,494 @@ function trocarFonteCampo(idCampo, fonte) {
 
 
 // =====================================================
-// 16. HELPERS
+// 16. HORARIOS DOS PROFESSORES
+// =====================================================
+
+const btnSalvarHorarioProfessor = document.getElementById("btnSalvarHorarioProfessor");
+const btnCancelarEdicaoHorarioProfessor = document.getElementById("btnCancelarEdicaoHorarioProfessor");
+const btnCarregarHorariosProfessores = document.getElementById("btnCarregarHorariosProfessores");
+const btnFiltrarHorariosProfessores = document.getElementById("btnFiltrarHorariosProfessores");
+const btnLimparFiltrosHorariosProfessores = document.getElementById("btnLimparFiltrosHorariosProfessores");
+const btnImportarCsvHorariosProfessores = document.getElementById("btnImportarCsvHorariosProfessores");
+
+if (btnSalvarHorarioProfessor) {
+    btnSalvarHorarioProfessor.addEventListener("click", salvarHorarioProfessorAdmin);
+}
+
+if (btnCancelarEdicaoHorarioProfessor) {
+    btnCancelarEdicaoHorarioProfessor.addEventListener("click", limparFormularioHorarioProfessorAdmin);
+}
+
+if (btnCarregarHorariosProfessores) {
+    btnCarregarHorariosProfessores.addEventListener("click", carregarHorariosProfessoresAdmin);
+}
+
+if (btnFiltrarHorariosProfessores) {
+    btnFiltrarHorariosProfessores.addEventListener("click", carregarHorariosProfessoresAdmin);
+}
+
+if (btnLimparFiltrosHorariosProfessores) {
+    btnLimparFiltrosHorariosProfessores.addEventListener("click", function () {
+        preencherCampoSeExistir("filtroHorarioProfessorDia", "");
+        preencherCampoSeExistir("filtroHorarioProfessorNome", "");
+        preencherCampoSeExistir("filtroHorarioProfessorTurma", "");
+        carregarHorariosProfessoresAdmin();
+    });
+}
+
+if (btnImportarCsvHorariosProfessores) {
+    btnImportarCsvHorariosProfessores.addEventListener("click", importarCsvHorariosProfessoresAdmin);
+}
+
+function normalizarDiaSemanaHorario(valor) {
+    const texto = (valor || "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    const mapa = {
+        segunda: "segunda",
+        "segunda-feira": "segunda",
+        terca: "terca",
+        "terca-feira": "terca",
+        terça: "terca",
+        "terça-feira": "terca",
+        quarta: "quarta",
+        "quarta-feira": "quarta",
+        quinta: "quinta",
+        "quinta-feira": "quinta",
+        sexta: "sexta",
+        "sexta-feira": "sexta"
+    };
+
+    return mapa[texto] || texto;
+}
+
+function nomeDiaSemanaHorario(valor) {
+    const nomes = {
+        segunda: "Segunda-feira",
+        terca: "Terça-feira",
+        quarta: "Quarta-feira",
+        quinta: "Quinta-feira",
+        sexta: "Sexta-feira"
+    };
+
+    return nomes[valor] || valor || "Dia não informado";
+}
+
+function horarioValidoProfessor(horario) {
+    return /^([01]\d|2[0-3]):[0-5]\d$/.test((horario || "").toString().substring(0, 5));
+}
+
+function montarDadosHorarioProfessorAdmin() {
+    const dia = normalizarDiaSemanaHorario(pegarValorCampo("horarioProfessorDia"));
+    const horarioInicio = pegarValorCampo("horarioProfessorInicio");
+    const horarioFim = pegarValorCampo("horarioProfessorFim");
+    const turma = pegarValorCampo("horarioProfessorTurma");
+    const professor = pegarValorCampo("horarioProfessorNome");
+
+    if (!["segunda", "terca", "quarta", "quinta", "sexta"].includes(dia)) {
+        throw new Error("Selecione um dia da semana válido.");
+    }
+
+    if (!horarioValidoProfessor(horarioInicio) || !horarioValidoProfessor(horarioFim)) {
+        throw new Error("Preencha horários válidos no formato HH:mm.");
+    }
+
+    if (horarioFim <= horarioInicio) {
+        throw new Error("O horário final precisa ser maior que o horário inicial.");
+    }
+
+    if (!turma || !professor) {
+        throw new Error("Preencha turma e professor.");
+    }
+
+    return {
+        dia_semana: dia,
+        horario_inicio: horarioInicio,
+        horario_fim: horarioFim,
+        turma: turma,
+        professor: professor,
+        disciplina: pegarValorCampo("horarioProfessorDisciplina") || null,
+        ambiente: pegarValorCampo("horarioProfessorAmbiente") || null,
+        ativo: pegarValorCampo("horarioProfessorAtivo") !== "false"
+    };
+}
+
+async function salvarHorarioProfessorAdmin() {
+    const mensagem = document.getElementById("mensagemHorariosProfessores");
+
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        if (mensagem) {
+            mensagem.textContent = "Este perfil não possui permissão para alterar horários.";
+        }
+        return;
+    }
+
+    try {
+        const dados = montarDadosHorarioProfessorAdmin();
+
+        if (mensagem) {
+            mensagem.textContent = "Salvando horário...";
+        }
+
+        const operacao = horarioProfessorEmEdicaoId
+            ? banco.from("horarios_aulas").update(dados).eq("id", horarioProfessorEmEdicaoId)
+            : banco.from("horarios_aulas").insert([dados]);
+
+        const { error } = await operacao;
+
+        if (error) {
+            throw error;
+        }
+
+        if (mensagem) {
+            mensagem.textContent = horarioProfessorEmEdicaoId
+                ? "Horário atualizado com sucesso."
+                : "Horário cadastrado com sucesso.";
+        }
+
+        limparFormularioHorarioProfessorAdmin();
+        carregarHorariosProfessoresAdmin();
+    } catch (erro) {
+        console.log("Erro ao salvar horário do professor:", erro);
+
+        if (mensagem) {
+            mensagem.textContent = "Erro ao salvar horário: " + erro.message;
+        }
+    }
+}
+
+async function carregarHorariosProfessoresAdmin() {
+    const lista = document.getElementById("listaHorariosProfessores");
+
+    if (!lista) {
+        return;
+    }
+
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        lista.innerHTML = `<p>Este perfil não possui acesso ao gerenciamento dos horários.</p>`;
+        return;
+    }
+
+    lista.innerHTML = `<p>Carregando horários...</p>`;
+
+    let consulta = banco
+        .from("horarios_aulas")
+        .select("*")
+        .order("dia_semana", { ascending: true })
+        .order("horario_inicio", { ascending: true });
+
+    const filtroDia = normalizarDiaSemanaHorario(pegarValorCampo("filtroHorarioProfessorDia"));
+    const filtroProfessor = pegarValorCampo("filtroHorarioProfessorNome");
+    const filtroTurma = pegarValorCampo("filtroHorarioProfessorTurma");
+
+    if (filtroDia) {
+        consulta = consulta.eq("dia_semana", filtroDia);
+    }
+
+    if (filtroProfessor) {
+        consulta = consulta.ilike("professor", `%${filtroProfessor}%`);
+    }
+
+    if (filtroTurma) {
+        consulta = consulta.ilike("turma", `%${filtroTurma}%`);
+    }
+
+    const { data, error } = await consulta;
+
+    if (error) {
+        console.log("Erro ao carregar horários dos professores:", error);
+        lista.innerHTML = `<p>Erro ao carregar horários: ${escaparHTML(error.message)}</p>`;
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        lista.innerHTML = `<p>Nenhum horário encontrado.</p>`;
+        return;
+    }
+
+    lista.innerHTML = data.map(montarCardHorarioProfessorAdmin).join("");
+}
+
+function montarCardHorarioProfessorAdmin(horario) {
+    return `
+        <div class="card-aula-admin card-aula-organizada">
+            <div class="topo-aula-organizada">
+                <div>
+                    <h3>${escaparHTML(horario.professor || "Professor não informado")}</h3>
+                    <p class="subtitulo-aula-organizada">
+                        ${escaparHTML(nomeDiaSemanaHorario(horario.dia_semana))}
+                        • ${formatarHorarioAdmin(horario.horario_inicio)} às ${formatarHorarioAdmin(horario.horario_fim)}
+                    </p>
+                </div>
+                ${horario.ativo ? `<span class="status-ativo-aula">Ativo</span>` : `<span class="status-inativo-aula">Inativo</span>`}
+            </div>
+
+            <div class="grade-info-aula-organizada">
+                <div>
+                    <span class="rotulo-info-aula">Turma</span>
+                    <strong>${escaparHTML(horario.turma || "-")}</strong>
+                </div>
+                <div>
+                    <span class="rotulo-info-aula">Disciplina</span>
+                    <strong>${escaparHTML(horario.disciplina || "Não informada")}</strong>
+                </div>
+                <div>
+                    <span class="rotulo-info-aula">Ambiente</span>
+                    <strong>${escaparHTML(horario.ambiente || "Não informado")}</strong>
+                </div>
+                <div>
+                    <span class="rotulo-info-aula">Status</span>
+                    <strong>${horario.ativo ? "Ativo" : "Inativo"}</strong>
+                </div>
+            </div>
+
+            <div class="acoes-card-aula-admin">
+                <button type="button" onclick="editarHorarioProfessorAdmin('${escaparAtributo(horario.id)}')">Editar</button>
+                <button type="button" onclick="alternarStatusHorarioProfessorAdmin('${escaparAtributo(horario.id)}', ${horario.ativo ? "false" : "true"})">
+                    ${horario.ativo ? "Inativar" : "Ativar"}
+                </button>
+                <button type="button" onclick="excluirHorarioProfessorAdmin('${escaparAtributo(horario.id)}')" class="btn-excluir-aula">Excluir</button>
+            </div>
+        </div>
+    `;
+}
+
+async function editarHorarioProfessorAdmin(id) {
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        alert("Este perfil não possui permissão para editar horários.");
+        return;
+    }
+
+    const { data, error } = await banco
+        .from("horarios_aulas")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+    if (error || !data) {
+        alert("Não foi possível carregar o horário para edição.");
+        console.log("Erro ao editar horário:", error);
+        return;
+    }
+
+    horarioProfessorEmEdicaoId = data.id;
+
+    preencherCampoSeExistir("horarioProfessorDia", data.dia_semana || "");
+    preencherCampoSeExistir("horarioProfessorInicio", formatarHorarioInputAdmin(data.horario_inicio));
+    preencherCampoSeExistir("horarioProfessorFim", formatarHorarioInputAdmin(data.horario_fim));
+    preencherCampoSeExistir("horarioProfessorTurma", data.turma || "");
+    preencherCampoSeExistir("horarioProfessorNome", data.professor || "");
+    preencherCampoSeExistir("horarioProfessorDisciplina", data.disciplina || "");
+    preencherCampoSeExistir("horarioProfessorAmbiente", data.ambiente || "");
+    preencherCampoSeExistir("horarioProfessorAtivo", data.ativo ? "true" : "false");
+
+    if (btnSalvarHorarioProfessor) {
+        btnSalvarHorarioProfessor.textContent = "Atualizar horário";
+    }
+
+    const mensagem = document.getElementById("mensagemHorariosProfessores");
+
+    if (mensagem) {
+        mensagem.textContent = "Editando horário selecionado.";
+    }
+
+    const tela = document.getElementById("telaHorariosProfessores");
+
+    if (tela) {
+        tela.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+}
+
+async function alternarStatusHorarioProfessorAdmin(id, novoStatus) {
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        alert("Este perfil não possui permissão para alterar horários.");
+        return;
+    }
+
+    const { error } = await banco
+        .from("horarios_aulas")
+        .update({ ativo: Boolean(novoStatus) })
+        .eq("id", id);
+
+    if (error) {
+        alert("Erro ao alterar status do horário: " + error.message);
+        return;
+    }
+
+    carregarHorariosProfessoresAdmin();
+}
+
+async function excluirHorarioProfessorAdmin(id) {
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        alert("Este perfil não possui permissão para excluir horários.");
+        return;
+    }
+
+    const confirmar = confirm("Tem certeza que deseja excluir este horário?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const { error } = await banco
+        .from("horarios_aulas")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+        alert("Erro ao excluir horário: " + error.message);
+        return;
+    }
+
+    carregarHorariosProfessoresAdmin();
+}
+
+function limparFormularioHorarioProfessorAdmin() {
+    horarioProfessorEmEdicaoId = null;
+
+    [
+        "horarioProfessorDia",
+        "horarioProfessorInicio",
+        "horarioProfessorFim",
+        "horarioProfessorTurma",
+        "horarioProfessorNome",
+        "horarioProfessorDisciplina",
+        "horarioProfessorAmbiente"
+    ].forEach(limparCampoSeExistir);
+
+    preencherCampoSeExistir("horarioProfessorAtivo", "true");
+
+    if (btnSalvarHorarioProfessor) {
+        btnSalvarHorarioProfessor.textContent = "Salvar horário";
+    }
+}
+
+function parseCsvHorariosProfessores(texto) {
+    return texto
+        .split(/\r?\n/)
+        .map(function (linha) {
+            return linha.trim();
+        })
+        .filter(Boolean)
+        .map(function (linha) {
+            return linha.split(",").map(function (coluna) {
+                return coluna.trim();
+            });
+        });
+}
+
+async function importarCsvHorariosProfessoresAdmin() {
+    const input = document.getElementById("arquivoCsvHorariosProfessores");
+    const resultado = document.getElementById("resultadoImportacaoHorariosProfessores");
+
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        if (resultado) {
+            resultado.innerHTML = `<p>Este perfil não possui permissão para importar horários.</p>`;
+        }
+        return;
+    }
+
+    if (!input || !input.files || input.files.length === 0) {
+        if (resultado) {
+            resultado.innerHTML = `<p>Selecione um arquivo CSV antes de importar.</p>`;
+        }
+        return;
+    }
+
+    try {
+        const texto = await input.files[0].text();
+        const linhas = parseCsvHorariosProfessores(texto);
+
+        if (linhas.length < 2) {
+            throw new Error("O CSV precisa ter cabeçalho e pelo menos uma linha de dados.");
+        }
+
+        const cabecalho = linhas[0].map(function (coluna) {
+            return coluna.toLowerCase();
+        });
+        const obrigatorias = ["dia_semana", "horario_inicio", "horario_fim", "turma", "professor"];
+        const faltando = obrigatorias.filter(function (coluna) {
+            return !cabecalho.includes(coluna);
+        });
+
+        if (faltando.length > 0) {
+            throw new Error("Colunas obrigatórias ausentes: " + faltando.join(", "));
+        }
+
+        const registros = [];
+
+        linhas.slice(1).forEach(function (colunas) {
+            if (colunas.every(function (valor) { return !valor; })) {
+                return;
+            }
+
+            const item = {};
+
+            cabecalho.forEach(function (nomeColuna, indice) {
+                item[nomeColuna] = colunas[indice] || "";
+            });
+
+            const registro = {
+                dia_semana: normalizarDiaSemanaHorario(item.dia_semana),
+                horario_inicio: (item.horario_inicio || "").substring(0, 5),
+                horario_fim: (item.horario_fim || "").substring(0, 5),
+                turma: item.turma || "",
+                professor: item.professor || "",
+                disciplina: item.disciplina || null,
+                ambiente: item.ambiente || null,
+                ativo: true
+            };
+
+            if (
+                ["segunda", "terca", "quarta", "quinta", "sexta"].includes(registro.dia_semana) &&
+                horarioValidoProfessor(registro.horario_inicio) &&
+                horarioValidoProfessor(registro.horario_fim) &&
+                registro.horario_fim > registro.horario_inicio &&
+                registro.turma &&
+                registro.professor
+            ) {
+                registros.push(registro);
+            }
+        });
+
+        if (registros.length === 0) {
+            throw new Error("Nenhuma linha válida encontrada para importar.");
+        }
+
+        if (resultado) {
+            resultado.innerHTML = `<p>Importando ${registros.length} horário(s)...</p>`;
+        }
+
+        const { error } = await banco
+            .from("horarios_aulas")
+            .insert(registros);
+
+        if (error) {
+            throw error;
+        }
+
+        if (resultado) {
+            resultado.innerHTML = `<p>${registros.length} horário(s) importado(s) com sucesso.</p>`;
+        }
+
+        input.value = "";
+        carregarHorariosProfessoresAdmin();
+    } catch (erro) {
+        console.log("Erro ao importar CSV de horários:", erro);
+
+        if (resultado) {
+            resultado.innerHTML = `<p>Erro ao importar CSV: ${escaparHTML(erro.message)}</p>`;
+        }
+    }
+}
+
+
+// =====================================================
+// 17. HELPERS
 // =====================================================
 
 function pegarValorCampo(idCampo) {
@@ -3032,6 +3599,11 @@ window.editarTurmaAdmin = editarTurmaAdmin;
 window.desativarTurmaAdmin = desativarTurmaAdmin;
 window.reativarTurmaAdmin = reativarTurmaAdmin;
 window.excluirTurmaAdmin = excluirTurmaAdmin;
+
+window.editarHorarioProfessorAdmin = editarHorarioProfessorAdmin;
+window.alternarStatusHorarioProfessorAdmin = alternarStatusHorarioProfessorAdmin;
+window.excluirHorarioProfessorAdmin = excluirHorarioProfessorAdmin;
+window.carregarHorariosProfessoresAdmin = carregarHorariosProfessoresAdmin;
 
 window.inserirMarcacaoTexto = inserirMarcacaoTexto;
 window.aumentarFonteCampo = aumentarFonteCampo;
