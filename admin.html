@@ -154,6 +154,11 @@
             border-color: #1e40af;
         }
 
+        .atalhos-horarios-publicos {
+            display: grid;
+            gap: 8px;
+        }
+
         /* =============================
            CARD DO ADMIN LOGADO
         ============================= */
@@ -830,6 +835,10 @@
                 box-sizing: border-box;
             }
 
+            .atalhos-horarios-publicos {
+                width: 100%;
+            }
+
             .painel-admin input,
             .painel-admin select,
             .painel-admin textarea,
@@ -1153,6 +1162,11 @@ body > p {
 .botao-inicio-admin:hover {
     background-color: #ffffff;
     transform: translateY(-1px);
+}
+
+.atalhos-horarios-publicos {
+    display: grid;
+    gap: 8px;
 }
 
 /* Card de perfil do admin */
@@ -2704,9 +2718,15 @@ Aluno Teste,aluno.teste@aluno.com,3ºA,desenvolvimento_sistemas,Riolando@2026</t
                     ← Voltar
                 </button>
 
-                <a href="horario-tv.html" class="botao-inicio-admin" target="_blank" rel="noopener">
-                    Abrir TV
-                </a>
+                <div class="atalhos-horarios-publicos">
+                    <a href="horario-tv.html" class="botao-inicio-admin" target="_blank" rel="noopener">
+                        Abrir TV
+                    </a>
+
+                    <a href="horario-celular.html" class="botao-inicio-admin" target="_blank" rel="noopener">
+                        Abrir no celular
+                    </a>
+                </div>
 
             </div>
 
