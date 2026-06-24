@@ -33,6 +33,32 @@
             </div>
         </section>
 
+        <section class="filtro-professor-celular">
+            <h2>Minhas aulas</h2>
+
+            <label for="filtroProfessorNomeTv">Nome do professor</label>
+            <input type="text" id="filtroProfessorNomeTv" placeholder="Digite seu nome">
+
+            <label for="filtroProfessorDiaTv">Dia da semana</label>
+            <select id="filtroProfessorDiaTv">
+                <option value="">Todos os dias</option>
+                <option value="segunda">Segunda-feira</option>
+                <option value="terca">Terca-feira</option>
+                <option value="quarta">Quarta-feira</option>
+                <option value="quinta">Quinta-feira</option>
+                <option value="sexta">Sexta-feira</option>
+            </select>
+
+            <div class="acoes-filtro-professor">
+                <button type="button" id="btnFiltrarProfessorTv">Filtrar</button>
+                <button type="button" id="btnLimparFiltroProfessorTv">Limpar</button>
+            </div>
+
+            <div id="resultadoFiltroProfessorTv" class="resultado-filtro-professor">
+                <p class="mensagem-tv">Digite seu nome para consultar suas aulas.</p>
+            </div>
+        </section>
+
         <section class="conteudo-tv-horarios">
             <div>
                 <h2>Aulas em andamento</h2>

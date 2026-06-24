@@ -21,6 +21,7 @@ const HORARIO_FIM_EXPEDIENTE_TV = "21:30";
 
 document.addEventListener("DOMContentLoaded", function () {
     atualizarPainelHorariosTv();
+    configurarFiltroProfessorTv();
     setInterval(atualizarPainelHorariosTv, INTERVALO_ATUALIZACAO_HORARIOS_TV);
     setTimeout(function () {
         window.location.reload();
@@ -249,6 +250,154 @@ function renderizarRiolandoOffTv() {
         proximo.className = "lista-proximos-tv";
         proximo.innerHTML = mensagem;
     }
+}
+
+function configurarFiltroProfessorTv() {
+    const campoNome = document.getElementById("filtroProfessorNomeTv");
+    const campoDia = document.getElementById("filtroProfessorDiaTv");
+    const btnFiltrar = document.getElementById("btnFiltrarProfessorTv");
+    const btnLimpar = document.getElementById("btnLimparFiltroProfessorTv");
+
+    if (!campoNome || !campoDia || !btnFiltrar) {
+        return;
+    }
+
+    const nomeSalvo = localStorage.getItem("filtroProfessorNomeTv") || "";
+    const diaSalvo = localStorage.getItem("filtroProfessorDiaTv") || "";
+
+    campoNome.value = nomeSalvo;
+    campoDia.value = diaSalvo;
+
+    btnFiltrar.addEventListener("click", filtrarAulasProfessorTv);
+    campoNome.addEventListener("keydown", function (evento) {
+        if (evento.key === "Enter") {
+            filtrarAulasProfessorTv();
+        }
+    });
+    campoDia.addEventListener("change", function () {
+        if (campoNome.value.trim()) {
+            filtrarAulasProfessorTv();
+        }
+    });
+
+    if (btnLimpar) {
+        btnLimpar.addEventListener("click", limparFiltroProfessorTv);
+    }
+
+    if (nomeSalvo) {
+        filtrarAulasProfessorTv();
+    }
+}
+
+async function filtrarAulasProfessorTv() {
+    const campoNome = document.getElementById("filtroProfessorNomeTv");
+    const campoDia = document.getElementById("filtroProfessorDiaTv");
+    const resultado = document.getElementById("resultadoFiltroProfessorTv");
+
+    if (!campoNome || !campoDia || !resultado) {
+        return;
+    }
+
+    const professor = campoNome.value.trim();
+    const dia = campoDia.value;
+
+    if (!professor) {
+        resultado.innerHTML = `<p class="mensagem-tv">Digite o nome do professor para consultar.</p>`;
+        return;
+    }
+
+    localStorage.setItem("filtroProfessorNomeTv", professor);
+    localStorage.setItem("filtroProfessorDiaTv", dia);
+    resultado.innerHTML = `<p class="mensagem-tv">Consultando aulas...</p>`;
+
+    try {
+        let consulta = bancoHorariosTv
+            .from("horarios_aulas")
+            .select("*")
+            .eq("ativo", true)
+            .ilike("professor", "%" + professor + "%")
+            .order("dia_semana", { ascending: true })
+            .order("horario_inicio", { ascending: true });
+
+        if (dia) {
+            consulta = consulta.eq("dia_semana", dia);
+        }
+
+        const { data, error } = await consulta;
+
+        if (error) {
+            throw error;
+        }
+
+        const aulasOrdenadas = ordenarAulasPorDiaEHorarioTv(data || []);
+
+        if (aulasOrdenadas.length === 0) {
+            resultado.innerHTML = `<p class="mensagem-tv">Nenhuma aula encontrada para esse filtro.</p>`;
+            return;
+        }
+
+        resultado.innerHTML = aulasOrdenadas.map(montarCardAulaFiltroProfessorTv).join("");
+    } catch (erro) {
+        console.log("Erro ao filtrar aulas do professor:", erro);
+        resultado.innerHTML = `<p class="mensagem-tv">Erro ao consultar aulas. Tente novamente.</p>`;
+    }
+}
+
+function limparFiltroProfessorTv() {
+    const campoNome = document.getElementById("filtroProfessorNomeTv");
+    const campoDia = document.getElementById("filtroProfessorDiaTv");
+    const resultado = document.getElementById("resultadoFiltroProfessorTv");
+
+    if (campoNome) {
+        campoNome.value = "";
+    }
+
+    if (campoDia) {
+        campoDia.value = "";
+    }
+
+    localStorage.removeItem("filtroProfessorNomeTv");
+    localStorage.removeItem("filtroProfessorDiaTv");
+
+    if (resultado) {
+        resultado.innerHTML = `<p class="mensagem-tv">Digite seu nome para consultar suas aulas.</p>`;
+    }
+}
+
+function ordenarAulasPorDiaEHorarioTv(aulas) {
+    const ordemDias = {
+        segunda: 1,
+        terca: 2,
+        quarta: 3,
+        quinta: 4,
+        sexta: 5
+    };
+
+    return aulas.slice().sort(function (a, b) {
+        const diaA = ordemDias[a.dia_semana] || 99;
+        const diaB = ordemDias[b.dia_semana] || 99;
+
+        if (diaA !== diaB) {
+            return diaA - diaB;
+        }
+
+        return formatarHorarioBancoTv(a.horario_inicio).localeCompare(formatarHorarioBancoTv(b.horario_inicio));
+    });
+}
+
+function montarCardAulaFiltroProfessorTv(aula) {
+    return `
+        <article class="card-aula-tv">
+            <span class="dia-card-filtro-professor">${escaparHtmlTv(nomesDiasTv[aula.dia_semana] || aula.dia_semana || "Dia nao informado")}</span>
+            <h3>${escaparHtmlTv(aula.professor || "Professor nao informado")}</h3>
+            <span class="horario">${formatarHorarioBancoTv(aula.horario_inicio)} as ${formatarHorarioBancoTv(aula.horario_fim)}</span>
+            <div class="info-aula-tv">
+                <div><strong>Turma:</strong> ${escaparHtmlTv(aula.turma || "-")}</div>
+                <div><strong>Disciplina:</strong> ${escaparHtmlTv(aula.disciplina || "Nao informada")}</div>
+                <div><strong>Ambiente:</strong> ${escaparHtmlTv(aula.ambiente || "Nao informado")}</div>
+            </div>
+        </article>
+    `;
 }
 
 function montarCardAulaTv(aula) {
