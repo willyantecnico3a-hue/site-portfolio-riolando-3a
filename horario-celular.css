@@ -202,6 +202,29 @@ body {
     font-weight: 700;
 }
 
+.mensagem-off-tv {
+    display: grid;
+    place-items: center;
+    gap: 10px;
+    min-height: 180px;
+    padding: 18px;
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.mensagem-off-tv strong {
+    font-size: 27px;
+    line-height: 1;
+}
+
+.mensagem-off-tv span {
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 700;
+}
+
 .rodape-tv-horarios {
     display: grid;
     gap: 4px;

@@ -106,3 +106,77 @@ using (
           and p.ativo = true
     )
 );
+
+create table if not exists public.site_settings (
+    chave text primary key,
+    valor text,
+    atualizado_em timestamp with time zone default now()
+);
+
+alter table public.site_settings enable row level security;
+
+drop policy if exists "site_settings_select_publico" on public.site_settings;
+drop policy if exists "site_settings_insert_admin_coordenacao" on public.site_settings;
+drop policy if exists "site_settings_update_admin_coordenacao" on public.site_settings;
+
+create policy "site_settings_select_publico"
+on public.site_settings
+for select
+to anon, authenticated
+using (true);
+
+create policy "site_settings_insert_admin_coordenacao"
+on public.site_settings
+for insert
+to authenticated
+with check (
+    exists (
+        select 1
+        from public.admins a
+        where lower(a.email) = lower(auth.jwt() ->> 'email')
+    )
+    or exists (
+        select 1
+        from public.perfis_acesso p
+        where lower(p.email) = lower(auth.jwt() ->> 'email')
+          and p.perfil = 'coordenacao'
+          and p.ativo = true
+    )
+);
+
+create policy "site_settings_update_admin_coordenacao"
+on public.site_settings
+for update
+to authenticated
+using (
+    exists (
+        select 1
+        from public.admins a
+        where lower(a.email) = lower(auth.jwt() ->> 'email')
+    )
+    or exists (
+        select 1
+        from public.perfis_acesso p
+        where lower(p.email) = lower(auth.jwt() ->> 'email')
+          and p.perfil = 'coordenacao'
+          and p.ativo = true
+    )
+)
+with check (
+    exists (
+        select 1
+        from public.admins a
+        where lower(a.email) = lower(auth.jwt() ->> 'email')
+    )
+    or exists (
+        select 1
+        from public.perfis_acesso p
+        where lower(p.email) = lower(auth.jwt() ->> 'email')
+          and p.perfil = 'coordenacao'
+          and p.ativo = true
+    )
+);
+
+insert into public.site_settings (chave, valor, atualizado_em)
+values ('riolando_sem_expediente', 'false', now())
+on conflict (chave) do nothing;

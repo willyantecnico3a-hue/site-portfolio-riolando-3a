@@ -16,6 +16,8 @@ const nomesDiasTv = {
 
 const INTERVALO_ATUALIZACAO_HORARIOS_TV = 30000;
 const INTERVALO_RECARREGAMENTO_COMPLETO_TV = 21600000;
+const HORARIO_INICIO_EXPEDIENTE_TV = "06:00";
+const HORARIO_FIM_EXPEDIENTE_TV = "21:30";
 
 document.addEventListener("DOMContentLoaded", function () {
     atualizarPainelHorariosTv();
@@ -44,6 +46,14 @@ async function atualizarPainelHorariosTv() {
     preencherTextoTv("ultimaAtualizacaoTv", horaAtual);
 
     try {
+        const semExpedienteManual = await buscarModoSemExpedienteManualTv();
+
+        if (semExpedienteManual || horarioForaDoExpedienteTv(horaAtual)) {
+            renderizarRiolandoOffTv();
+            preencherTextoTv("mensagemStatusTv", semExpedienteManual ? "Modo sem expediente ativado pelo admin." : "Fora do horario de expediente.");
+            return;
+        }
+
         if (diaSemana === "domingo" || diaSemana === "sabado") {
             renderizarSemAulasTv("Nenhuma aula cadastrada para hoje.");
             preencherTextoTv("mensagemStatusTv", "Tela pública em modo somente leitura.");
@@ -65,11 +75,12 @@ async function atualizarPainelHorariosTv() {
         const aulasAgora = horarios.filter(function (item) {
             const inicio = formatarHorarioBancoTv(item.horario_inicio);
             const fim = formatarHorarioBancoTv(item.horario_fim);
-            return inicio <= horaAtual && fim >= horaAtual;
+            return inicio <= horaAtual && fim > horaAtual;
         });
-        const proximos = horarios.filter(function (item) {
+        const proximosDoDia = horarios.filter(function (item) {
             return formatarHorarioBancoTv(item.horario_inicio) > horaAtual;
         });
+        const proximos = filtrarProximoBlocoHorariosTv(proximosDoDia);
         const proximo = proximos.length > 0 ? proximos[0] : null;
 
         renderizarAulasAgoraTv(aulasAgora);
@@ -122,6 +133,18 @@ function aplicarTamanhoGradeAulasTv(lista, totalAulas) {
         document.body.setAttribute("data-total-aulas-agora", totalAulas.toString());
         document.body.setAttribute("data-densidade-aulas", totalAulas >= 7 ? "alta" : totalAulas >= 5 ? "media" : "normal");
     }
+}
+
+function filtrarProximoBlocoHorariosTv(proximosDoDia) {
+    if (!proximosDoDia || proximosDoDia.length === 0) {
+        return [];
+    }
+
+    const proximoInicio = formatarHorarioBancoTv(proximosDoDia[0].horario_inicio);
+
+    return proximosDoDia.filter(function (item) {
+        return formatarHorarioBancoTv(item.horario_inicio) === proximoInicio;
+    });
 }
 
 function renderizarProximosHorariosTv(aulas) {
@@ -177,6 +200,54 @@ function renderizarErroTv(mensagem) {
 
     if (proximo) {
         proximo.innerHTML = `<p class="mensagem-tv">Aguardando nova tentativa.</p>`;
+    }
+}
+
+async function buscarModoSemExpedienteManualTv() {
+    try {
+        const { data, error } = await bancoHorariosTv
+            .from("site_settings")
+            .select("valor")
+            .eq("chave", "riolando_sem_expediente")
+            .maybeSingle();
+
+        if (error) {
+            console.log("Erro ao consultar modo sem expediente:", error);
+            return false;
+        }
+
+        return data && data.valor === "true";
+    } catch (erro) {
+        console.log("Modo sem expediente indisponivel:", erro);
+        return false;
+    }
+}
+
+function horarioForaDoExpedienteTv(horaAtual) {
+    return horaAtual >= HORARIO_FIM_EXPEDIENTE_TV || horaAtual < HORARIO_INICIO_EXPEDIENTE_TV;
+}
+
+function renderizarRiolandoOffTv() {
+    preencherTextoTv("totalAulasAgoraTv", "0");
+    preencherTextoTv("proximoHorarioResumoTv", HORARIO_INICIO_EXPEDIENTE_TV);
+
+    const lista = document.getElementById("listaAulasAgoraTv");
+    const proximo = document.getElementById("proximoHorarioTv");
+    const mensagem = `
+        <div class="mensagem-off-tv">
+            <strong>RIOLANDO EM OFF</strong>
+            <span>Aguarde o horario do proximo expediente iniciar.</span>
+        </div>
+    `;
+
+    if (lista) {
+        aplicarTamanhoGradeAulasTv(lista, 0);
+        lista.innerHTML = mensagem;
+    }
+
+    if (proximo) {
+        proximo.className = "lista-proximos-tv";
+        proximo.innerHTML = mensagem;
     }
 }
 

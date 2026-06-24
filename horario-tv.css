@@ -228,6 +228,30 @@ body {
     font-weight: 700;
 }
 
+.mensagem-off-tv {
+    display: grid;
+    place-items: center;
+    gap: 18px;
+    min-height: 260px;
+    padding: 32px;
+    background: #0f172a;
+    color: #ffffff;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.mensagem-off-tv strong {
+    font-size: 56px;
+    line-height: 1;
+}
+
+.mensagem-off-tv span {
+    max-width: 680px;
+    color: #cbd5e1;
+    font-size: 30px;
+    font-weight: 700;
+}
+
 .grade-aulas-tv.aulas-qtd-1 {
     --colunas-aulas: 1;
 }

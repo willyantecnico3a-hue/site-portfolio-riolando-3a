@@ -159,6 +159,26 @@
             gap: 8px;
         }
 
+        .controle-expediente-admin {
+            display: grid;
+            gap: 12px;
+        }
+
+        .status-expediente-admin {
+            display: inline-flex;
+            width: fit-content;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background-color: #dcfce7;
+            color: #14532d;
+            font-weight: bold;
+        }
+
+        .status-expediente-admin.off {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
         /* =============================
            CARD DO ADMIN LOGADO
         ============================= */
@@ -2735,6 +2755,24 @@ Aluno Teste,aluno.teste@aluno.com,3ºA,desenvolvimento_sistemas,Riolando@2026</t
             <p>
                 Cadastre, edite, inative, exclua ou importe a grade exibida na tela pública da TV.
             </p>
+
+            <section class="card-admin-form controle-expediente-admin">
+                <h3>Controle de expediente</h3>
+
+                <span id="statusExpedienteRiolando" class="status-expediente-admin">
+                    Consultando status...
+                </span>
+
+                <p class="texto-ajuda">
+                    Quando ativado, a TV e a tela do celular param de mostrar aulas e exibem a mensagem RIOLANDO EM OFF.
+                </p>
+
+                <button type="button" id="btnAlternarExpedienteRiolando">
+                    Carregando...
+                </button>
+
+                <p id="mensagemExpedienteRiolando"></p>
+            </section>
 
             <section class="card-admin-form">
                 <h3>Cadastrar ou editar horário</h3>

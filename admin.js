@@ -3009,6 +3009,7 @@ const btnCarregarHorariosProfessores = document.getElementById("btnCarregarHorar
 const btnFiltrarHorariosProfessores = document.getElementById("btnFiltrarHorariosProfessores");
 const btnLimparFiltrosHorariosProfessores = document.getElementById("btnLimparFiltrosHorariosProfessores");
 const btnImportarCsvHorariosProfessores = document.getElementById("btnImportarCsvHorariosProfessores");
+const btnAlternarExpedienteRiolando = document.getElementById("btnAlternarExpedienteRiolando");
 
 if (btnSalvarHorarioProfessor) {
     btnSalvarHorarioProfessor.addEventListener("click", salvarHorarioProfessorAdmin);
@@ -3037,6 +3038,125 @@ if (btnLimparFiltrosHorariosProfessores) {
 
 if (btnImportarCsvHorariosProfessores) {
     btnImportarCsvHorariosProfessores.addEventListener("click", importarCsvHorariosProfessoresAdmin);
+}
+
+if (btnAlternarExpedienteRiolando) {
+    btnAlternarExpedienteRiolando.addEventListener("click", alternarModoExpedienteRiolandoAdmin);
+}
+
+async function carregarModoExpedienteRiolandoAdmin() {
+    const status = document.getElementById("statusExpedienteRiolando");
+    const botao = document.getElementById("btnAlternarExpedienteRiolando");
+    const mensagem = document.getElementById("mensagemExpedienteRiolando");
+
+    if (!status || !botao) {
+        return false;
+    }
+
+    try {
+        const { data, error } = await banco
+            .from("site_settings")
+            .select("valor")
+            .eq("chave", "riolando_sem_expediente")
+            .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        const semExpediente = Boolean(data && data.valor === "true");
+        atualizarVisualExpedienteRiolandoAdmin(semExpediente);
+
+        if (mensagem) {
+            mensagem.textContent = "";
+        }
+
+        return semExpediente;
+    } catch (erro) {
+        console.log("Erro ao carregar modo de expediente:", erro);
+        status.textContent = "Status indisponível";
+        status.classList.add("off");
+        botao.textContent = "Tentar novamente";
+
+        if (mensagem) {
+            mensagem.textContent = "Erro ao consultar status: " + erro.message;
+        }
+
+        return false;
+    }
+}
+
+async function alternarModoExpedienteRiolandoAdmin() {
+    const botao = document.getElementById("btnAlternarExpedienteRiolando");
+    const mensagem = document.getElementById("mensagemExpedienteRiolando");
+
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        if (mensagem) {
+            mensagem.textContent = "Este perfil não possui permissão para alterar o expediente.";
+        }
+        return;
+    }
+
+    const semExpedienteAtual = await carregarModoExpedienteRiolandoAdmin();
+    const novoValor = !semExpedienteAtual;
+
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = "Salvando...";
+    }
+
+    try {
+        const { error } = await banco
+            .from("site_settings")
+            .upsert(
+                [
+                    {
+                        chave: "riolando_sem_expediente",
+                        valor: novoValor ? "true" : "false",
+                        atualizado_em: new Date().toISOString()
+                    }
+                ],
+                {
+                    onConflict: "chave"
+                }
+            );
+
+        if (error) {
+            throw error;
+        }
+
+        atualizarVisualExpedienteRiolandoAdmin(novoValor);
+
+        if (mensagem) {
+            mensagem.textContent = novoValor
+                ? "Modo sem expediente ativado. As telas públicas mostrarão RIOLANDO EM OFF."
+                : "Modo sem expediente desativado. As telas públicas voltarão a mostrar os horários.";
+        }
+    } catch (erro) {
+        console.log("Erro ao alterar modo de expediente:", erro);
+
+        if (mensagem) {
+            mensagem.textContent = "Erro ao salvar status: " + erro.message;
+        }
+    } finally {
+        if (botao) {
+            botao.disabled = false;
+        }
+    }
+}
+
+function atualizarVisualExpedienteRiolandoAdmin(semExpediente) {
+    const status = document.getElementById("statusExpedienteRiolando");
+    const botao = document.getElementById("btnAlternarExpedienteRiolando");
+
+    if (status) {
+        status.textContent = semExpediente ? "Riolando sem expediente" : "Expediente ativo";
+        status.classList.toggle("off", semExpediente);
+    }
+
+    if (botao) {
+        botao.textContent = semExpediente ? "Desativar sem expediente" : "Ativar Riolando sem expediente";
+    }
 }
 
 function normalizarDiaSemanaHorario(valor) {
@@ -3171,6 +3291,8 @@ async function carregarHorariosProfessoresAdmin() {
         lista.innerHTML = `<p>Este perfil não possui acesso ao gerenciamento dos horários.</p>`;
         return;
     }
+
+    carregarModoExpedienteRiolandoAdmin();
 
     lista.innerHTML = `<p>Carregando horários...</p>`;
 
