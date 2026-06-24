@@ -14,12 +14,24 @@ const nomesDiasTv = {
     sabado: "Sábado"
 };
 
+const INTERVALO_ATUALIZACAO_HORARIOS_TV = 30000;
+const INTERVALO_RECARREGAMENTO_COMPLETO_TV = 21600000;
+
 document.addEventListener("DOMContentLoaded", function () {
     atualizarPainelHorariosTv();
-    setInterval(atualizarPainelHorariosTv, 60000);
+    setInterval(atualizarPainelHorariosTv, INTERVALO_ATUALIZACAO_HORARIOS_TV);
     setTimeout(function () {
         window.location.reload();
-    }, 21600000);
+    }, INTERVALO_RECARREGAMENTO_COMPLETO_TV);
+
+    document.addEventListener("visibilitychange", function () {
+        if (!document.hidden) {
+            atualizarPainelHorariosTv();
+        }
+    });
+
+    window.addEventListener("focus", atualizarPainelHorariosTv);
+    window.addEventListener("online", atualizarPainelHorariosTv);
 });
 
 async function atualizarPainelHorariosTv() {
@@ -79,12 +91,37 @@ function renderizarAulasAgoraTv(aulas) {
         return;
     }
 
+    const totalAulas = aulas ? aulas.length : 0;
+    aplicarTamanhoGradeAulasTv(lista, totalAulas);
+
     if (!aulas || aulas.length === 0) {
         lista.innerHTML = `<p class="mensagem-tv">Nenhuma aula em andamento neste horário.</p>`;
         return;
     }
 
     lista.innerHTML = aulas.map(montarCardAulaTv).join("");
+}
+
+function aplicarTamanhoGradeAulasTv(lista, totalAulas) {
+    lista.className = lista.className
+        .split(" ")
+        .filter(function (classe) {
+            return classe && !classe.startsWith("aulas-qtd-") && classe !== "aulas-vazia";
+        })
+        .join(" ");
+
+    if (totalAulas === 0) {
+        lista.classList.add("aulas-vazia");
+    } else if (totalAulas > 10) {
+        lista.classList.add("aulas-qtd-muitas");
+    } else {
+        lista.classList.add("aulas-qtd-" + totalAulas);
+    }
+
+    if (document.body) {
+        document.body.setAttribute("data-total-aulas-agora", totalAulas.toString());
+        document.body.setAttribute("data-densidade-aulas", totalAulas >= 7 ? "alta" : totalAulas >= 5 ? "media" : "normal");
+    }
 }
 
 function renderizarProximoHorarioTv(aula) {

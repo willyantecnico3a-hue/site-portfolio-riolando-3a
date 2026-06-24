@@ -131,35 +131,38 @@ body {
 
 .grade-aulas-tv {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(var(--colunas-aulas, 2), minmax(0, 1fr));
+    gap: var(--espaco-card-aula, 18px);
 }
 
 .card-aula-tv {
-    padding: 24px;
+    min-height: 0;
+    padding: var(--padding-card-aula, 24px);
 }
 
 .card-aula-tv h3 {
-    margin: 0 0 12px;
-    font-size: 34px;
+    margin: 0 0 var(--margem-titulo-card-aula, 12px);
+    font-size: var(--fonte-professor-aula, 34px);
+    line-height: 1.08;
     color: var(--verde);
 }
 
 .card-aula-tv .horario {
     display: inline-block;
-    margin-bottom: 16px;
-    padding: 8px 12px;
+    margin-bottom: var(--margem-horario-card-aula, 16px);
+    padding: var(--padding-horario-card-aula, 8px 12px);
     background: #dbeafe;
     color: #1e3a8a;
     border-radius: 6px;
-    font-size: 26px;
+    font-size: var(--fonte-horario-aula, 26px);
     font-weight: 800;
 }
 
 .info-aula-tv {
     display: grid;
-    gap: 10px;
-    font-size: 25px;
+    gap: var(--espaco-info-aula, 10px);
+    font-size: var(--fonte-info-aula, 25px);
+    line-height: 1.18;
 }
 
 .info-aula-tv strong {
@@ -186,6 +189,100 @@ body {
     color: var(--muted);
     font-size: 30px;
     font-weight: 700;
+}
+
+.grade-aulas-tv.aulas-qtd-1 {
+    --colunas-aulas: 1;
+}
+
+.grade-aulas-tv.aulas-qtd-2 {
+    --colunas-aulas: 2;
+}
+
+.grade-aulas-tv.aulas-qtd-3 {
+    --colunas-aulas: 3;
+    --padding-card-aula: 20px;
+    --fonte-professor-aula: 30px;
+    --fonte-horario-aula: 23px;
+    --fonte-info-aula: 22px;
+}
+
+.grade-aulas-tv.aulas-qtd-4 {
+    --colunas-aulas: 4;
+    --padding-card-aula: 18px;
+    --fonte-professor-aula: 27px;
+    --fonte-horario-aula: 21px;
+    --fonte-info-aula: 20px;
+    --espaco-info-aula: 8px;
+}
+
+.grade-aulas-tv.aulas-qtd-5,
+.grade-aulas-tv.aulas-qtd-6 {
+    --colunas-aulas: 3;
+    --padding-card-aula: 16px;
+    --fonte-professor-aula: 25px;
+    --fonte-horario-aula: 20px;
+    --fonte-info-aula: 19px;
+    --espaco-card-aula: 14px;
+    --espaco-info-aula: 7px;
+}
+
+.grade-aulas-tv.aulas-qtd-7,
+.grade-aulas-tv.aulas-qtd-8 {
+    --colunas-aulas: 4;
+    --padding-card-aula: 14px;
+    --fonte-professor-aula: 22px;
+    --fonte-horario-aula: 18px;
+    --fonte-info-aula: 17px;
+    --espaco-card-aula: 12px;
+    --espaco-info-aula: 6px;
+    --margem-titulo-card-aula: 8px;
+    --margem-horario-card-aula: 10px;
+}
+
+.grade-aulas-tv.aulas-qtd-9,
+.grade-aulas-tv.aulas-qtd-10,
+.grade-aulas-tv.aulas-qtd-muitas {
+    --colunas-aulas: 5;
+    --padding-card-aula: 12px;
+    --fonte-professor-aula: 20px;
+    --fonte-horario-aula: 16px;
+    --fonte-info-aula: 15px;
+    --espaco-card-aula: 10px;
+    --espaco-info-aula: 5px;
+    --margem-titulo-card-aula: 6px;
+    --margem-horario-card-aula: 8px;
+    --padding-horario-card-aula: 5px 8px;
+}
+
+.grade-aulas-tv.aulas-qtd-muitas {
+    --colunas-aulas: 6;
+    --padding-card-aula: 10px;
+    --fonte-professor-aula: 18px;
+    --fonte-horario-aula: 14px;
+    --fonte-info-aula: 13px;
+    --espaco-card-aula: 8px;
+    --espaco-info-aula: 4px;
+}
+
+body[data-densidade-aulas="media"] .conteudo-tv-horarios,
+body[data-densidade-aulas="alta"] .conteudo-tv-horarios {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.32fr);
+}
+
+body[data-densidade-aulas="alta"] .painel-tv-horarios {
+    gap: 16px;
+}
+
+body[data-densidade-aulas="alta"] .conteudo-tv-horarios h2,
+body[data-densidade-aulas="alta"] .proximo-horario-tv h2 {
+    margin-bottom: 10px;
+    font-size: 28px;
+}
+
+body[data-densidade-aulas="alta"] .faixa-status-tv div,
+body[data-densidade-aulas="alta"] .proximo-horario-tv {
+    padding: 16px;
 }
 
 .rodape-tv-horarios {
