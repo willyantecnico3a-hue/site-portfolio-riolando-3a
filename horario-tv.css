@@ -172,12 +172,49 @@ body {
 .proximo-horario-tv {
     padding: 24px;
     border-left-color: var(--amarelo);
+    overflow: hidden;
+    min-height: 0;
 }
 
 .proximo-horario-tv .card-aula-tv {
     border: 0;
     box-shadow: none;
     padding: 0;
+}
+
+.lista-proximos-tv {
+    height: calc(100% - 54px);
+    min-height: 0;
+    overflow: hidden;
+}
+
+.trilho-proximos-tv {
+    display: grid;
+    gap: 22px;
+    animation: subir-creditos-tv var(--duracao-creditos, 55s) linear infinite;
+}
+
+.grupo-proximos-tv {
+    display: grid;
+    gap: 22px;
+}
+
+.proximo-horario-tv:hover .trilho-proximos-tv {
+    animation-play-state: paused;
+}
+
+.lista-proximos-tv.proximos-qtd-1 .trilho-proximos-tv {
+    animation: none;
+}
+
+@keyframes subir-creditos-tv {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-50%);
+    }
 }
 
 .mensagem-tv {

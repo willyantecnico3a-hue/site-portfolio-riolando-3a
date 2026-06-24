@@ -73,7 +73,7 @@ async function atualizarPainelHorariosTv() {
         const proximo = proximos.length > 0 ? proximos[0] : null;
 
         renderizarAulasAgoraTv(aulasAgora);
-        renderizarProximoHorarioTv(proximo);
+        renderizarProximosHorariosTv(proximos);
         preencherTextoTv("totalAulasAgoraTv", aulasAgora.length.toString());
         preencherTextoTv("proximoHorarioResumoTv", proximo ? formatarHorarioBancoTv(proximo.horario_inicio) : "--:--");
         preencherTextoTv("mensagemStatusTv", "Tela pública em modo somente leitura.");
@@ -124,19 +124,35 @@ function aplicarTamanhoGradeAulasTv(lista, totalAulas) {
     }
 }
 
-function renderizarProximoHorarioTv(aula) {
+function renderizarProximosHorariosTv(aulas) {
     const area = document.getElementById("proximoHorarioTv");
 
     if (!area) {
         return;
     }
 
-    if (!aula) {
+    area.className = "lista-proximos-tv";
+    area.style.removeProperty("--duracao-creditos");
+
+    if (!aulas || aulas.length === 0) {
         area.innerHTML = `<p class="mensagem-tv">Não há próximos horários para hoje.</p>`;
         return;
     }
 
-    area.innerHTML = montarCardAulaTv(aula);
+    area.classList.add(aulas.length > 10 ? "proximos-qtd-muitos" : "proximos-qtd-" + aulas.length);
+
+    const cards = aulas.map(montarCardAulaTv).join("");
+    const copiaCards = aulas.length > 1
+        ? `<div class="grupo-proximos-tv copia-creditos-tv" aria-hidden="true">${cards}</div>`
+        : "";
+
+    area.style.setProperty("--duracao-creditos", Math.max(35, aulas.length * 12) + "s");
+    area.innerHTML = `
+        <div class="trilho-proximos-tv">
+            <div class="grupo-proximos-tv">${cards}</div>
+            ${copiaCards}
+        </div>
+    `;
 }
 
 function renderizarSemAulasTv(mensagem) {

@@ -171,6 +171,26 @@ body {
     padding: 0;
 }
 
+.lista-proximos-tv {
+    max-height: 46vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.trilho-proximos-tv,
+.grupo-proximos-tv {
+    display: grid;
+    gap: 10px;
+}
+
+.trilho-proximos-tv {
+    animation: none;
+}
+
+.copia-creditos-tv {
+    display: none;
+}
+
 .mensagem-tv {
     margin: 0;
     padding: 14px;
