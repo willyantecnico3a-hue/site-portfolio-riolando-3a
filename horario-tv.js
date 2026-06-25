@@ -265,17 +265,17 @@ function configurarFiltroProfessorTv() {
     const nomeSalvo = localStorage.getItem("filtroProfessorNomeTv") || "";
     const diaSalvo = localStorage.getItem("filtroProfessorDiaTv") || "";
 
-    campoNome.value = nomeSalvo;
+    carregarListaProfessoresFiltroTv(nomeSalvo);
     campoDia.value = diaSalvo;
 
     btnFiltrar.addEventListener("click", filtrarAulasProfessorTv);
-    campoNome.addEventListener("keydown", function (evento) {
-        if (evento.key === "Enter") {
+    campoNome.addEventListener("change", function () {
+        if (campoNome.value) {
             filtrarAulasProfessorTv();
         }
     });
     campoDia.addEventListener("change", function () {
-        if (campoNome.value.trim()) {
+        if (campoNome.value) {
             filtrarAulasProfessorTv();
         }
     });
@@ -284,8 +284,70 @@ function configurarFiltroProfessorTv() {
         btnLimpar.addEventListener("click", limparFiltroProfessorTv);
     }
 
-    if (nomeSalvo) {
-        filtrarAulasProfessorTv();
+}
+
+async function carregarListaProfessoresFiltroTv(nomeSelecionado) {
+    const campoNome = document.getElementById("filtroProfessorNomeTv");
+
+    if (!campoNome) {
+        return;
+    }
+
+    try {
+        const { data, error } = await bancoHorariosTv
+            .from("horarios_aulas")
+            .select("professor")
+            .eq("ativo", true)
+            .order("professor", { ascending: true });
+
+        if (error) {
+            throw error;
+        }
+
+        const professores = [];
+        const nomesUnicos = new Set();
+
+        (data || []).forEach(function (item) {
+            const nome = (item.professor || "").trim();
+            const chave = normalizarTextoBuscaTv(nome);
+
+            if (nome && !nomesUnicos.has(chave)) {
+                nomesUnicos.add(chave);
+                professores.push(nome);
+            }
+        });
+
+        professores.sort(function (a, b) {
+            return a.localeCompare(b, "pt-BR");
+        });
+
+        campoNome.innerHTML = `<option value="">Selecione o professor</option>`;
+
+        professores.forEach(function (nome) {
+            const opcao = document.createElement("option");
+            opcao.value = nome;
+            opcao.textContent = nome;
+            campoNome.appendChild(opcao);
+        });
+
+        if (nomeSelecionado) {
+            const existeSelecionado = professores.some(function (nome) {
+                return normalizarTextoBuscaTv(nome) === normalizarTextoBuscaTv(nomeSelecionado);
+            });
+
+            if (!existeSelecionado) {
+                const opcaoSalva = document.createElement("option");
+                opcaoSalva.value = nomeSelecionado;
+                opcaoSalva.textContent = nomeSelecionado;
+                campoNome.appendChild(opcaoSalva);
+            }
+
+            campoNome.value = nomeSelecionado;
+            filtrarAulasProfessorTv();
+        }
+    } catch (erro) {
+        console.log("Erro ao carregar lista de professores:", erro);
+        campoNome.innerHTML = `<option value="">Erro ao carregar professores</option>`;
     }
 }
 
@@ -302,7 +364,7 @@ async function filtrarAulasProfessorTv() {
     const dia = campoDia.value;
 
     if (!professor) {
-        resultado.innerHTML = `<p class="mensagem-tv">Digite o nome do professor para consultar.</p>`;
+        resultado.innerHTML = `<p class="mensagem-tv">Selecione o professor para consultar.</p>`;
         return;
     }
 
@@ -360,8 +422,17 @@ function limparFiltroProfessorTv() {
     localStorage.removeItem("filtroProfessorDiaTv");
 
     if (resultado) {
-        resultado.innerHTML = `<p class="mensagem-tv">Digite seu nome para consultar suas aulas.</p>`;
+        resultado.innerHTML = `<p class="mensagem-tv">Selecione seu nome para consultar suas aulas.</p>`;
     }
+}
+
+function normalizarTextoBuscaTv(texto) {
+    return (texto || "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
 }
 
 function ordenarAulasPorDiaEHorarioTv(aulas) {
