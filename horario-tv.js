@@ -18,6 +18,8 @@ const INTERVALO_ATUALIZACAO_HORARIOS_TV = 30000;
 const INTERVALO_RECARREGAMENTO_COMPLETO_TV = 21600000;
 const HORARIO_INICIO_EXPEDIENTE_TV = "06:00";
 const HORARIO_FIM_EXPEDIENTE_TV = "21:30";
+const FILTRO_PROFESSORES_TEC_DS_TV = "__profs_tec_ds__";
+const PROFESSORES_TEC_DS_TV = ["Willyan", "Jeronimo", "Ana Paula", "Gilberto", "Mauro"];
 
 document.addEventListener("DOMContentLoaded", function () {
     atualizarPainelHorariosTv();
@@ -323,6 +325,11 @@ async function carregarListaProfessoresFiltroTv(nomeSelecionado) {
 
         campoNome.innerHTML = `<option value="">Selecione o professor</option>`;
 
+        const opcaoProfessoresTecDs = document.createElement("option");
+        opcaoProfessoresTecDs.value = FILTRO_PROFESSORES_TEC_DS_TV;
+        opcaoProfessoresTecDs.textContent = "Profs Tec. D.S";
+        campoNome.appendChild(opcaoProfessoresTecDs);
+
         professores.forEach(function (nome) {
             const opcao = document.createElement("option");
             opcao.value = nome;
@@ -331,7 +338,7 @@ async function carregarListaProfessoresFiltroTv(nomeSelecionado) {
         });
 
         if (nomeSelecionado) {
-            const existeSelecionado = professores.some(function (nome) {
+            const existeSelecionado = nomeSelecionado === FILTRO_PROFESSORES_TEC_DS_TV || professores.some(function (nome) {
                 return normalizarTextoBuscaTv(nome) === normalizarTextoBuscaTv(nomeSelecionado);
             });
 
@@ -373,13 +380,17 @@ async function filtrarAulasProfessorTv() {
     resultado.innerHTML = `<p class="mensagem-tv">Consultando aulas...</p>`;
 
     try {
+        const filtroGrupoTecDs = professor === FILTRO_PROFESSORES_TEC_DS_TV;
         let consulta = bancoHorariosTv
             .from("horarios_aulas")
             .select("*")
             .eq("ativo", true)
-            .ilike("professor", "%" + professor + "%")
             .order("dia_semana", { ascending: true })
             .order("horario_inicio", { ascending: true });
+
+        if (!filtroGrupoTecDs) {
+            consulta = consulta.ilike("professor", "%" + professor + "%");
+        }
 
         if (dia) {
             consulta = consulta.eq("dia_semana", dia);
@@ -391,7 +402,12 @@ async function filtrarAulasProfessorTv() {
             throw error;
         }
 
-        const aulasOrdenadas = ordenarAulasPorDiaEHorarioTv(data || []);
+        const aulasEncontradas = filtroGrupoTecDs
+            ? (data || []).filter(function (aula) {
+                return professorPertenceAoTecnicoDsTv(aula.professor);
+            })
+            : (data || []);
+        const aulasOrdenadas = ordenarAulasPorDiaEHorarioTv(aulasEncontradas);
 
         if (aulasOrdenadas.length === 0) {
             resultado.innerHTML = `<p class="mensagem-tv">Nenhuma aula encontrada para esse filtro.</p>`;
@@ -433,6 +449,14 @@ function normalizarTextoBuscaTv(texto) {
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
+}
+
+function professorPertenceAoTecnicoDsTv(nomeProfessor) {
+    const nomeNormalizado = normalizarTextoBuscaTv(nomeProfessor);
+
+    return PROFESSORES_TEC_DS_TV.some(function (nome) {
+        return nomeNormalizado.includes(normalizarTextoBuscaTv(nome));
+    });
 }
 
 function ordenarAulasPorDiaEHorarioTv(aulas) {
