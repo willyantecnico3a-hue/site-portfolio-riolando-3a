@@ -1,0 +1,54 @@
+/* Configuração do Grid para computadores (telas grandes) */
+.grid-container {
+  display: grid; /* Transforma a caixa em um Grid */
+  grid-template-columns: 1fr 3fr; /* Divide a tela em 2 colunas: Menu (1 parte) e Conteúdo (3 partes) */
+  grid-template-rows: auto 1fr auto; /* 3 linhas: cabeçalho, conteúdo flexível e rodapé */
+  grid-template-areas: 
+    "header header"
+    "menu main"
+    "footer footer"; /* Define o nome das áreas no layout */
+  gap: 10px; /* Espaçamento entre os blocos */
+  min-height: 100vh;
+}
+
+/* Atribuindo o nome das áreas a cada classe HTML */
+.header {
+  grid-area: header;
+  background-color: #f0f0f0;
+  padding: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.menu {
+  grid-area: menu;
+  background-color: #dcdcdc;
+  padding: 20px;
+}
+
+.main {
+  grid-area: main;
+  background-color: #ffffff;
+  padding: 20px;
+}
+
+.footer {
+  grid-area: footer;
+  background-color: #f0f0f0;
+  padding: 20px;
+  text-align: center;
+}
+/* Regra para telas de até 768px de largura (Celulares e Tablets) */
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr; /* Muda o layout para apenas 1 coluna */
+    grid-template-areas:
+      "header"
+      "main"
+      "footer"; /* Remove a área do menu da tela */
+  }
+
+  .menu {
+    display: none; /* Esconde o menu totalmente em telas pequenas */
+  }
+}

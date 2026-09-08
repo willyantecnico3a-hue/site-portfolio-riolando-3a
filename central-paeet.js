@@ -258,6 +258,20 @@ async function salvarAcaoChecklistNoServidor(check) {
                 origem: "central_paeet"
             });
 
+            await registrarLogSistema({
+    modulo: "central_paeet",
+    acao: "preencher_checklist",
+    tipo_evento: "usuario_preencheu_checklist_paeet",
+    tabela_afetada: "acoes_checklist_paeet",
+    registro_id: registroExistente?.id || null,
+    descricao: "Usuário marcou ou atualizou um item do checklist PAEET.",
+    dados_novos: {
+        item_codigo: codigo,
+        item_descricao: descricao,
+        status: status
+    }
+});
+
         if (error) {
             throw error;
         }

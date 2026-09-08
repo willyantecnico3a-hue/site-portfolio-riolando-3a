@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercício 2 - Galeria Responsiva</title>
+  <style>
+    .galeria {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* 3 colunas em telas grandes */
+      gap: 10px;
+    }
+    .item {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    /* Regra para telas pequenas */
+    @media (max-width: 600px) {
+      .galeria {
+        grid-template-columns: 1fr; /* Transforma em 1 coluna única */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Exercício 2: Galeria Responsiva</h2>
+  <p>Redimensione a janela do seu navegador para ver as colunas mudando de 3 para 1.</p>
+
+  <div class="galeria">
+    <div class="item">Imagem 1</div>
+    <div class="item">Imagem 2</div>
+    <div class="item">Imagem 3</div>
+  </div>
+
+</body>
+</html>

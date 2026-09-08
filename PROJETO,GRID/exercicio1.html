@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Exercício 1 - Card de Produto</title>
+  <style>
+    .card {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* 2 colunas idênticas */
+      gap: 15px;
+      border: 2px solid #333;
+      padding: 15px;
+      max-width: 400px;
+      border-radius: 8px;
+    }
+    .coluna-imagem {
+      background-color: #ffcccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100px;
+    }
+    .coluna-info {
+      background-color: #e6f2ff;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Exercício 1: Card de Produto em 2 Colunas</h2>
+  <div class="card">
+    <div class="coluna-imagem">Foto do Produto</div>
+    <div class="coluna-info">
+      <h3>Tênis Esportivo</h3>
+      <p>R$ 199,90</p>
+    </div>
+  </div>
+
+</body>
+</html>
