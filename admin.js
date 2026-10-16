@@ -249,7 +249,16 @@ async function carregarPerfilAcessoSistema(usuario) {
 
     const email = usuario.email.toLowerCase();
 
-    const adminAutorizado = await verificarSeUsuarioEAdmin(email);
+    let adminAutorizado = false;
+    try {
+        const documentoAdmin = await window.firebaseDbRiolando
+            .collection("_roles_admin")
+            .doc(usuario.id)
+            .get();
+        adminAutorizado = documentoAdmin.exists && documentoAdmin.data().active === true;
+    } catch (error) {
+        console.log("Erro ao verificar permissão administrativa no Firebase:", error);
+    }
 
     if (adminAutorizado) {
         return {
