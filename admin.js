@@ -253,7 +253,7 @@ async function carregarPerfilAcessoSistema(usuario) {
     try {
         const documentoAdmin = await window.firebaseDbRiolando
             .collection("_roles_admin")
-            .doc(usuario.id)
+            .doc(usuario.uid || usuario.id)
             .get();
         adminAutorizado = documentoAdmin.exists && documentoAdmin.data().active === true;
     } catch (error) {
