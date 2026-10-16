@@ -1035,6 +1035,18 @@
     background: linear-gradient(135deg, #1e40af, #2563eb) !important;
 }
 
+.btn-recuperar-senha-admin {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    border: 0;
+    background: transparent;
+    color: #1e40af;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .btn-acessar-turma-publica {
     background: linear-gradient(135deg, #0f766e, #14b8a6) !important;
 }
@@ -1591,6 +1603,10 @@ body > p {
 
             <button id="btnLoginAdmin" type="button" class="btn-login-admin-destaque">
                 Entrar no Sistema
+            </button>
+
+            <button id="btnRecuperarSenhaAdmin" type="button" class="btn-recuperar-senha-admin">
+                Esqueci minha senha
             </button>
 
             <p id="mensagemLogin" class="mensagem-login-admin"></p>
@@ -3027,7 +3043,7 @@ segunda,14:30,15:20,1ºA,Adriana,Componente Técnico,Sala 01</textarea>
 <script src="firebase-data-compat.js?v=20261016-02"></script>
 
     <!-- Arquivo com as funções do painel administrativo -->
-    <script src="admin.js?v=20260615-PERFIS-02"></script>
+    <script src="admin.js?v=20261016-03"></script>
 
     <script>
         if ("serviceWorker" in navigator) {

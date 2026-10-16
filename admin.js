@@ -20,6 +20,7 @@ console.log("Painel admin conectado ao Firebase.");
 // =====================================================
 
 const btnLoginAdmin = document.getElementById("btnLoginAdmin");
+const btnRecuperarSenhaAdmin = document.getElementById("btnRecuperarSenhaAdmin");
 const areaAdmin = document.getElementById("areaAdmin");
 const secaoLoginAdmin = document.getElementById("secaoLoginAdmin");
 const areaProfessorLimitado = document.getElementById("areaProfessorLimitado");
@@ -36,6 +37,31 @@ let alunoSelecionadoAtendimentoId = null;
 let nomeAlunoSelecionadoAtendimento = "";
 let horarioProfessorEmEdicaoId = null;
 let horariosProfessoresFirebaseAdmin = [];
+
+if (btnRecuperarSenhaAdmin) {
+    btnRecuperarSenhaAdmin.addEventListener("click", async function () {
+        const emailCampo = document.getElementById("emailAdmin");
+        const email = emailCampo ? emailCampo.value.trim().toLowerCase() : "";
+
+        if (!email) {
+            if (mensagemLogin) mensagemLogin.textContent = "Digite seu e-mail para receber a redefinição de senha.";
+            if (emailCampo) emailCampo.focus();
+            return;
+        }
+
+        if (mensagemLogin) mensagemLogin.textContent = "Enviando solicitação de redefinição...";
+        try {
+            const { error } = await banco.auth.resetPasswordForEmail(email);
+            if (mensagemLogin) {
+                mensagemLogin.textContent = error
+                    ? "Não foi possível enviar. Confira o e-mail e tente novamente."
+                    : "Se este e-mail estiver cadastrado no Firebase, você receberá um link para redefinir a senha.";
+            }
+        } catch (_) {
+            if (mensagemLogin) mensagemLogin.textContent = "Não foi possível enviar. Confira sua conexão e tente novamente.";
+        }
+    });
+}
 
 
 // =====================================================
