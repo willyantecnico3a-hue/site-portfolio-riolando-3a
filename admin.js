@@ -231,7 +231,7 @@ async function verificarSeUsuarioEAdmin(emailUsuario) {
     const { data, error } = await banco
         .from("admins")
         .select("email")
-        .ilike("email", emailUsuario)
+        .eq("email", emailUsuario)
         .maybeSingle();
 
     if (error) {
