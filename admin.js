@@ -37,6 +37,7 @@ let alunoPaeetEmEdicaoId = null;
 let alunoSelecionadoAtendimentoId = null;
 let nomeAlunoSelecionadoAtendimento = "";
 let horarioProfessorEmEdicaoId = null;
+let horariosProfessoresFirebaseAdmin = [];
 
 
 // =====================================================
@@ -1185,11 +1186,28 @@ async function salvarNovaDisciplinaAdmin() {
             return;
         }
 
-        if (mensagem) {
-            mensagem.textContent = "Disciplina cadastrada com sucesso!";
+        try {
+            await chamarApiHorariosFirebaseAdmin("add-discipline", {
+                nome: nome,
+                curso: curso,
+                descricao: descricao
+            });
+        } catch (erroFirebase) {
+            console.error("Disciplina salva no Supabase, mas não no Firebase:", erroFirebase);
+
+            if (mensagem) {
+                mensagem.textContent = "A disciplina foi salva nas telas atuais, mas não no Firebase: " + erroFirebase.message;
+            }
+
+            alert("A disciplina foi salva no Supabase, mas não no Firebase: " + erroFirebase.message);
+            return;
         }
 
-        alert("Disciplina cadastrada com sucesso!");
+        if (mensagem) {
+            mensagem.textContent = "Disciplina cadastrada no Supabase e no Firebase com sucesso!";
+        }
+
+        alert("Disciplina cadastrada no Supabase e no Firebase com sucesso!");
 
         limparCampoSeExistir("novaDisciplinaNome");
         limparCampoSeExistir("novaDisciplinaCurso");
@@ -3010,6 +3028,7 @@ const btnFiltrarHorariosProfessores = document.getElementById("btnFiltrarHorario
 const btnLimparFiltrosHorariosProfessores = document.getElementById("btnLimparFiltrosHorariosProfessores");
 const btnImportarCsvHorariosProfessores = document.getElementById("btnImportarCsvHorariosProfessores");
 const btnAlternarExpedienteRiolando = document.getElementById("btnAlternarExpedienteRiolando");
+const btnMigrarHorariosFirebase = document.getElementById("btnMigrarHorariosFirebase");
 
 if (btnSalvarHorarioProfessor) {
     btnSalvarHorarioProfessor.addEventListener("click", salvarHorarioProfessorAdmin);
@@ -3044,6 +3063,10 @@ if (btnAlternarExpedienteRiolando) {
     btnAlternarExpedienteRiolando.addEventListener("click", alternarModoExpedienteRiolandoAdmin);
 }
 
+if (btnMigrarHorariosFirebase) {
+    btnMigrarHorariosFirebase.addEventListener("click", migrarHorariosExistentesParaFirebaseAdmin);
+}
+
 async function carregarModoExpedienteRiolandoAdmin() {
     const status = document.getElementById("statusExpedienteRiolando");
     const botao = document.getElementById("btnAlternarExpedienteRiolando");
@@ -3054,17 +3077,8 @@ async function carregarModoExpedienteRiolandoAdmin() {
     }
 
     try {
-        const { data, error } = await banco
-            .from("site_settings")
-            .select("valor")
-            .eq("chave", "riolando_sem_expediente")
-            .maybeSingle();
-
-        if (error) {
-            throw error;
-        }
-
-        const semExpediente = Boolean(data && data.valor === "true");
+        const resposta = await chamarApiHorariosFirebaseAdmin("get-setting");
+        const semExpediente = resposta.semExpediente;
         atualizarVisualExpedienteRiolandoAdmin(semExpediente);
 
         if (mensagem) {
@@ -3073,7 +3087,7 @@ async function carregarModoExpedienteRiolandoAdmin() {
 
         return semExpediente;
     } catch (erro) {
-        console.log("Erro ao carregar modo de expediente:", erro);
+        console.error("Erro ao carregar modo de expediente no Firebase:", erro);
         status.textContent = "Status indisponível";
         status.classList.add("off");
         botao.textContent = "Tentar novamente";
@@ -3082,7 +3096,7 @@ async function carregarModoExpedienteRiolandoAdmin() {
             mensagem.textContent = "Erro ao consultar status: " + erro.message;
         }
 
-        return false;
+        return null;
     }
 }
 
@@ -3098,6 +3112,11 @@ async function alternarModoExpedienteRiolandoAdmin() {
     }
 
     const semExpedienteAtual = await carregarModoExpedienteRiolandoAdmin();
+
+    if (semExpedienteAtual === null) {
+        return;
+    }
+
     const novoValor = !semExpedienteAtual;
 
     if (botao) {
@@ -3106,24 +3125,9 @@ async function alternarModoExpedienteRiolandoAdmin() {
     }
 
     try {
-        const { error } = await banco
-            .from("site_settings")
-            .upsert(
-                [
-                    {
-                        chave: "riolando_sem_expediente",
-                        valor: novoValor ? "true" : "false",
-                        atualizado_em: new Date().toISOString()
-                    }
-                ],
-                {
-                    onConflict: "chave"
-                }
-            );
-
-        if (error) {
-            throw error;
-        }
+        await chamarApiHorariosFirebaseAdmin("set-setting", {
+            semExpediente: novoValor
+        });
 
         atualizarVisualExpedienteRiolandoAdmin(novoValor);
 
@@ -3253,20 +3257,15 @@ async function salvarHorarioProfessorAdmin() {
             mensagem.textContent = "Salvando horário...";
         }
 
-        const operacao = horarioProfessorEmEdicaoId
-            ? banco.from("horarios_aulas").update(dados).eq("id", horarioProfessorEmEdicaoId)
-            : banco.from("horarios_aulas").insert([dados]);
-
-        const { error } = await operacao;
-
-        if (error) {
-            throw error;
-        }
+        await chamarApiHorariosFirebaseAdmin("save", {
+            horarioId: horarioProfessorEmEdicaoId,
+            horario: dados
+        });
 
         if (mensagem) {
             mensagem.textContent = horarioProfessorEmEdicaoId
-                ? "Horário atualizado com sucesso."
-                : "Horário cadastrado com sucesso.";
+                ? "Horário atualizado no Firebase com sucesso."
+                : "Horário cadastrado no Firebase com sucesso.";
         }
 
         limparFormularioHorarioProfessorAdmin();
@@ -3296,42 +3295,50 @@ async function carregarHorariosProfessoresAdmin() {
 
     lista.innerHTML = `<p>Carregando horários...</p>`;
 
-    let consulta = banco
-        .from("horarios_aulas")
-        .select("*")
-        .order("dia_semana", { ascending: true })
-        .order("horario_inicio", { ascending: true });
-
     const filtroDia = normalizarDiaSemanaHorario(pegarValorCampo("filtroHorarioProfessorDia"));
     const filtroProfessor = pegarValorCampo("filtroHorarioProfessorNome");
     const filtroTurma = pegarValorCampo("filtroHorarioProfessorTurma");
 
-    if (filtroDia) {
-        consulta = consulta.eq("dia_semana", filtroDia);
+    try {
+        const resposta = await chamarApiHorariosFirebaseAdmin("list");
+        horariosProfessoresFirebaseAdmin = resposta.horarios || [];
+        const ordemDias = { segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5 };
+        const horariosFiltrados = horariosProfessoresFirebaseAdmin
+            .filter(function (horario) {
+                return !filtroDia || horario.dia_semana === filtroDia;
+            })
+            .filter(function (horario) {
+                return !filtroProfessor || normalizarTextoBuscaHorarioAdmin(horario.professor).includes(normalizarTextoBuscaHorarioAdmin(filtroProfessor));
+            })
+            .filter(function (horario) {
+                return !filtroTurma || normalizarTextoBuscaHorarioAdmin(horario.turma).includes(normalizarTextoBuscaHorarioAdmin(filtroTurma));
+            })
+            .sort(function (a, b) {
+                const diaA = ordemDias[a.dia_semana] || 99;
+                const diaB = ordemDias[b.dia_semana] || 99;
+
+                return diaA - diaB || formatarHorarioAdmin(a.horario_inicio).localeCompare(formatarHorarioAdmin(b.horario_inicio));
+            });
+
+        if (horariosFiltrados.length === 0) {
+            lista.innerHTML = `<p>Nenhum horário encontrado.</p>`;
+            return;
+        }
+
+        lista.innerHTML = horariosFiltrados.map(montarCardHorarioProfessorAdmin).join("");
+    } catch (erro) {
+        console.error("Erro ao carregar horários dos professores no Firebase:", erro);
+        lista.innerHTML = `<p>Erro ao carregar horários do Firebase: ${escaparHTML(erro.message)}</p>`;
     }
+}
 
-    if (filtroProfessor) {
-        consulta = consulta.ilike("professor", `%${filtroProfessor}%`);
-    }
-
-    if (filtroTurma) {
-        consulta = consulta.ilike("turma", `%${filtroTurma}%`);
-    }
-
-    const { data, error } = await consulta;
-
-    if (error) {
-        console.log("Erro ao carregar horários dos professores:", error);
-        lista.innerHTML = `<p>Erro ao carregar horários: ${escaparHTML(error.message)}</p>`;
-        return;
-    }
-
-    if (!data || data.length === 0) {
-        lista.innerHTML = `<p>Nenhum horário encontrado.</p>`;
-        return;
-    }
-
-    lista.innerHTML = data.map(montarCardHorarioProfessorAdmin).join("");
+function normalizarTextoBuscaHorarioAdmin(texto) {
+    return (texto || "")
+        .toString()
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
 }
 
 function montarCardHorarioProfessorAdmin(horario) {
@@ -3384,15 +3391,12 @@ async function editarHorarioProfessorAdmin(id) {
         return;
     }
 
-    const { data, error } = await banco
-        .from("horarios_aulas")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
+    const data = horariosProfessoresFirebaseAdmin.find(function (horario) {
+        return horario.id === id;
+    });
 
-    if (error || !data) {
+    if (!data) {
         alert("Não foi possível carregar o horário para edição.");
-        console.log("Erro ao editar horário:", error);
         return;
     }
 
@@ -3430,13 +3434,13 @@ async function alternarStatusHorarioProfessorAdmin(id, novoStatus) {
         return;
     }
 
-    const { error } = await banco
-        .from("horarios_aulas")
-        .update({ ativo: Boolean(novoStatus) })
-        .eq("id", id);
-
-    if (error) {
-        alert("Erro ao alterar status do horário: " + error.message);
+    try {
+        await chamarApiHorariosFirebaseAdmin("set-active", {
+            horarioId: id,
+            ativo: Boolean(novoStatus)
+        });
+    } catch (erro) {
+        alert("Erro ao alterar status do horário no Firebase: " + erro.message);
         return;
     }
 
@@ -3455,13 +3459,12 @@ async function excluirHorarioProfessorAdmin(id) {
         return;
     }
 
-    const { error } = await banco
-        .from("horarios_aulas")
-        .delete()
-        .eq("id", id);
-
-    if (error) {
-        alert("Erro ao excluir horário: " + error.message);
+    try {
+        await chamarApiHorariosFirebaseAdmin("delete", {
+            horarioId: id
+        });
+    } catch (erro) {
+        alert("Erro ao excluir horário do Firebase: " + erro.message);
         return;
     }
 
@@ -3502,6 +3505,78 @@ function parseCsvHorariosProfessores(texto) {
         });
 }
 
+async function chamarApiHorariosFirebaseAdmin(acao, dados) {
+    const { data, error } = await banco.auth.getSession();
+
+    if (error) {
+        throw new Error("Não foi possível validar a sessão administrativa: " + error.message);
+    }
+
+    const token = data && data.session && data.session.access_token;
+
+    if (!token) {
+        throw new Error("Sessão expirada. Entre novamente no painel administrativo.");
+    }
+
+    const resposta = await fetch("/.netlify/functions/horarios-professores", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify(Object.assign({ acao: acao }, dados || {}))
+    });
+
+    let corpo;
+
+    try {
+        corpo = await resposta.json();
+    } catch (erro) {
+        throw new Error("A função de horários do Firebase retornou uma resposta inválida.");
+    }
+
+    if (!resposta.ok || !corpo.sucesso) {
+        throw new Error(corpo.mensagem || "Não foi possível concluir a operação no Firebase.");
+    }
+
+    return corpo;
+}
+
+async function migrarHorariosExistentesParaFirebaseAdmin() {
+    const resultado = document.getElementById("resultadoMigracaoHorariosFirebase");
+
+    if (!usuarioLogadoPodeGerenciarHorarios()) {
+        if (resultado) {
+            resultado.textContent = "Este perfil não possui permissão para migrar horários.";
+        }
+        return;
+    }
+
+    if (!confirm("Copiar os horários atuais do Supabase para o Firebase? Os dados originais serão mantidos no Supabase.")) {
+        return;
+    }
+
+    if (resultado) {
+        resultado.textContent = "Migrando horários existentes...";
+    }
+
+    try {
+        const resposta = await chamarApiHorariosFirebaseAdmin("migrate-existing");
+
+        if (resultado) {
+            resultado.textContent = `${resposta.migrados} horário(s) copiado(s); ${resposta.ignorados} já existia(m). ${resposta.disciplinasMigradas} disciplina(s) sincronizada(s).${resposta.modoSemExpedienteMigrado ? " O modo de expediente também foi copiado." : ""}`;
+        }
+
+        await carregarHorariosProfessoresAdmin();
+    } catch (erro) {
+        console.error("Erro ao migrar horários existentes para o Firebase:", erro);
+
+        if (resultado) {
+            resultado.textContent = "Erro ao migrar horários: " + erro.message;
+        }
+    }
+}
+
 async function importarCsvHorariosProfessoresAdmin() {
     const input = document.getElementById("arquivoCsvHorariosProfessores");
     const resultado = document.getElementById("resultadoImportacaoHorariosProfessores");
@@ -3519,6 +3594,8 @@ async function importarCsvHorariosProfessoresAdmin() {
         }
         return;
     }
+
+    let importados = 0;
 
     try {
         const texto = await input.files[0].text();
@@ -3584,16 +3661,20 @@ async function importarCsvHorariosProfessoresAdmin() {
             resultado.innerHTML = `<p>Importando ${registros.length} horário(s)...</p>`;
         }
 
-        const { error } = await banco
-            .from("horarios_aulas")
-            .insert(registros);
+        for (let inicio = 0; inicio < registros.length; inicio += 150) {
+            const lote = registros.slice(inicio, inicio + 150);
+            const resposta = await chamarApiHorariosFirebaseAdmin("import", {
+                horarios: lote
+            });
+            importados += resposta.importados;
 
-        if (error) {
-            throw error;
+            if (resultado) {
+                resultado.innerHTML = `<p>Importados ${importados} de ${registros.length} horário(s) no Firebase...</p>`;
+            }
         }
 
         if (resultado) {
-            resultado.innerHTML = `<p>${registros.length} horário(s) importado(s) com sucesso.</p>`;
+            resultado.innerHTML = `<p>${importados} horário(s) importado(s) no Firebase com sucesso.</p>`;
         }
 
         input.value = "";
@@ -3602,7 +3683,8 @@ async function importarCsvHorariosProfessoresAdmin() {
         console.log("Erro ao importar CSV de horários:", erro);
 
         if (resultado) {
-            resultado.innerHTML = `<p>Erro ao importar CSV: ${escaparHTML(erro.message)}</p>`;
+            const parciais = importados > 0 ? `${importados} horário(s) já foram gravados no Firebase. ` : "";
+            resultado.innerHTML = `<p>Erro ao importar CSV: ${parciais}${escaparHTML(erro.message)}</p>`;
         }
     }
 }

@@ -1,8 +1,3 @@
-const SUPABASE_URL_TV = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY_TV = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
-
-const bancoHorariosTv = supabase.createClient(SUPABASE_URL_TV, SUPABASE_KEY_TV);
-
 const diasSemanaTv = ["domingo", "segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
 const nomesDiasTv = {
     domingo: "Domingo",
@@ -20,6 +15,11 @@ const HORARIO_INICIO_EXPEDIENTE_TV = "06:00";
 const HORARIO_FIM_EXPEDIENTE_TV = "21:30";
 const FILTRO_PROFESSORES_TEC_DS_TV = "__profs_tec_ds__";
 const PROFESSORES_TEC_DS_TV = ["Willyan", "Jeronimo", "Ana Paula", "Gilberto", "Mauro"];
+let cacheHorariosFirebaseTv = null;
+let promessaHorariosFirebaseTv = null;
+let cacheModoSemExpedienteFirebaseTv = null;
+let modoSemExpedienteCarregadoFirebaseTv = false;
+let promessaModoSemExpedienteFirebaseTv = null;
 
 document.addEventListener("DOMContentLoaded", function () {
     atualizarPainelHorariosTv();
@@ -63,18 +63,13 @@ async function atualizarPainelHorariosTv() {
             return;
         }
 
-        const { data, error } = await bancoHorariosTv
-            .from("horarios_aulas")
-            .select("*")
-            .eq("dia_semana", diaSemana)
-            .eq("ativo", true)
-            .order("horario_inicio", { ascending: true });
-
-        if (error) {
-            throw error;
-        }
-
-        const horarios = data || [];
+        const horarios = (await carregarHorariosFirebaseTv())
+            .filter(function (item) {
+                return item.dia_semana === diaSemana;
+            })
+            .sort(function (a, b) {
+                return formatarHorarioBancoTv(a.horario_inicio).localeCompare(formatarHorarioBancoTv(b.horario_inicio));
+            });
         const aulasAgora = horarios.filter(function (item) {
             const inicio = formatarHorarioBancoTv(item.horario_inicio);
             const fim = formatarHorarioBancoTv(item.horario_fim);
@@ -94,7 +89,7 @@ async function atualizarPainelHorariosTv() {
     } catch (erro) {
         console.log("Erro ao atualizar horários da TV:", erro);
         renderizarErroTv("Não foi possível carregar os horários agora. Tentando novamente em 1 minuto.");
-        preencherTextoTv("mensagemStatusTv", "Erro de conexão com o Supabase.");
+        preencherTextoTv("mensagemStatusTv", "Erro de conexão com o Firebase.");
     }
 }
 
@@ -207,23 +202,82 @@ function renderizarErroTv(mensagem) {
 }
 
 async function buscarModoSemExpedienteManualTv() {
-    try {
-        const { data, error } = await bancoHorariosTv
-            .from("site_settings")
-            .select("valor")
-            .eq("chave", "riolando_sem_expediente")
-            .maybeSingle();
-
-        if (error) {
-            console.log("Erro ao consultar modo sem expediente:", error);
-            return false;
-        }
-
-        return data && data.valor === "true";
-    } catch (erro) {
-        console.log("Modo sem expediente indisponivel:", erro);
-        return false;
+    if (modoSemExpedienteCarregadoFirebaseTv) {
+        return cacheModoSemExpedienteFirebaseTv;
     }
+
+    if (promessaModoSemExpedienteFirebaseTv) {
+        return promessaModoSemExpedienteFirebaseTv;
+    }
+
+    promessaModoSemExpedienteFirebaseTv = new Promise(function (resolve, reject) {
+        let primeiraLeitura = true;
+
+        firebaseDbHorariosTv
+            .collection("site_settings")
+            .doc("riolando_sem_expediente")
+            .onSnapshot(function (documento) {
+                const valor = documento.exists ? documento.data().valor : false;
+                cacheModoSemExpedienteFirebaseTv = valor === true || valor === "true";
+                modoSemExpedienteCarregadoFirebaseTv = true;
+
+                if (primeiraLeitura) {
+                    primeiraLeitura = false;
+                    resolve(cacheModoSemExpedienteFirebaseTv);
+                }
+            }, function (erro) {
+                console.error("Erro ao observar modo sem expediente no Firebase:", erro);
+                modoSemExpedienteCarregadoFirebaseTv = false;
+                promessaModoSemExpedienteFirebaseTv = null;
+
+                if (primeiraLeitura) {
+                    primeiraLeitura = false;
+                    reject(erro);
+                }
+            });
+    });
+
+    return promessaModoSemExpedienteFirebaseTv;
+}
+
+async function carregarHorariosFirebaseTv() {
+    if (cacheHorariosFirebaseTv !== null) {
+        return cacheHorariosFirebaseTv;
+    }
+
+    if (promessaHorariosFirebaseTv) {
+        return promessaHorariosFirebaseTv;
+    }
+
+    promessaHorariosFirebaseTv = new Promise(function (resolve, reject) {
+        let primeiraLeitura = true;
+
+        firebaseDbHorariosTv.collection("horarios_aulas").onSnapshot(function (consulta) {
+            cacheHorariosFirebaseTv = consulta.docs
+                .map(function (documento) {
+                    return Object.assign({ id: documento.id }, documento.data());
+                })
+                .filter(function (horario) {
+                    return horario.ativo === true;
+                });
+
+            if (primeiraLeitura) {
+                primeiraLeitura = false;
+                resolve(cacheHorariosFirebaseTv);
+            }
+        }, function (erro) {
+            console.error("Erro ao observar horários no Firebase:", erro);
+            cacheHorariosFirebaseTv = null;
+            promessaHorariosFirebaseTv = null;
+
+            if (primeiraLeitura) {
+                primeiraLeitura = false;
+                reject(erro);
+            }
+        });
+    });
+
+    return promessaHorariosFirebaseTv;
 }
 
 function horarioForaDoExpedienteTv(horaAtual) {
@@ -296,20 +350,10 @@ async function carregarListaProfessoresFiltroTv(nomeSelecionado) {
     }
 
     try {
-        const { data, error } = await bancoHorariosTv
-            .from("horarios_aulas")
-            .select("professor")
-            .eq("ativo", true)
-            .order("professor", { ascending: true });
-
-        if (error) {
-            throw error;
-        }
-
         const professores = [];
         const nomesUnicos = new Set();
 
-        (data || []).forEach(function (item) {
+        (await carregarHorariosFirebaseTv()).forEach(function (item) {
             const nome = (item.professor || "").trim();
             const chave = normalizarTextoBuscaTv(nome);
 
@@ -381,33 +425,21 @@ async function filtrarAulasProfessorTv() {
 
     try {
         const filtroGrupoTecDs = professor === FILTRO_PROFESSORES_TEC_DS_TV;
-        let consulta = bancoHorariosTv
-            .from("horarios_aulas")
-            .select("*")
-            .eq("ativo", true)
-            .order("dia_semana", { ascending: true })
-            .order("horario_inicio", { ascending: true });
-
-        if (!filtroGrupoTecDs) {
-            consulta = consulta.ilike("professor", "%" + professor + "%");
-        }
-
-        if (dia) {
-            consulta = consulta.eq("dia_semana", dia);
-        }
-
-        const { data, error } = await consulta;
-
-        if (error) {
-            throw error;
-        }
+        const horarios = await carregarHorariosFirebaseTv();
 
         const aulasEncontradas = filtroGrupoTecDs
-            ? (data || []).filter(function (aula) {
+            ? horarios.filter(function (aula) {
                 return professorPertenceAoTecnicoDsTv(aula.professor);
             })
-            : (data || []);
-        const aulasOrdenadas = ordenarAulasPorDiaEHorarioTv(aulasEncontradas);
+            : horarios.filter(function (aula) {
+                return normalizarTextoBuscaTv(aula.professor).includes(normalizarTextoBuscaTv(professor));
+            });
+        const aulasFiltradas = dia
+            ? aulasEncontradas.filter(function (aula) {
+                return aula.dia_semana === dia;
+            })
+            : aulasEncontradas;
+        const aulasOrdenadas = ordenarAulasPorDiaEHorarioTv(aulasFiltradas);
 
         if (aulasOrdenadas.length === 0) {
             resultado.innerHTML = `<p class="mensagem-tv">Nenhuma aula encontrada para esse filtro.</p>`;

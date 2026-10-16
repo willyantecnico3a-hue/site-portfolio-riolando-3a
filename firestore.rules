@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /horarios_aulas/{horarioId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /site_settings/{settingId} {
+      allow read: if settingId == 'riolando_sem_expediente';
+      allow write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
