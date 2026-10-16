@@ -6,15 +6,13 @@
 
 
 // =====================================================
-// 1. CONEXÃO COM O SUPABASE
+// 1. CONEXÃO COM O FIREBASE
 // =====================================================
 
-const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
-const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const banco = firebaseData.createClient();
 
-console.log("Painel admin conectado ao Supabase.");
+console.log("Painel admin conectado ao Firebase.");
 
 
 // =====================================================
@@ -593,7 +591,7 @@ async function salvarPerfilAdminEditavel() {
     const mensagem = document.getElementById("mensagemPerfilAdmin");
 
     if (mensagem) {
-        mensagem.textContent = "Salvando perfil administrativo no Supabase...";
+        mensagem.textContent = "Salvando perfil administrativo no Firebase...";
     }
 
     const { data: userData, error: userError } = await banco.auth.getUser();
@@ -1110,7 +1108,7 @@ function limparFormularioTurma() {
 
 // =====================================================
 // CADASTRAR NOVA DISCIPLINA
-// Correção: botão "+ Cadastrar Disciplina" agora salva no Supabase.
+// Correção: botão "+ Cadastrar Disciplina" agora salva no Firebase.
 // Campos esperados no admin.html:
 // - novaDisciplinaNome
 // - novaDisciplinaCurso
@@ -1193,21 +1191,21 @@ async function salvarNovaDisciplinaAdmin() {
                 descricao: descricao
             });
         } catch (erroFirebase) {
-            console.error("Disciplina salva no Supabase, mas não no Firebase:", erroFirebase);
+            console.error("Disciplina salva no Firebase, mas não no Firebase:", erroFirebase);
 
             if (mensagem) {
                 mensagem.textContent = "A disciplina foi salva nas telas atuais, mas não no Firebase: " + erroFirebase.message;
             }
 
-            alert("A disciplina foi salva no Supabase, mas não no Firebase: " + erroFirebase.message);
+            alert("A disciplina foi salva no Firebase, mas não no Firebase: " + erroFirebase.message);
             return;
         }
 
         if (mensagem) {
-            mensagem.textContent = "Disciplina cadastrada no Supabase e no Firebase com sucesso!";
+            mensagem.textContent = "Disciplina cadastrada no Firebase e no Firebase com sucesso!";
         }
 
-        alert("Disciplina cadastrada no Supabase e no Firebase com sucesso!");
+        alert("Disciplina cadastrada no Firebase e no Firebase com sucesso!");
 
         limparCampoSeExistir("novaDisciplinaNome");
         limparCampoSeExistir("novaDisciplinaCurso");
@@ -1484,7 +1482,7 @@ async function reativarTurmaAdmin(idTurma) {
 
 async function excluirTurmaAdmin(idTurma) {
     const confirmar = confirm(
-        "Tem certeza que deseja excluir esta turma? Se houver aulas vinculadas a ela, o Supabase pode bloquear a exclusão."
+        "Tem certeza que deseja excluir esta turma? Se houver aulas vinculadas a ela, o Firebase pode bloquear a exclusão."
     );
 
     if (!confirmar) {
@@ -2307,7 +2305,7 @@ function preservarFormatacaoTextoAdmin(texto) {
 
 async function ativarAulaDoDia(aulaId, turmaId) {
     if (!banco) {
-        alert("Supabase não conectado.");
+        alert("Firebase não conectado.");
         return;
     }
 
@@ -2843,10 +2841,15 @@ async function gerarConteudoIA(tipo) {
     resultadoIA.innerHTML = "<p>⏳ A IA está preparando o conteúdo...</p>";
 
     try {
-        const resposta = await fetch("/.netlify/functions/generate-content", {
+        const { data: sessaoIA, error: erroSessaoIA } = await banco.auth.getSession();
+        const tokenIA = sessaoIA?.session?.access_token;
+        if (erroSessaoIA || !tokenIA) throw new Error("Entre como administrador para gerar conte?do.");
+
+        const resposta = await fetch("/api/generate-content", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + tokenIA
             },
             body: JSON.stringify({
                 tipo: tipo,
@@ -2862,7 +2865,7 @@ async function gerarConteudoIA(tipo) {
         } catch (erroJson) {
             dados = {
                 error: "A resposta da função não veio em JSON.",
-                details: "Verifique se a Netlify Function foi publicada corretamente."
+                details: "Verifique se a Firebase Function foi publicada corretamente."
             };
         }
 
@@ -2894,8 +2897,8 @@ async function gerarConteudoIA(tipo) {
         resultadoIA.innerHTML = `
             <p>
                 Não foi possível conectar com a IA.
-                Verifique se a função Netlify foi publicada e se a variável
-                <strong>OPENROUTER_API_KEY</strong> está configurada no Netlify.
+                Verifique se a função Firebase foi publicada e se a variável
+                <strong>OPENROUTER_API_KEY</strong> está configurada no Firebase.
             </p>
             <p><strong>Detalhes:</strong> ${escaparHTML(erro.message)}</p>
         `;
@@ -3028,7 +3031,6 @@ const btnFiltrarHorariosProfessores = document.getElementById("btnFiltrarHorario
 const btnLimparFiltrosHorariosProfessores = document.getElementById("btnLimparFiltrosHorariosProfessores");
 const btnImportarCsvHorariosProfessores = document.getElementById("btnImportarCsvHorariosProfessores");
 const btnAlternarExpedienteRiolando = document.getElementById("btnAlternarExpedienteRiolando");
-const btnMigrarHorariosFirebase = document.getElementById("btnMigrarHorariosFirebase");
 
 if (btnSalvarHorarioProfessor) {
     btnSalvarHorarioProfessor.addEventListener("click", salvarHorarioProfessorAdmin);
@@ -3063,9 +3065,6 @@ if (btnAlternarExpedienteRiolando) {
     btnAlternarExpedienteRiolando.addEventListener("click", alternarModoExpedienteRiolandoAdmin);
 }
 
-if (btnMigrarHorariosFirebase) {
-    btnMigrarHorariosFirebase.addEventListener("click", migrarHorariosExistentesParaFirebaseAdmin);
-}
 
 async function carregarModoExpedienteRiolandoAdmin() {
     const status = document.getElementById("statusExpedienteRiolando");
@@ -3518,7 +3517,7 @@ async function chamarApiHorariosFirebaseAdmin(acao, dados) {
         throw new Error("Sessão expirada. Entre novamente no painel administrativo.");
     }
 
-    const resposta = await fetch("/.netlify/functions/horarios-professores", {
+    const resposta = await fetch("/api/horarios-professores", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -3540,41 +3539,6 @@ async function chamarApiHorariosFirebaseAdmin(acao, dados) {
     }
 
     return corpo;
-}
-
-async function migrarHorariosExistentesParaFirebaseAdmin() {
-    const resultado = document.getElementById("resultadoMigracaoHorariosFirebase");
-
-    if (!usuarioLogadoPodeGerenciarHorarios()) {
-        if (resultado) {
-            resultado.textContent = "Este perfil não possui permissão para migrar horários.";
-        }
-        return;
-    }
-
-    if (!confirm("Copiar os horários atuais do Supabase para o Firebase? Os dados originais serão mantidos no Supabase.")) {
-        return;
-    }
-
-    if (resultado) {
-        resultado.textContent = "Migrando horários existentes...";
-    }
-
-    try {
-        const resposta = await chamarApiHorariosFirebaseAdmin("migrate-existing");
-
-        if (resultado) {
-            resultado.textContent = `${resposta.migrados} horário(s) copiado(s); ${resposta.ignorados} já existia(m). ${resposta.disciplinasMigradas} disciplina(s) sincronizada(s).${resposta.modoSemExpedienteMigrado ? " O modo de expediente também foi copiado." : ""}`;
-        }
-
-        await carregarHorariosProfessoresAdmin();
-    } catch (erro) {
-        console.error("Erro ao migrar horários existentes para o Firebase:", erro);
-
-        if (resultado) {
-            resultado.textContent = "Erro ao migrar horários: " + erro.message;
-        }
-    }
 }
 
 async function importarCsvHorariosProfessoresAdmin() {
@@ -4905,7 +4869,7 @@ async function carregarTurmasPublicasNaTelaAdmin() {
         select.innerHTML = `<option value="">Erro ao carregar turmas</option>`;
 
         if (mensagem) {
-            mensagem.textContent = "Não foi possível carregar as turmas. Verifique a política pública no Supabase.";
+            mensagem.textContent = "Não foi possível carregar as turmas. Verifique a política pública no Firebase.";
         }
 
         return;
@@ -5061,7 +5025,7 @@ async function criarAlunoManualAdmin() {
     }
 
     if (mensagem) {
-        mensagem.textContent = "Criando aluno no Supabase Auth...";
+        mensagem.textContent = "Criando aluno no Firebase Auth...";
     }
 
     const token = await obterTokenAdminAtual();
@@ -5074,7 +5038,7 @@ async function criarAlunoManualAdmin() {
     }
 
     try {
-        const resposta = await fetch("/.netlify/functions/criar-aluno", {
+        const resposta = await fetch("/api/criar-aluno", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -5303,7 +5267,7 @@ async function resetarSenhaAlunoAdmin(alunoId) {
     }
 
     try {
-        const resposta = await fetch("/.netlify/functions/resetar-senha-aluno", {
+        const resposta = await fetch("/api/resetar-senha-aluno", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -5411,7 +5375,7 @@ async function importarAlunosCsvAdmin() {
 
     for (const aluno of alunos) {
         try {
-            const resposta = await fetch("/.netlify/functions/criar-aluno", {
+            const resposta = await fetch("/api/criar-aluno", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

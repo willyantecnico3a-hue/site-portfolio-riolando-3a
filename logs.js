@@ -6,15 +6,13 @@
    gráficos, CSV, PDF e modal de detalhes.
 ===================================================== */
 
-const SUPABASE_URL_LOGS = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY_LOGS = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 let bancoLogs = null;
 let usuarioAdminLogs = null;
 let logsCarregados = [];
 
-if (window.supabase) {
-    bancoLogs = window.supabase.createClient(SUPABASE_URL_LOGS, SUPABASE_KEY_LOGS);
+if (window.firebaseData) {
+    bancoLogs = window.firebaseData.createClient();
 }
 
 document.addEventListener("DOMContentLoaded", iniciarLogsSistema);
@@ -41,7 +39,7 @@ async function iniciarLogsSistema() {
 async function verificarAcessoAdministradorLogs() {
     try {
         if (!bancoLogs) {
-            bloquearLogsSemPermissao("Erro ao carregar conexão com o Supabase.");
+            bloquearLogsSemPermissao("Erro ao carregar conexão com o Firebase.");
             return false;
         }
 
@@ -268,7 +266,7 @@ function obterFiltrosLogs() {
 
 
 /* =====================================================
-   CARREGAR LOGS DO SUPABASE
+   CARREGAR LOGS DO FIREBASE
 ===================================================== */
 
 async function carregarLogsSistema() {
@@ -276,7 +274,7 @@ async function carregarLogsSistema() {
 
     try {
         if (!bancoLogs) {
-            throw new Error("Supabase não carregou.");
+            throw new Error("Firebase não carregou.");
         }
 
         const filtros = obterFiltrosLogs();

@@ -4,6 +4,7 @@
   "description": "",
   "main": "admin.js",
   "scripts": {
+    "migrate:firebase": "node scripts/migrate-supabase-to-firebase.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

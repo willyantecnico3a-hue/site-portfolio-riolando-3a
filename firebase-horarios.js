@@ -8,5 +8,7 @@ const firebaseConfigHorariosTv = {
     measurementId: "G-MGMG7PYC2Y"
 };
 
-firebase.initializeApp(firebaseConfigHorariosTv);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfigHorariosTv);
+}
 const firebaseDbHorariosTv = firebase.firestore();

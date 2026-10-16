@@ -1,6 +1,6 @@
 /* =====================================================
    AGENDA PEDAGÓGICA INTERATIVA
-   HTML + CSS + JAVASCRIPT PURO + SUPABASE
+   HTML + CSS + JAVASCRIPT PURO + FIREBASE
 
    VERSÃO CORRIGIDA COM PERFIS:
    - Admin pode criar, editar e excluir eventos.
@@ -15,13 +15,11 @@
 
 
 /* =====================================================
-   1. CONEXÃO COM SUPABASE
+   1. CONEXÃO COM FIREBASE
 ===================================================== */
 
-const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
-const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const banco = firebaseData.createClient();
 
 
 /* =====================================================
@@ -371,7 +369,7 @@ async function carregarEventosDoMes() {
         eventosCarregados = [];
 
         alert(
-            "Não foi possível carregar os eventos da agenda. Verifique as permissões SELECT da tabela eventos no Supabase."
+            "Não foi possível carregar os eventos da agenda. Verifique as permissões SELECT da tabela eventos no Firebase."
         );
 
         return;
@@ -2236,7 +2234,7 @@ async function ativarPushAgenda() {
             });
         }
 
-        await salvarInscricaoPushNoSupabase(inscricao);
+        await salvarInscricaoPushNoFirebase(inscricao);
 
         if (mensagemPushAgenda) {
             mensagemPushAgenda.textContent = "✅ Notificações ativadas neste aparelho.";
@@ -2256,7 +2254,7 @@ async function ativarPushAgenda() {
     }
 }
 
-async function salvarInscricaoPushNoSupabase(inscricao) {
+async function salvarInscricaoPushNoFirebase(inscricao) {
     const dados = inscricao.toJSON();
 
     const endpoint = dados.endpoint;
@@ -2398,7 +2396,7 @@ async function carregarConfiguracaoExpedientePaeet() {
             .in("chave", ["paeet_expediente_inicio", "paeet_expediente_fim"]);
 
         if (error) {
-            console.log("Não foi possível carregar expediente do Supabase. Usando padrão:", error);
+            console.log("Não foi possível carregar expediente do Firebase. Usando padrão:", error);
         }
 
         (data || []).forEach(function (item) {
@@ -2482,7 +2480,7 @@ async function salvarConfiguracaoExpedientePaeet() {
             console.log("Erro ao salvar expediente:", error);
 
             if (mensagem) {
-                mensagem.textContent = "Erro ao salvar no Supabase. O horário foi aplicado apenas nesta tela.";
+                mensagem.textContent = "Erro ao salvar no Firebase. O horário foi aplicado apenas nesta tela.";
             }
         } else {
             if (mensagem) {

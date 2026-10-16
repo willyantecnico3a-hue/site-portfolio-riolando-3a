@@ -6,16 +6,14 @@
    Funções:
    - Busca e filtro dos cards
    - Checklist local no navegador
-   - Salvamento do checklist no Supabase
+   - Salvamento do checklist no Firebase
 ===================================================== */
 
-const SUPABASE_URL_CENTRAL = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY_CENTRAL = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 let bancoCentral = null;
 
-if (window.supabase) {
-    bancoCentral = window.supabase.createClient(SUPABASE_URL_CENTRAL, SUPABASE_KEY_CENTRAL);
+if (window.firebaseData) {
+    bancoCentral = window.firebaseData.createClient();
 }
 
 document.addEventListener("DOMContentLoaded", iniciarCentralPaeet);
@@ -36,7 +34,7 @@ async function iniciarCentralPaeet() {
 async function verificarAcessoAdministradorCentral() {
     try {
         if (!bancoCentral) {
-            bloquearCentralSemPermissao("Erro ao carregar conexão com o Supabase.");
+            bloquearCentralSemPermissao("Erro ao carregar conexão com o Firebase.");
             return false;
         }
 
@@ -181,7 +179,7 @@ function normalizarTextoCentral(texto) {
 
 
 /* =====================================================
-   CHECKLIST LOCAL + SUPABASE
+   CHECKLIST LOCAL + FIREBASE
 ===================================================== */
 
 function carregarChecklistCentral() {
@@ -211,7 +209,7 @@ async function salvarAcaoChecklistNoServidor(check) {
     atualizarMensagemServidorChecklist("Salvando ação no servidor...");
 
     if (!bancoCentral) {
-        atualizarMensagemServidorChecklist("Supabase não carregou. A ação ficou salva apenas neste navegador.", true);
+        atualizarMensagemServidorChecklist("Firebase não carregou. A ação ficou salva apenas neste navegador.", true);
         return;
     }
 

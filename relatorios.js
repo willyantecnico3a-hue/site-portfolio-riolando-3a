@@ -5,11 +5,9 @@
    VERSÃO: 20260614-06
 ===================================================== */
 
-const SUPABASE_URL_RELATORIO = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY_RELATORIO = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
-const banco = window.supabase
-    ? window.supabase.createClient(SUPABASE_URL_RELATORIO, SUPABASE_KEY_RELATORIO)
+const banco = window.firebaseData
+    ? window.firebaseData.createClient()
     : null;
 
 let dadosRelatorio = {
@@ -45,7 +43,7 @@ async function iniciarRelatorios() {
 async function verificarAcessoAdministradorRelatorio() {
     try {
         if (!banco) {
-            bloquearRelatorioSemPermissao("Erro ao carregar conexão com o Supabase.");
+            bloquearRelatorioSemPermissao("Erro ao carregar conexão com o Firebase.");
             return false;
         }
 
@@ -220,11 +218,11 @@ async function gerarRelatorio() {
 
     try {
         if (!banco) {
-            throw new Error("Supabase não carregou.");
+            throw new Error("Firebase não carregou.");
         }
 
         if (mensagem) {
-            mensagem.textContent = "Carregando dados reais do Supabase...";
+            mensagem.textContent = "Carregando dados reais do Firebase...";
         }
 
         const filtros = obterFiltrosRelatorio();
@@ -251,7 +249,7 @@ async function gerarRelatorio() {
         console.error("Erro ao gerar relatório:", erro);
 
         if (mensagem) {
-            mensagem.textContent = "Erro ao gerar relatório. Verifique o console, tabelas do Supabase e permissões.";
+            mensagem.textContent = "Erro ao gerar relatório. Verifique o console, tabelas do Firebase e permissões.";
         }
     }
 }
@@ -575,7 +573,7 @@ async function gerarRelatorioAcompanhamento() {
 
     try {
         if (!banco) {
-            throw new Error("Supabase não carregou.");
+            throw new Error("Firebase não carregou.");
         }
 
         if (mensagem) {

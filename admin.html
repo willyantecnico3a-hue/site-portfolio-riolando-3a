@@ -2854,11 +2854,7 @@ segunda,14:30,15:20,1ºA,Adriana,Componente Técnico,Sala 01</textarea>
                 </div>
 
                 <div class="texto-ajuda">
-                    <p>Os novos horários são gravados no Firebase. A cópia do Supabase mantém os dados atuais nas outras áreas do site.</p>
-                    <button type="button" id="btnMigrarHorariosFirebase">
-                        Copiar horários existentes do Supabase para o Firebase
-                    </button>
-                    <p id="resultadoMigracaoHorariosFirebase" role="status"></p>
+                    <p>Horarios armazenados no Firebase. Para migrar os registros existentes e as demais tabelas, siga o guia <code>MIGRACAO_FIREBASE.md</code> do repositorio.</p>
                 </div>
 
                 <div class="filtros-solicitacoes-ajuda-admin">
@@ -3023,8 +3019,13 @@ segunda,14:30,15:20,1ºA,Adriana,Componente Técnico,Sala 01</textarea>
     </section>
 
 
-    <!-- Biblioteca do Supabase precisa carregar antes do admin.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Biblioteca do Firebase precisa carregar antes do admin.js -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="firebase-app.js?v=20261016-01"></script>
+<script src="firebase-data-compat.js?v=20261016-01"></script>
 
     <!-- Arquivo com as funções do painel administrativo -->
     <script src="admin.js?v=20260615-PERFIS-02"></script>

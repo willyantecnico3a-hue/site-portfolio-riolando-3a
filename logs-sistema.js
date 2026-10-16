@@ -1,7 +1,7 @@
 async function registrarLogSistema(config) {
     try {
-        if (!window.supabase || !banco) {
-            console.warn("Supabase não disponível para registrar log.");
+        if (!window.firebaseData || !banco) {
+            console.warn("Firebase não disponível para registrar log.");
             return;
         }
 

@@ -1,28 +1,24 @@
 // =====================================================
 // PORTAL DE AULAS E PORTFÓLIOS - PÁGINA DO ALUNO
-// HTML + CSS + JAVASCRIPT PURO + SUPABASE
+// HTML + CSS + JAVASCRIPT PURO + FIREBASE
 // VERSÃO CORRIGIDA: portfólio vinculado à turma, telefone, e-mail, RA e logs
 // =====================================================
 
 
 // =====================================================
-// 1. CONEXÃO COM O SUPABASE
+// 1. CONEXÃO COM O FIREBASE
 // =====================================================
 
-const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
 
-// COLE AQUI SUA CHAVE ANON PUBLIC / PUBLISHABLE DO SUPABASE
-// IMPORTANTE: mantenha a chave entre aspas.
-const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 let banco = null;
 
-// Verifica se a biblioteca do Supabase carregou corretamente no index.html
-if (window.supabase) {
-    banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    console.log("Supabase conectado!");
+// Verifica se a biblioteca do Firebase carregou corretamente no index.html
+if (window.firebaseData) {
+    banco = firebaseData.createClient();
+    console.log("Firebase conectado!");
 } else {
-    console.log("Supabase não carregou. Verifique o script CDN no index.html.");
+    console.log("Firebase não carregou. Verifique o script CDN no index.html.");
 }
 
 
@@ -85,7 +81,7 @@ if (botao) {
 • Lista com 3 habilidades ou interesses.
 • Botão que troca uma mensagem usando JavaScript.
 • Visual com cores, card, espaçamento e botão estilizado.
-• Publicação no Netlify com link compartilhável.
+• Publicação no Firebase com link compartilhável.
 
 Tempo sugerido: 50 a 80 minutos, dependendo do ritmo da turma.`);
     });
@@ -227,7 +223,7 @@ if (btnPDF) {
 
 
 // =====================================================
-// 7. CARREGAR TURMAS DO SUPABASE
+// 7. CARREGAR TURMAS DO FIREBASE
 // Preenche o select de turmas na tela inicial.
 // =====================================================
 
@@ -239,7 +235,7 @@ async function carregarTurmas() {
     }
 
     if (!banco) {
-        console.log("Supabase não conectado para carregar turmas.");
+        console.log("Firebase não conectado para carregar turmas.");
         return;
     }
 
@@ -399,7 +395,7 @@ async function carregarAulaDaTurma(turmaId) {
     }
 
     if (!banco) {
-        aulaDiaConteudo.innerHTML = `<p>Supabase não conectado.</p>`;
+        aulaDiaConteudo.innerHTML = `<p>Firebase não conectado.</p>`;
         return;
     }
 
@@ -710,7 +706,7 @@ async function carregarLinhaTempoAulas(turmaId) {
     }
 
     if (!banco) {
-        linhaTempo.innerHTML = `<p>Supabase não conectado.</p>`;
+        linhaTempo.innerHTML = `<p>Firebase não conectado.</p>`;
         return;
     }
 
@@ -846,7 +842,7 @@ if (btnCadastrarPortfolio) {
 
 async function cadastrarPortfolioAluno() {
     if (!banco) {
-        alert("Supabase não está conectado. Verifique a chave e o script CDN.");
+        alert("Firebase não está conectado. Verifique a chave e o script CDN.");
         return;
     }
 
@@ -918,7 +914,7 @@ async function cadastrarPortfolioAluno() {
 
     if (error) {
         alert("Erro ao salvar: " + error.message);
-        console.log("Erro Supabase:", error);
+        console.log("Erro Firebase:", error);
         return;
     }
 
@@ -1023,7 +1019,7 @@ if (btnCarregarPortfolios) {
 
 async function carregarPortfoliosPublicados() {
     if (!banco) {
-        alert("Supabase não está conectado.");
+        alert("Firebase não está conectado.");
         return;
     }
 
@@ -1163,7 +1159,7 @@ function formatarDataHoraPortfolio(dataTexto) {
 
 // =====================================================
 // 21. CARREGAR FRASE MOTIVACIONAL PÚBLICA NA TELA INICIAL
-// Essa frase vem da tabela site_settings do Supabase.
+// Essa frase vem da tabela site_settings do Firebase.
 // =====================================================
 
 async function carregarFraseMotivacionalPublica() {
@@ -1428,16 +1424,11 @@ function limparCampoPublico(idCampo) {
 ===================================================== */
 
 (function configurarBotoesAreaAlunoNaHome() {
-    const SUPABASE_URL_ALUNO_HOME = "https://pwomyoprbvoimqmikvev.supabase.co";
-    const SUPABASE_KEY_ALUNO_HOME = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
     let bancoAlunoHome = null;
 
-    if (typeof supabase !== "undefined") {
-        bancoAlunoHome = supabase.createClient(
-            SUPABASE_URL_ALUNO_HOME,
-            SUPABASE_KEY_ALUNO_HOME
-        );
+    if (typeof firebaseData !== "undefined") {
+        bancoAlunoHome = firebaseData.createClient();
     }
 
     const btnAbrirAjudaAlunoHome = document.getElementById("btnAbrirAjudaAluno");

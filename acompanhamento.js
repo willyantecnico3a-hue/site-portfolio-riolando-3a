@@ -4,16 +4,14 @@
    Protegido por login com perfil: admin, professor e coordenacao
 ===================================================== */
 
-const SUPABASE_URL_ACOMP = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY_ACOMP = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
 let bancoAcompanhamento = null;
 let usuarioAdminAcompanhamento = null;
 let perfilAcessoAcompanhamento = null;
 let registrosAcompanhamento = [];
 
-if (window.supabase) {
-    bancoAcompanhamento = window.supabase.createClient(SUPABASE_URL_ACOMP, SUPABASE_KEY_ACOMP);
+if (window.firebaseData) {
+    bancoAcompanhamento = window.firebaseData.createClient();
 }
 
 document.addEventListener("DOMContentLoaded", iniciarAcompanhamentoPaeet);
@@ -39,7 +37,7 @@ async function iniciarAcompanhamentoPaeet() {
 async function verificarAcessoAdministradorAcompanhamento() {
     try {
         if (!bancoAcompanhamento) {
-            bloquearAcompanhamentoSemPermissao("Erro ao carregar conexão com o Supabase.");
+            bloquearAcompanhamentoSemPermissao("Erro ao carregar conexão com o Firebase.");
             return false;
         }
 
@@ -111,7 +109,7 @@ async function verificarAcessoAdministradorAcompanhamento() {
                 "O acesso ao Acompanhamento PAEET será liberado porque o usuário já está autenticado."
             );
 
-            // Tenta corrigir automaticamente a marcação no Supabase.
+            // Tenta corrigir automaticamente a marcação no Firebase.
             // Se a RLS bloquear este update, o acesso continua liberado.
             await bancoAcompanhamento
                 .from("perfis_acesso")
@@ -283,7 +281,7 @@ async function salvarAcompanhamento() {
             return;
         }
 
-        if (!bancoAcompanhamento) throw new Error("Supabase não carregou.");
+        if (!bancoAcompanhamento) throw new Error("Firebase não carregou.");
 
         const id = getValor("registroIdAcompanhamento");
 
@@ -347,7 +345,7 @@ async function carregarRegistrosAcompanhamento() {
     const mensagem = document.getElementById("mensagemListaAcompanhamento");
 
     try {
-        if (!bancoAcompanhamento) throw new Error("Supabase não carregou.");
+        if (!bancoAcompanhamento) throw new Error("Firebase não carregou.");
         if (mensagem) mensagem.textContent = "Carregando acompanhamentos...";
 
         const filtros = obterFiltrosListaAcompanhamento();

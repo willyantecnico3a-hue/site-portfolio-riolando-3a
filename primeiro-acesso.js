@@ -6,13 +6,11 @@
 
 
 /* =====================================================
-   1. CONEXÃO COM SUPABASE
+   1. CONEXÃO COM FIREBASE
 ===================================================== */
 
-const SUPABASE_URL = "https://pwomyoprbvoimqmikvev.supabase.co";
-const SUPABASE_KEY = "sb_publishable_elGQyDU7ngaUHCLWIHLhDQ_IxiLo6kD";
 
-const banco = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const banco = firebaseData.createClient();
 
 
 /* =====================================================
