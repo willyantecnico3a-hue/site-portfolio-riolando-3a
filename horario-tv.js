@@ -252,7 +252,7 @@ async function carregarHorariosFirebaseTv() {
     promessaHorariosFirebaseTv = new Promise(function (resolve, reject) {
         let primeiraLeitura = true;
 
-        firebaseDbHorariosTv.collection("horarios_aulas").onSnapshot(function (consulta) {
+        firebaseDbHorariosTv.collection("horarios_aulas").where("ativo", "==", true).onSnapshot(function (consulta) {
             cacheHorariosFirebaseTv = consulta.docs
                 .map(function (documento) {
                     return Object.assign({ id: documento.id }, documento.data());

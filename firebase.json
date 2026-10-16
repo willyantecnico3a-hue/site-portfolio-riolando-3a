@@ -1,13 +1,6 @@
 {
-  "functions": {
-    "source": "functions",
-    "runtime": "nodejs20"
-  },
   "firestore": {
     "rules": "firestore.rules"
-  },
-  "storage": {
-    "rules": "storage.rules"
   },
   "hosting": {
     "public": ".",
@@ -16,6 +9,8 @@
       ".firebaserc",
       "**/.*",
       "**/node_modules/**",
+      "firebase-service-account*.json",
+      "firebase-password-reset-links.csv",
       "functions/**",
       "netlify/**",
       "Arquivos Originais/**",
@@ -26,43 +21,6 @@
       "package.json",
       "package-lock.json",
       "MIGRACAO_FIREBASE.md"
-    ],
-    "rewrites": [
-      {
-        "source": "/api/database",
-        "function": {
-          "functionId": "databaseApi",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "/api/horarios-professores",
-        "function": {
-          "functionId": "teacherSchedules",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "/api/criar-aluno",
-        "function": {
-          "functionId": "createStudent",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "/api/resetar-senha-aluno",
-        "function": {
-          "functionId": "resetStudentPassword",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "/api/generate-content",
-        "function": {
-          "functionId": "generateContent",
-          "region": "us-central1"
-        }
-      }
     ]
   }
 }

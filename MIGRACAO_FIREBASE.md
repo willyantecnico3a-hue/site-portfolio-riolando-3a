@@ -1,30 +1,52 @@
-# Migração do Supabase para Firebase
+# Migração para Firebase Spark (gratuito)
 
-O arquivo `supabase_schema.sql` é a referência exportada do Supabase: 21 tabelas e 72 políticas RLS. As políticas usam funções e identidade do PostgreSQL/Supabase; elas precisam ser convertidas em regras de segurança do Firestore e não devem ser executadas no Firebase.
+O destino é o projeto Firebase `horariosprofsriolandocanno`. A versão Spark usa Firebase Hosting para as páginas, Firebase Authentication para login e Cloud Firestore para os dados. O deploy não publica Cloud Functions nem Firebase Storage.
 
-## Ferramenta de cópia de dados e contas
+## O que funciona no Spark
 
-O script `scripts/migrate-supabase-to-firebase.js` copia as tabelas do Supabase para coleções Firestore, os arquivos dos buckets `admin-perfil` e `materiais` para Firebase Storage, atualiza os links dos arquivos nas linhas e cria no Firebase Auth as contas com os mesmos UIDs. Preservar os UIDs mantém as referências existentes nas linhas. O script não copia senhas: cria links de redefinição para os usuários.
+- Páginas estáticas no Firebase Hosting.
+- Login por e-mail e senha e redefinição de senha pelo Firebase Authentication.
+- Dados no Firestore, protegidos por `firestore.rules`.
+- Importação local das tabelas e contas do Supabase para Firestore/Auth usando o script de migração.
+- Links de arquivos existentes continuam apontando para o Supabase enquanto esses arquivos permanecerem hospedados lá.
 
-Antes de executá-lo:
+## Recursos que ficam indisponíveis
 
-1. Crie uma chave de conta de serviço no projeto Firebase `horariosprofsriolandocanno` e salve o JSON como `firebase-service-account.json` na raiz do projeto. Não compartilhe nem faça commit desse arquivo.
-2. Copie `.env.example` para `.env.local` e preencha a URL do Supabase e a chave `service_role` localmente. Não cole essas chaves no chat.
-3. Execute `npm run migrate:firebase`.
-4. O script grava os links de redefinição em `firebase-password-reset-links.csv`. Envie os links aos usuários por um canal privado e apague o CSV quando terminar.
+- Upload de fotos e materiais para Firebase Storage. Os formulários de upload informam que o recurso não está disponível; use URLs públicas já existentes.
+- Funções de servidor: geração de conteúdo por IA, envio automático de notificações push e tarefas agendadas. A agenda continua mostrando os eventos, mas notificações automáticas ficam desativadas.
+- O Firebase Spark não inclui Cloud Functions nem Firebase Storage para este projeto. Não faça upgrade para Blaze se a exigência é manter tudo gratuito.
 
-O script para se um e-mail já existir no Firebase com UID diferente do Supabase, para evitar alterar referências de conta silenciosamente. Ele preserva configurações de `site_settings` que já existam no Firestore e grava horários migrados em documentos `supabase_<id>` para evitar colisão com os documentos de horários existentes.
+O Spark tem limites de uso gratuitos. Consulte os limites atuais do [Firebase Spark](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans), [Firestore](https://firebase.google.com/docs/firestore/pricing) e [Hosting](https://firebase.google.com/docs/hosting/usage-quotas-pricing). Ao atingir cotas gratuitas, alguns recursos podem parar até o próximo ciclo ou até reduzir o uso; o plano Spark não faz cobrança automática.
 
-## Estado da migração do app
+## Preparar a migração de dados
 
-As páginas agora usam Firebase Authentication, uma API de dados em Cloud Functions e Firebase Storage. As cinco operações backend (horários, criação de aluno, redefinição de senha, geração de conteúdo e notificações push) também têm implementações Firebase. O workflow do GitHub faz deploy de Hosting, Functions e regras quando a credencial do Firebase estiver cadastrada no repositório.
+O arquivo `supabase_schema.sql` contém somente a estrutura e as políticas exportadas. Ele não contém as linhas de dados necessárias para fazer a cópia. As políticas RLS do Supabase não podem ser executadas no Firestore; a proteção equivalente está sendo definida em `firestore.rules`.
 
-Antes do primeiro deploy:
+1. No Supabase, copie a **Project URL** e a chave **service_role** em Project Settings → API. Não compartilhe a chave nem a cole em mensagens.
+2. Na pasta do projeto, copie `.env.example` para `.env.local` e preencha `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` com os valores do seu projeto. Deixe `FIREBASE_SERVICE_ACCOUNT_FILE=firebase-service-account.json`.
+3. No Firebase Console do projeto `horariosprofsriolandocanno`, habilite Authentication com e-mail/senha e crie o banco Cloud Firestore. Mantenha o plano Spark.
+4. Gere uma chave de conta de serviço Firebase para executar a migração localmente e salve como `firebase-service-account.json` na raiz. Esse arquivo é privado e não deve ser enviado ao GitHub.
+5. No terminal, dentro da pasta do projeto, execute `npm run migrate:firebase`.
 
-1. No Firebase Console, habilite o provedor **E-mail/senha** em Authentication. Confirme que Firestore e Storage estão ativados.
-2. Configure os segredos de função localmente, sem publicá-los: `firebase functions:secrets:set OPENROUTER_API_KEY`, `firebase functions:secrets:set VAPID_PUBLIC_KEY` e `firebase functions:secrets:set VAPID_PRIVATE_KEY`. O valor privado VAPID deve ser obtido no provedor onde está salvo hoje.
-3. No GitHub, crie o segredo do repositório `FIREBASE_SERVICE_ACCOUNT` com o JSON da conta de serviço de deploy do projeto. O workflow não consegue autenticar enquanto esse segredo não existir.
-4. Instale e autentique o Firebase CLI, preencha `.env.local` e execute `npm run migrate:firebase` para copiar as contas e tabelas. Não envie `.env.local`, a conta de serviço ou o CSV de links de redefinição ao GitHub.
-5. Depois de conferir os dados e as contas no Firebase, publique pelo workflow **Deploy Firebase Hosting and Functions** na aba Actions do GitHub.
+O script cria no Firebase Auth os usuários que existem no Supabase, preserva seus UIDs e prepara links para redefinição de senha, pois as senhas antigas não podem ser copiadas. Os links ficam em `firebase-password-reset-links.csv`; trate-os como credenciais privadas, envie cada link ao respectivo usuário por um canal privado e apague o arquivo depois. A migração copia as tabelas listadas no script e preserva IDs SQL no corpo dos documentos para não quebrar referências.
 
-O deploy de Functions agendadas pode exigir o plano Blaze do Firebase/Google Cloud. O site não foi publicado ainda: este ambiente não tem Firebase CLI autenticado nem as chaves privadas necessárias para a migração e os serviços externos.
+Faça a migração uma única vez após conferir que o Firestore está vazio ou que os dados existentes podem ser combinados. Em caso de conflito de e-mail/UID entre Supabase Auth e Firebase Auth, o script para e informa o conflito, para evitar associar uma conta à pessoa errada.
+
+## Publicar no Firebase Hosting
+
+Para deploy local, instale Firebase CLI, autentique a conta que administra `horariosprofsriolandocanno`, abra PowerShell na pasta do projeto e execute:
+
+```powershell
+firebase deploy --project horariosprofsriolandocanno --only firestore:rules,hosting
+```
+
+Para publicação automática a cada push em `main`, adicione no GitHub do repositório o secret `FIREBASE_SERVICE_ACCOUNT`, cujo valor é o JSON privado da conta de serviço com permissões de deploy. O workflow `.github/workflows/firebase-deploy.yml` publica somente as regras do Firestore e o Hosting.
+
+O Hosting serve os arquivos estáticos; os dados e autenticação são acessados diretamente pelo SDK Firebase no navegador, sujeitos às regras do Firestore. Não coloque chaves de serviço ou `service_role` em HTML, JavaScript, no Git ou em secrets usados pelo site.
+
+## Antes de encerrar a migração
+
+- Revise os usuários importados e envie links individuais de redefinição.
+- Confira os registros e permissões no aplicativo publicado.
+- Arquivos e imagens já existentes dependem dos URLs e do projeto Supabase continuarem ativos. Este caminho Spark não migra bytes para Firebase Storage.
+- Não publique a chave de conta de serviço, `.env.local` ou `firebase-password-reset-links.csv`.

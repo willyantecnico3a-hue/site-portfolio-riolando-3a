@@ -13,5 +13,4 @@
     window.firebaseConfigRiolando = config;
     window.firebaseAuthRiolando = firebase.auth();
     window.firebaseDbRiolando = firebase.firestore();
-    window.firebaseStorageRiolando = firebase.storage();
 }());

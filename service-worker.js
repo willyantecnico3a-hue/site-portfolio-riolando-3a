@@ -1,4 +1,4 @@
-const CACHE_NAME = "riolandoconecta-pwa-v3";
+const CACHE_NAME = "riolandoconecta-pwa-v4";
 
 const ARQUIVOS_CACHE = [
     "/",

@@ -557,28 +557,7 @@ async function enviarFotoPerfilAdminParaStorage(arquivo, userId) {
     if (!arquivo || !userId) {
         return null;
     }
-
-    const extensao = arquivo.name.split(".").pop().toLowerCase();
-    const nomeArquivo = `perfil-${userId}-${Date.now()}.${extensao}`;
-    const caminhoArquivo = `${userId}/${nomeArquivo}`;
-
-    const { error } = await banco.storage
-        .from("admin-perfil")
-        .upload(caminhoArquivo, arquivo, {
-            cacheControl: "3600",
-            upsert: true,
-            contentType: arquivo.type
-        });
-
-    if (error) {
-        throw new Error("Erro ao enviar foto de perfil: " + error.message);
-    }
-
-    const { data } = banco.storage
-        .from("admin-perfil")
-        .getPublicUrl(caminhoArquivo);
-
-    return data.publicUrl;
+    throw new Error("O plano Firebase Spark não oferece armazenamento de arquivos. Use uma imagem já hospedada e cole o link público.");
 }
 
 async function salvarPerfilAdminEditavel() {
@@ -2570,35 +2549,8 @@ async function enviarArquivoParaStorage(inputFile, pastaDestino) {
         return null;
     }
 
-    const arquivo = inputFile.files[0];
-
-    const nomeSeguro = arquivo.name
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/[^a-zA-Z0-9.\-_]/g, "")
-        .toLowerCase();
-
-    const caminhoArquivo = `${pastaDestino}/${Date.now()}-${nomeSeguro}`;
-
-    const { error } = await banco.storage
-        .from("materiais")
-        .upload(caminhoArquivo, arquivo, {
-            cacheControl: "3600",
-            upsert: false,
-            contentType: arquivo.type
-        });
-
-    if (error) {
-        alert("Erro ao enviar arquivo: " + error.message);
-        return null;
-    }
-
-    const { data } = banco.storage
-        .from("materiais")
-        .getPublicUrl(caminhoArquivo);
-
-    return data.publicUrl;
+    alert("O plano Firebase Spark não oferece armazenamento de arquivos. Informe um link público para o material.");
+    return null;
 }
 
 function identificarTipoMidia(url) {
@@ -2818,93 +2770,12 @@ if (campoDataAula) {
 let ultimoConteudoGeradoIA = "";
 let ultimoTipoGeradoIA = "";
 
-async function gerarConteudoIA(tipo) {
-    const promptCampo = document.getElementById("promptIA");
-    const contextoCampo = document.getElementById("contextoIA");
-    const resultadoIA = document.getElementById("resultadoIA");
+async function gerarConteudoIA() {
     const mensagemIA = document.getElementById("mensagemIA");
-
-    if (!promptCampo || !resultadoIA || !mensagemIA) {
-        alert("Erro: área da IA não encontrada no HTML.");
-        return;
-    }
-
-    const prompt = promptCampo.value.trim();
-    const contexto = contextoCampo ? contextoCampo.value.trim() : "";
-
-    if (!prompt) {
-        mensagemIA.textContent = "Digite um pedido para a IA antes de gerar.";
-        return;
-    }
-
-    mensagemIA.textContent = "Gerando conteúdo com IA. Aguarde...";
-    resultadoIA.innerHTML = "<p>⏳ A IA está preparando o conteúdo...</p>";
-
-    try {
-        const { data: sessaoIA, error: erroSessaoIA } = await banco.auth.getSession();
-        const tokenIA = sessaoIA?.session?.access_token;
-        if (erroSessaoIA || !tokenIA) throw new Error("Entre como administrador para gerar conte?do.");
-
-        const resposta = await fetch("/api/generate-content", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + tokenIA
-            },
-            body: JSON.stringify({
-                tipo: tipo,
-                prompt: prompt,
-                contexto: contexto
-            })
-        });
-
-        let dados = {};
-
-        try {
-            dados = await resposta.json();
-        } catch (erroJson) {
-            dados = {
-                error: "A resposta da função não veio em JSON.",
-                details: "Verifique se a Firebase Function foi publicada corretamente."
-            };
-        }
-
-        if (!resposta.ok) {
-            mensagemIA.textContent = "Erro ao gerar conteúdo.";
-
-            resultadoIA.innerHTML = `
-                <p><strong>Erro:</strong> ${escaparHTML(dados.error || "Falha desconhecida.")}</p>
-                <p>${escaparHTML(typeof dados.details === "string" ? dados.details : JSON.stringify(dados.details))}</p>
-            `;
-
-            return;
-        }
-
-        ultimoConteudoGeradoIA = dados.conteudo || "";
-        ultimoTipoGeradoIA = tipo;
-
-        mensagemIA.textContent = "Conteúdo gerado com sucesso!";
-
-        resultadoIA.innerHTML = `
-            <div class="conteudo-gerado-ia">
-                ${formatarTextoIAParaHTML(ultimoConteudoGeradoIA)}
-            </div>
-        `;
-
-    } catch (erro) {
-        mensagemIA.textContent = "Erro de conexão com a função da IA.";
-
-        resultadoIA.innerHTML = `
-            <p>
-                Não foi possível conectar com a IA.
-                Verifique se a função Firebase foi publicada e se a variável
-                <strong>OPENROUTER_API_KEY</strong> está configurada no Firebase.
-            </p>
-            <p><strong>Detalhes:</strong> ${escaparHTML(erro.message)}</p>
-        `;
-    }
+    const resultadoIA = document.getElementById("resultadoIA");
+    if (mensagemIA) mensagemIA.textContent = "A geracao automatica por IA foi desativada na versao Firebase Spark, que nao inclui backend para proteger a chave do provedor.";
+    if (resultadoIA) resultadoIA.innerHTML = "<p>Este recurso precisa de um servidor seguro e nao esta disponivel nesta versao gratuita.</p>";
 }
-
 function formatarTextoIAParaHTML(texto) {
     if (!texto) {
         return "<p>Nenhum conteúdo gerado.</p>";
@@ -3505,42 +3376,64 @@ function parseCsvHorariosProfessores(texto) {
 }
 
 async function chamarApiHorariosFirebaseAdmin(acao, dados) {
-    const { data, error } = await banco.auth.getSession();
+    const db = window.firebaseDbRiolando;
+    const input = dados || {};
+    const catalogId = valor => String(valor || "").trim().toLowerCase().normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-    if (error) {
-        throw new Error("Não foi possível validar a sessão administrativa: " + error.message);
+    if (!db || !usuarioLogadoPodeGerenciarHorarios()) throw new Error("Entre com um perfil autorizado para gerenciar horarios.");
+    if (acao === "get-setting") {
+        const doc = await db.collection("site_settings").doc("riolando_sem_expediente").get();
+        return { semExpediente: doc.exists && (doc.data().valor === true || doc.data().valor === "true") };
     }
-
-    const token = data && data.session && data.session.access_token;
-
-    if (!token) {
-        throw new Error("Sessão expirada. Entre novamente no painel administrativo.");
+    if (acao === "set-setting") {
+        await db.collection("site_settings").doc("riolando_sem_expediente").set({ valor: Boolean(input.semExpediente), atualizado_em: new Date().toISOString() }, { merge: true });
+        return {};
     }
-
-    const resposta = await fetch("/api/horarios-professores", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-        },
-        body: JSON.stringify(Object.assign({ acao: acao }, dados || {}))
-    });
-
-    let corpo;
-
-    try {
-        corpo = await resposta.json();
-    } catch (erro) {
-        throw new Error("A função de horários do Firebase retornou uma resposta inválida.");
+    if (acao === "add-discipline") {
+        const id = catalogId(input.nome);
+        if (!id) throw new Error("Informe um nome valido para a disciplina.");
+        await db.collection("disciplinas_horarios").doc(id).set({ nome: input.nome, curso: input.curso, descricao: input.descricao || "", ativo: true }, { merge: true });
+        return {};
     }
-
-    if (!resposta.ok || !corpo.sucesso) {
-        throw new Error(corpo.mensagem || "Não foi possível concluir a operação no Firebase.");
+    if (acao === "list") {
+        const result = await db.collection("horarios_aulas").get();
+        return { horarios: result.docs.map(doc => Object.assign({}, doc.data(), { id: doc.id })) };
     }
-
-    return corpo;
+    if (acao === "save") {
+        const ref = input.horarioId ? db.collection("horarios_aulas").doc(String(input.horarioId)) : db.collection("horarios_aulas").doc();
+        const horario = Object.assign({}, input.horario, { id: ref.id, atualizado_em: new Date().toISOString() });
+        await ref.set(horario, { merge: true });
+        const professorId = catalogId(horario.professor);
+        if (professorId) await db.collection("professores_horarios").doc(professorId).set({ nome: horario.professor }, { merge: true });
+        if (horario.disciplina) await db.collection("disciplinas_horarios").doc(catalogId(horario.disciplina)).set({ nome: horario.disciplina }, { merge: true });
+        return { horarioId: ref.id };
+    }
+    if (acao === "set-active") {
+        await db.collection("horarios_aulas").doc(String(input.horarioId)).update({ ativo: Boolean(input.ativo), atualizado_em: new Date().toISOString() });
+        return {};
+    }
+    if (acao === "delete") {
+        await db.collection("horarios_aulas").doc(String(input.horarioId)).delete();
+        return {};
+    }
+    if (acao === "import") {
+        const rows = input.horarios || [];
+        if (!rows.length || rows.length > 150) throw new Error("Importe de 1 a 150 horarios por vez.");
+        const batch = db.batch();
+        rows.forEach(item => {
+            const ref = db.collection("horarios_aulas").doc();
+            const horario = Object.assign({}, item, { id: ref.id, atualizado_em: new Date().toISOString() });
+            batch.set(ref, horario);
+            const professorId = catalogId(horario.professor);
+            if (professorId) batch.set(db.collection("professores_horarios").doc(professorId), { nome: horario.professor }, { merge: true });
+            if (horario.disciplina) batch.set(db.collection("disciplinas_horarios").doc(catalogId(horario.disciplina)), { nome: horario.disciplina }, { merge: true });
+        });
+        await batch.commit();
+        return { importados: rows.length };
+    }
+    throw new Error("Operacao de horario desconhecida.");
 }
-
 async function importarCsvHorariosProfessoresAdmin() {
     const input = document.getElementById("arquivoCsvHorariosProfessores");
     const resultado = document.getElementById("resultadoImportacaoHorariosProfessores");
@@ -4014,30 +3907,7 @@ function montarCardSolicitacaoAjudaAdmin(pedido) {
             </div>
 
 
-            <div class="bloco-resposta-ajuda-admin">
-
-                <label for="respostaAjuda_${idSeguro}">
-                    Resposta / orientação do professor
-                </label>
-
-                <textarea
-                    id="respostaAjuda_${idSeguro}"
-                    class="textarea-resposta-ajuda-admin"
-                    placeholder="Digite a devolutiva para o aluno..."
-                >${escaparHTML(pedido.resposta_professor || "")}</textarea>
-
-                ${
-                    pedido.respondido_em
-                        ? `
-                            <p class="data-resposta-ajuda-admin">
-                                Última resposta em ${formatarDataHoraAdminCompleta(pedido.respondido_em)}
-                            </p>
-                        `
-                        : ""
-                }
-
-            </div>
-
+            <p>O link de redefinicao sera enviado ao e-mail cadastrado.</p>
 
             <div class="acoes-paeet acoes-solicitacao-ajuda">
 
@@ -4996,93 +4866,24 @@ async function obterTokenAdminAtual() {
 
 async function criarAlunoManualAdmin() {
     const mensagem = document.getElementById("mensagemGestaoAlunoAdmin");
-
-    const nome = pegarValorCampo("gestaoAlunoNome");
-    const email = pegarValorCampo("gestaoAlunoEmail").toLowerCase();
+    const nome = pegarValorCampo("gestaoAlunoNome").trim();
+    const email = pegarValorCampo("gestaoAlunoEmail").trim().toLowerCase();
     const turma = pegarValorCampo("gestaoAlunoTurma");
     const curso = pegarValorCampo("gestaoAlunoCurso") || "desenvolvimento_sistemas";
     const senhaTemporaria = pegarValorCampo("gestaoAlunoSenha");
-
-    if (!nome || !email || !senhaTemporaria) {
-        if (mensagem) {
-            mensagem.textContent = "Preencha nome, e-mail e senha temporária.";
-        }
-        return;
-    }
-
-    if (!email.includes("@")) {
-        if (mensagem) {
-            mensagem.textContent = "Digite um e-mail válido.";
-        }
-        return;
-    }
-
-    if (senhaTemporaria.length < 6) {
-        if (mensagem) {
-            mensagem.textContent = "A senha temporária precisa ter pelo menos 6 caracteres.";
-        }
-        return;
-    }
-
-    if (mensagem) {
-        mensagem.textContent = "Criando aluno no Firebase Auth...";
-    }
-
-    const token = await obterTokenAdminAtual();
-
-    if (!token) {
-        if (mensagem) {
-            mensagem.textContent = "Sessão administrativa expirada. Faça login novamente.";
-        }
-        return;
-    }
-
-    try {
-        const resposta = await fetch("/api/criar-aluno", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({
-                nome: nome,
-                email: email,
-                turma: turma,
-                curso: curso,
-                senhaTemporaria: senhaTemporaria
-            })
-        });
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            if (mensagem) {
-                mensagem.textContent = dados.mensagem || "Erro ao criar aluno.";
-            }
-            return;
-        }
-
-        if (mensagem) {
-            mensagem.textContent = "Aluno criado com sucesso! Senha temporária: " + senhaTemporaria;
-        }
-
-        limparCampoSeExistir("gestaoAlunoNome");
-        limparCampoSeExistir("gestaoAlunoEmail");
-        limparCampoSeExistir("gestaoAlunoTurma");
-        limparCampoSeExistir("gestaoAlunoSenha");
-
-        await carregarAlunosGestaoAdmin();
-
-    } catch (erro) {
-        console.log("Erro ao criar aluno:", erro);
-
-        if (mensagem) {
-            mensagem.textContent = "Erro de conexão ao criar aluno: " + erro.message;
-        }
-    }
+    if (!nome || !email || !senhaTemporaria) { if (mensagem) mensagem.textContent = "Preencha nome, e-mail e senha temporaria."; return; }
+    if (!email.includes("@")) { if (mensagem) mensagem.textContent = "Digite um e-mail valido."; return; }
+    if (senhaTemporaria.length < 6) { if (mensagem) mensagem.textContent = "A senha temporaria precisa ter pelo menos 6 caracteres."; return; }
+    if (mensagem) mensagem.textContent = "Criando conta no Firebase Auth...";
+    const { error } = await banco.auth.createStudentAccount({ nome, email, turma, curso, password: senhaTemporaria });
+    if (error) { if (mensagem) mensagem.textContent = "Erro ao criar aluno: " + error.message; return; }
+    if (mensagem) mensagem.textContent = "Aluno criado. Oriente-o a trocar a senha no primeiro acesso.";
+    limparCampoSeExistir("gestaoAlunoNome");
+    limparCampoSeExistir("gestaoAlunoEmail");
+    limparCampoSeExistir("gestaoAlunoTurma");
+    limparCampoSeExistir("gestaoAlunoSenha");
+    await carregarAlunosGestaoAdmin();
 }
-
-
 async function carregarAlunosGestaoAdmin() {
     const lista = document.getElementById("listaAlunosAdmin");
 
@@ -5238,65 +5039,14 @@ function formatarCursoGestaoAluno(curso) {
 
 
 async function resetarSenhaAlunoAdmin(alunoId) {
-    const campoSenha = document.getElementById("novaSenhaAluno_" + alunoId);
-
-    if (!campoSenha) {
-        alert("Campo de senha não encontrado.");
-        return;
-    }
-
-    const novaSenhaTemporaria = campoSenha.value.trim();
-
-    if (!novaSenhaTemporaria || novaSenhaTemporaria.length < 6) {
-        alert("Digite uma senha temporária com pelo menos 6 caracteres.");
-        campoSenha.focus();
-        return;
-    }
-
-    const confirmar = confirm("Deseja resetar a senha deste aluno?");
-
-    if (!confirmar) {
-        return;
-    }
-
-    const token = await obterTokenAdminAtual();
-
-    if (!token) {
-        alert("Sessão administrativa expirada. Faça login novamente.");
-        return;
-    }
-
-    try {
-        const resposta = await fetch("/api/resetar-senha-aluno", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({
-                alunoId: alunoId,
-                novaSenhaTemporaria: novaSenhaTemporaria
-            })
-        });
-
-        const dados = await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-            alert(dados.mensagem || "Erro ao resetar senha.");
-            return;
-        }
-
-        alert("Senha resetada com sucesso! Nova senha temporária: " + novaSenhaTemporaria);
-
-        await carregarAlunosGestaoAdmin();
-
-    } catch (erro) {
-        console.log("Erro ao resetar senha:", erro);
-        alert("Erro de conexão ao resetar senha: " + erro.message);
-    }
+    const confirmar = confirm("Enviar um link de redefinicao de senha para o e-mail do aluno?");
+    if (!confirmar) return;
+    const { data, error } = await banco.from("perfis").select("email,nome").eq("id", alunoId).single();
+    if (error || !data?.email) { alert("Nao foi possivel localizar o e-mail do aluno."); return; }
+    const resultado = await banco.auth.resetPasswordForEmail(data.email, { redirectTo: window.location.origin + "/primeiro-acesso.html" });
+    if (resultado.error) { alert("Falha ao enviar o link: " + resultado.error.message); return; }
+    alert("Link de redefinicao enviado para " + data.email + ". O Firebase limita a quantidade de e-mails enviados por dia no plano gratuito.");
 }
-
-
 async function alternarStatusAlunoAdmin(alunoId, novoStatus) {
     const confirmar = confirm(
         novoStatus
@@ -5331,103 +5081,24 @@ async function alternarStatusAlunoAdmin(alunoId, novoStatus) {
 async function importarAlunosCsvAdmin() {
     const input = document.getElementById("arquivoCsvAlunosAdmin");
     const resultado = document.getElementById("resultadoImportacaoAlunosAdmin");
-
-    if (!input || !input.files || input.files.length === 0) {
-        if (resultado) {
-            resultado.innerHTML = "<p>Selecione um arquivo CSV antes de importar.</p>";
-        }
-        return;
-    }
-
-    const arquivo = input.files[0];
-
-    if (resultado) {
-        resultado.innerHTML = "<p>Lendo arquivo CSV...</p>";
-    }
-
-    const texto = await arquivo.text();
-
-    const alunos = converterCsvParaAlunos(texto);
-
-    if (!alunos || alunos.length === 0) {
-        if (resultado) {
-            resultado.innerHTML = "<p>Nenhum aluno válido encontrado no CSV.</p>";
-        }
-        return;
-    }
-
-    if (resultado) {
-        resultado.innerHTML = `<p>Importando ${alunos.length} aluno(s)...</p>`;
-    }
-
-    const token = await obterTokenAdminAtual();
-
-    if (!token) {
-        if (resultado) {
-            resultado.innerHTML = "<p>Sessão administrativa expirada. Faça login novamente.</p>";
-        }
-        return;
-    }
-
-    let sucessos = 0;
-    let erros = 0;
-    let linhasResultado = "";
-
+    if (!input || !input.files || input.files.length === 0) { if (resultado) resultado.innerHTML = "<p>Selecione um arquivo CSV antes de importar.</p>"; return; }
+    const alunos = converterCsvParaAlunos(await input.files[0].text());
+    if (!alunos.length) { if (resultado) resultado.innerHTML = "<p>Nenhum aluno valido encontrado no CSV.</p>"; return; }
+    let sucessos = 0, erros = 0, linhasResultado = "";
+    if (resultado) resultado.innerHTML = `<p>Importando ${alunos.length} aluno(s)...</p>`;
     for (const aluno of alunos) {
-        try {
-            const resposta = await fetch("/api/criar-aluno", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({
-                    nome: aluno.nome,
-                    email: aluno.email,
-                    turma: aluno.turma,
-                    curso: aluno.curso,
-                    senhaTemporaria: aluno.senha
-                })
-            });
-
-            const dados = await resposta.json();
-
-            if (!resposta.ok || !dados.sucesso) {
-                erros++;
-
-                linhasResultado += `
-                    <p>❌ ${escaparHTML(aluno.email)} — ${escaparHTML(dados.mensagem || "Erro ao importar.")}</p>
-                `;
-            } else {
-                sucessos++;
-
-                linhasResultado += `
-                    <p>✅ ${escaparHTML(aluno.email)} — importado com sucesso.</p>
-                `;
-            }
-
-        } catch (erro) {
+        const resultadoCriacao = await banco.auth.createStudentAccount({ nome: aluno.nome, email: aluno.email, turma: aluno.turma, curso: aluno.curso, password: aluno.senha });
+        if (resultadoCriacao.error) {
             erros++;
-
-            linhasResultado += `
-                <p>❌ ${escaparHTML(aluno.email)} — ${escaparHTML(erro.message)}</p>
-            `;
+            linhasResultado += `<p>Erro: ${escaparHTML(aluno.email)} — ${escaparHTML(resultadoCriacao.error.message)}</p>`;
+        } else {
+            sucessos++;
+            linhasResultado += `<p>Importado: ${escaparHTML(aluno.email)}</p>`;
         }
     }
-
-    if (resultado) {
-        resultado.innerHTML = `
-            <h4>Resultado da importação</h4>
-            <p><strong>Sucessos:</strong> ${sucessos}</p>
-            <p><strong>Erros:</strong> ${erros}</p>
-            ${linhasResultado}
-        `;
-    }
-
+    if (resultado) resultado.innerHTML = `<h4>Resultado da importacao</h4><p><strong>Sucessos:</strong> ${sucessos}</p><p><strong>Erros:</strong> ${erros}</p>${linhasResultado}`;
     await carregarAlunosGestaoAdmin();
 }
-
-
 function converterCsvParaAlunos(textoCsv) {
     const linhas = textoCsv
         .split(/\r?\n/)

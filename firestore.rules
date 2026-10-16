@@ -2,14 +2,95 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /horarios_aulas/{horarioId} {
-      allow read: if true;
-      allow write: if false;
+    function signedIn() {
+      return request.auth != null;
     }
 
-    match /site_settings/{settingId} {
-      allow read: if settingId == 'riolando_sem_expediente';
-      allow write: if false;
+    function roleActive(collectionName) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/$(collectionName)/$(request.auth.uid))
+        && get(/databases/$(database)/documents/$(collectionName)/$(request.auth.uid)).data.active == true;
+    }
+
+    function isAdmin() {
+      return roleActive('_roles_admin');
+    }
+
+    function isCoordinator() {
+      return roleActive('_roles_coordenacao');
+    }
+
+    function adminManaged(table) {
+      return table in [
+        'acoes_checklist_paeet', 'acompanhamento_alunos', 'alunos_acompanhamento',
+        'atendimentos_paeet', 'backup_eventos_15_30_junho_2026', 'disciplinas',
+        'eventos', 'horarios_aulas', 'logs_sistema', 'perfis', 'perfis_acesso',
+        'portfolio_alunos', 'site_settings', 'solicitacoes_ajuda', 'turmas', 'aulas'
+      ];
+    }
+
+    match /_roles_admin/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+
+    match /_roles_coordenacao/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, create, update, delete: if false;
+    }
+
+    match /disciplinas_horarios/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /professores_horarios/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /{table}/{docId} {
+      allow read: if table == 'admins'
+          ? signedIn() && resource.data.email == request.auth.token.email
+          : table == 'admin_profiles'
+            ? signedIn() && resource.data.user_id == request.auth.uid
+            : isAdmin() && adminManaged(table)
+              || (table == 'perfis' && signedIn() && resource.data.id == request.auth.uid)
+              || (table == 'perfis_acesso' && signedIn() && resource.data.email == request.auth.token.email)
+              || (table == 'solicitacoes_ajuda' && signedIn() && resource.data.aluno_id == request.auth.uid)
+              || (table == 'acompanhamento_alunos' && isCoordinator())
+              || (table in ['turmas', 'disciplinas', 'aulas', 'horarios_aulas'] && resource.data.ativo == true)
+              || (table in ['eventos', 'site_settings'])
+              || (table == 'portfolio_alunos' && resource.data.autorizado == true && resource.data.aprovado == true);
+
+      allow create: if table == 'admin_profiles'
+          ? signedIn() && request.resource.data.user_id == request.auth.uid
+          : isAdmin() && adminManaged(table) && table != 'admins'
+            || (table == 'acompanhamento_alunos' && isCoordinator())
+            || (table == 'horarios_aulas' && isCoordinator())
+            || (table == 'perfis' && signedIn()
+              && request.resource.data.id == request.auth.uid
+              && request.resource.data.funcao == 'aluno'
+              && request.resource.data.ativo == true)
+            || (table == 'solicitacoes_ajuda'
+              && ((signedIn() && request.resource.data.aluno_id == request.auth.uid)
+                || (!signedIn() && (!('aluno_id' in request.resource.data) || request.resource.data.aluno_id == null))))
+            || (table == 'portfolio_alunos'
+              && request.resource.data.autorizado == true
+              && request.resource.data.aprovado != true)
+            || (table == 'logs_sistema' && signedIn());
+
+      allow update: if table == 'admin_profiles'
+          ? signedIn() && resource.data.user_id == request.auth.uid && request.resource.data.user_id == request.auth.uid
+          : isAdmin() && adminManaged(table) && table != 'admins'
+            || (table == 'acompanhamento_alunos' && isCoordinator())
+            || (table == 'horarios_aulas' && isCoordinator())
+            || (table == 'perfis' && signedIn()
+              && resource.data.id == request.auth.uid
+              && request.resource.data.id == request.auth.uid
+              && request.resource.data.funcao == resource.data.funcao
+              && request.resource.data.ativo == resource.data.ativo);
+
+      allow delete: if isAdmin() && adminManaged(table) && table != 'admins'
+          || (table == 'horarios_aulas' && isCoordinator());
     }
 
     match /{document=**} {

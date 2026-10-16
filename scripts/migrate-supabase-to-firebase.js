@@ -3,15 +3,12 @@ const path = require("node:path");
 const { createClient } = require("@supabase/supabase-js");
 const { cert, getApps, initializeApp } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
-const { getStorage: getFirebaseStorage } = require("firebase-admin/storage");
 const { getFirestore } = require("firebase-admin/firestore");
-const { randomUUID } = require("node:crypto");
 
 const FIREBASE_PROJECT_ID = "horariosprofsriolandocanno";
 const PAGE_SIZE = 1000;
 const BATCH_SIZE = 200;
 const TABLES = [
-    "Tabela _de _administradores",
     "acoes_checklist_paeet",
     "acompanhamento_alunos",
     "admin_profiles",
@@ -27,8 +24,6 @@ const TABLES = [
     "perfis",
     "perfis_acesso",
     "portfolio_alunos",
-    "push_agenda_logs",
-    "push_subscriptions",
     "site_settings",
     "solicitacoes_ajuda",
     "turmas"
@@ -39,7 +34,6 @@ async function main() {
     const supabaseUrl = requiredEnv("SUPABASE_URL");
     const supabaseKey = requiredEnv("SUPABASE_SERVICE_ROLE_KEY");
     const serviceAccountPath = requiredEnv("FIREBASE_SERVICE_ACCOUNT_FILE");
-    const storageBucketName = requiredEnv("FIREBASE_STORAGE_BUCKET");
     const rawServiceAccount = await fs.readFile(path.resolve(process.cwd(), serviceAccountPath), "utf8");
     let serviceAccount;
 
@@ -62,10 +56,12 @@ async function main() {
     }, "supabase-migration");
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storageBucket = getFirebaseStorage(app).bucket(storageBucketName);
 
     console.log(`Migrando para Firebase ${FIREBASE_PROJECT_ID}.`);
     const users = await listSupabaseUsers(supabase);
+    const uidByEmail = new Map(users.filter(user => user.id && user.email).map(user => [normalizeEmail(user.email), user.id]));
+    const activeAdminUids = new Set();
+    const activeCoordinatorUids = new Set();
     const resetLinks = [];
     let usersPrepared = 0;
 
@@ -81,11 +77,10 @@ async function main() {
     await writeCsv(resetPath, ["email", "uid", "password_reset_link"], resetLinks);
     console.log(`Preparados ${usersPrepared} usuários. Links de redefinição salvos localmente em firebase-password-reset-links.csv.`);
 
-    const storageUrls = await migrateStorageObjects(supabase, storageBucket);
-    console.log(`Arquivos copiados do Supabase Storage: ${storageUrls.size}.`);
+    console.log("Os arquivos existentes mantêm os URLs do Supabase Storage; o plano Firebase Spark não inclui Firebase Storage.");
 
     for (const table of TABLES) {
-        const rows = (await loadTable(supabase, table)).map(row => replaceStorageUrls(row, storageUrls));
+        const rows = await loadTable(supabase, table);
         let migrated = 0;
 
         for (let offset = 0; offset < rows.length; offset += BATCH_SIZE) {
@@ -103,21 +98,32 @@ async function main() {
                     continue;
                 }
 
+                // Keep the original SQL id type in the document body; only the Firestore document name is a string.
                 batch.set(reference, row, { merge: true });
                 migrated += 1;
 
                 if (table === "admins" && row.email) {
-                    batch.set(db.collection("_roles_admin").doc(normalizeEmail(row.email)), {
-                        email: normalizeEmail(row.email),
-                        active: true
-                    }, { merge: true });
+                    const uid = uidByEmail.get(normalizeEmail(row.email));
+                    if (uid) {
+                        activeAdminUids.add(uid);
+                        batch.set(db.collection("_roles_admin").doc(uid), {
+                            uid,
+                            email: normalizeEmail(row.email),
+                            active: true
+                        }, { merge: true });
+                    }
                 }
 
                 if (table === "perfis_acesso" && row.email && row.ativo === true && row.perfil === "coordenacao") {
-                    batch.set(db.collection("_roles_coordenacao").doc(normalizeEmail(row.email)), {
-                        email: normalizeEmail(row.email),
-                        active: true
-                    }, { merge: true });
+                    const uid = uidByEmail.get(normalizeEmail(row.email));
+                    if (uid) {
+                        activeCoordinatorUids.add(uid);
+                        batch.set(db.collection("_roles_coordenacao").doc(uid), {
+                            uid,
+                            email: normalizeEmail(row.email),
+                            active: true
+                        }, { merge: true });
+                    }
                 }
             }
 
@@ -127,14 +133,8 @@ async function main() {
         console.log(`${table}: ${migrated}/${rows.length} registros copiados.`);
     }
 
-    await pruneRoleCollection(db, "_roles_admin", new Set(
-        (await loadTable(supabase, "admins")).map(row => normalizeEmail(row.email)).filter(Boolean)
-    ));
-    await pruneRoleCollection(db, "_roles_coordenacao", new Set(
-        (await loadTable(supabase, "perfis_acesso"))
-            .filter(row => row.perfil === "coordenacao" && row.ativo === true)
-            .map(row => normalizeEmail(row.email)).filter(Boolean)
-    ));
+    await pruneRoleCollection(db, "_roles_admin", activeAdminUids);
+    await pruneRoleCollection(db, "_roles_coordenacao", activeCoordinatorUids);
 
     console.log("Migração concluída. O CSV de redefinição contém links privados: não o publique nem o envie ao GitHub.");
 }
@@ -209,7 +209,7 @@ function normalizeEmail(email) {
 
 function requiredEnv(name) {
     const value = process.env[name];
-    if (!value) throw new Error(`Defina a variável ${name} no ambiente local antes de iniciar a migração.`);
+    if (!value || /YOUR_PROJECT|KEEP_THIS_PRIVATE/.test(value)) throw new Error(`Preencha a variável ${name} em .env.local antes de iniciar a migração.`);
     return value;
 }
 
@@ -239,73 +239,14 @@ async function writeCsv(filePath, headers, rows) {
     await fs.writeFile(filePath, contents, { encoding: "utf8", flag: "w" });
 }
 
-async function pruneRoleCollection(db, collection, activeEmails) {
+async function pruneRoleCollection(db, collection, activeUids) {
     const snapshot = await db.collection(collection).get();
-    const stale = snapshot.docs.filter(doc => !activeEmails.has(doc.id));
+    const stale = snapshot.docs.filter(doc => !activeUids.has(doc.id));
     for (let offset = 0; offset < stale.length; offset += BATCH_SIZE) {
         const batch = db.batch();
         stale.slice(offset, offset + BATCH_SIZE).forEach(doc => batch.delete(doc.ref));
         await batch.commit();
     }
-}
-
-async function migrateStorageObjects(supabase, targetBucket) {
-    const urls = new Map();
-    for (const sourceBucket of ["admin-perfil", "materiais"]) {
-        const objects = await listStorageObjects(supabase, sourceBucket);
-        for (const object of objects) {
-            const { data, error } = await supabase.storage.from(sourceBucket).download(object.path);
-            if (error) throw new Error(`Não foi possível baixar ${sourceBucket}/${object.path} do Supabase Storage: ${error.message}`);
-            const buffer = Buffer.from(await data.arrayBuffer());
-            const token = randomUUID();
-            const targetPath = `${sourceBucket}/${object.path}`;
-            const file = targetBucket.file(targetPath);
-            await file.save(buffer, {
-                resumable: false,
-                metadata: {
-                    contentType: object.metadata?.mimetype || "application/octet-stream",
-                    cacheControl: "public,max-age=3600",
-                    metadata: { firebaseStorageDownloadTokens: token }
-                }
-            });
-            const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${encodeURIComponent(targetBucket.name)}/o/${encodeURIComponent(targetPath)}?alt=media&token=${token}`;
-            urls.set(object.publicUrl, publicUrl);
-        }
-    }
-    return urls;
-}
-
-function replaceStorageUrls(value, urlMap) {
-    const result = {};
-    for (const [key, current] of Object.entries(value)) {
-        if (typeof current !== "string") {
-            result[key] = current;
-            continue;
-        }
-        let updated = current;
-        for (const [oldUrl, newUrl] of urlMap) updated = updated.split(oldUrl).join(newUrl);
-        result[key] = updated;
-    }
-    return result;
-}
-
-async function listStorageObjects(supabase, bucket, folder) {
-    const objects = [];
-    for (let offset = 0; ; offset += 100) {
-        const { data, error } = await supabase.storage.from(bucket).list(folder || "", {
-            limit: 100,
-            offset,
-            sortBy: { column: "name", order: "asc" }
-        });
-        if (error) throw new Error(`Não foi possível listar o bucket ${bucket}: ${error.message}`);
-        for (const entry of data || []) {
-            const objectPath = folder ? `${folder}/${entry.name}` : entry.name;
-            if (entry.id === null) objects.push(...await listStorageObjects(supabase, bucket, objectPath));
-            else objects.push({ path: objectPath, metadata: entry.metadata || {}, publicUrl: supabase.storage.from(bucket).getPublicUrl(objectPath).data.publicUrl });
-        }
-        if (!data || data.length < 100) break;
-    }
-    return objects;
 }
 
 main().catch(error => {
