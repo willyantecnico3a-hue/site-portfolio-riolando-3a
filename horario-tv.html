@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f8fafc">
     <title>Horários dos Professores | Riolando Conecta Técnico</title>
-    <link rel="stylesheet" href="horario-tv.css">
+    <link rel="stylesheet" href="horario-tv.css?v=20261028-02">
 </head>
 <body>
     <main class="painel-tv-horarios">
@@ -25,6 +25,10 @@
             <div>
                 <span>Agora em aula</span>
                 <strong id="totalAulasAgoraTv">0</strong>
+                <div id="ambientesEmUsoAgoraTv" class="ambientes-em-uso-agora-tv" aria-live="polite">
+                    <span class="rotulo-ambientes-agora-tv">Ambientes reservados agora</span>
+                    <span class="estado-ambientes-agora-tv">Nenhum ambiente reservado neste horário.</span>
+                </div>
             </div>
 
             <section class="reservas-salas-tv" aria-labelledby="tituloReservasSalasTv" aria-live="polite">
@@ -71,6 +75,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="firebase-horarios.js"></script>
-    <script src="horario-tv.js?v=20261027-01"></script>
+    <script src="horario-tv.js?v=20261028-02"></script>
 </body>
 </html>

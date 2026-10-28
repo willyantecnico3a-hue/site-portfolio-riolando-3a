@@ -23,6 +23,7 @@ let promessaModoSemExpedienteFirebaseTv = null;
 let pararObservacaoReservasSalasTv = null;
 let dataObservadaReservasSalasTv = null;
 let proximaTentativaReservasSalasTv = 0;
+let reservasSalasTv = [];
 
 document.addEventListener("DOMContentLoaded", function () {
     atualizarPainelHorariosTv();
@@ -50,6 +51,7 @@ async function atualizarPainelHorariosTv() {
     preencherTextoTv("diaSemanaAtualTv", nomesDiasTv[diaSemana] || diaSemana);
     preencherTextoTv("horaAtualTv", horaAtual);
     preencherTextoTv("ultimaAtualizacaoTv", horaAtual);
+    atualizarAmbientesEmUsoAgoraTv(agora);
     await atualizarReservasSalasTv();
 
     try {
@@ -134,9 +136,18 @@ async function atualizarReservasSalasTv() {
                         || a.horario_inicio.localeCompare(b.horario_inicio)
                         || a.ambiente.localeCompare(b.ambiente);
                 });
+            reservasSalasTv = todasReservas;
+            atualizarAmbientesEmUsoAgoraTv(new Date());
             proximaTentativaReservasSalasTv = 0;
             const maxReservasVisiveis = document.getElementById("filtroProfessorNomeTv") ? 1 : 2;
-            const reservas = todasReservas.slice(0, maxReservasVisiveis);
+            const reservasAtivas = obterReservasAtivasAgoraTv(new Date(), todasReservas);
+            const reservas = reservasAtivas.concat(
+                todasReservas.filter(function (reserva) {
+                    return !reservasAtivas.some(function (ativa) {
+                        return ativa.id === reserva.id;
+                    });
+                }).slice(0, Math.max(0, maxReservasVisiveis - reservasAtivas.length))
+            );
             if (reservas.length === 0) {
                 lista.innerHTML = `<p class="mensagem-tv">Nenhuma sala reservada nos próximos dias.</p>`;
                 return;
@@ -158,10 +169,54 @@ async function atualizarReservasSalasTv() {
                 : "");
         }, function (error) {
             console.error("Erro ao carregar reservas de salas para a TV:", error);
+            reservasSalasTv = [];
+            atualizarAmbientesEmUsoAgoraTv(new Date());
             lista.innerHTML = `<p class="mensagem-tv">Não foi possível carregar a agenda de salas.</p>`;
             pararObservacaoReservasSalasTv = null;
             proximaTentativaReservasSalasTv = Date.now() + 5 * 60 * 1000;
         });
+}
+
+function atualizarAmbientesEmUsoAgoraTv(agora) {
+    const area = document.getElementById("ambientesEmUsoAgoraTv");
+    if (!area) return;
+
+    const reservasAtivas = obterReservasAtivasAgoraTv(agora, reservasSalasTv);
+    if (reservasAtivas.length === 0) {
+        area.innerHTML = `
+            <span class="rotulo-ambientes-agora-tv">Ambientes reservados agora</span>
+            <span class="estado-ambientes-agora-tv">Nenhum ambiente reservado neste horário.</span>
+        `;
+        area.classList.remove("tem-ambiente-em-uso-tv");
+        return;
+    }
+
+    area.innerHTML = `
+        <span class="rotulo-ambientes-agora-tv">EM USO AGORA</span>
+        <div class="lista-ambientes-em-uso-tv">
+            ${reservasAtivas.map(function (reserva) {
+                return `
+                    <span class="selo-ambiente-em-uso-tv">
+                        <strong>${escaparHtmlTv(reserva.ambiente)}</strong>
+                        <span>${escaparHtmlTv(reserva.horario_inicio)} às ${escaparHtmlTv(reserva.horario_fim)}</span>
+                    </span>
+                `;
+            }).join("")}
+        </div>
+    `;
+    area.classList.add("tem-ambiente-em-uso-tv");
+}
+
+function obterReservasAtivasAgoraTv(agora, reservas) {
+    const offset = agora.getTimezoneOffset() * 60000;
+    const dataHoje = new Date(agora.getTime() - offset).toISOString().slice(0, 10);
+    const horaAtual = formatarHoraTv(agora);
+
+    return reservas.filter(function (reserva) {
+        return reserva.data === dataHoje
+            && formatarHorarioBancoTv(reserva.horario_inicio) <= horaAtual
+            && formatarHorarioBancoTv(reserva.horario_fim) > horaAtual;
+    });
 }
 
 function formatarDataReservaTv(value) {

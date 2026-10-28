@@ -115,6 +115,67 @@ body {
     color: var(--texto);
 }
 
+.ambientes-em-uso-agora-tv {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 12px;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.rotulo-ambientes-agora-tv {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+}
+
+.estado-ambientes-agora-tv {
+    color: var(--muted);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.ambientes-em-uso-agora-tv.tem-ambiente-em-uso-tv {
+    border-color: #f59e0b;
+    background: linear-gradient(120deg, #fef3c7, #fffbeb);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+.tem-ambiente-em-uso-tv .rotulo-ambientes-agora-tv {
+    color: #92400e;
+}
+
+.lista-ambientes-em-uso-tv {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.selo-ambiente-em-uso-tv {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 8px 12px;
+    border: 2px solid #d97706;
+    border-radius: 8px;
+    background: #f59e0b;
+    color: #451a03;
+}
+
+.selo-ambiente-em-uso-tv strong {
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.selo-ambiente-em-uso-tv span {
+    font-size: 15px;
+    font-weight: 800;
+}
+
 .conteudo-tv-horarios {
     display: grid;
     grid-template-columns: minmax(0, 2.2fr) minmax(360px, 0.8fr);
