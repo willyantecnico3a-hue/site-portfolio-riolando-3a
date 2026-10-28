@@ -20,6 +20,9 @@ let promessaHorariosFirebaseTv = null;
 let cacheModoSemExpedienteFirebaseTv = null;
 let modoSemExpedienteCarregadoFirebaseTv = false;
 let promessaModoSemExpedienteFirebaseTv = null;
+let pararObservacaoReservasSalasTv = null;
+let dataObservadaReservasSalasTv = null;
+let proximaTentativaReservasSalasTv = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
     atualizarPainelHorariosTv();
@@ -47,6 +50,7 @@ async function atualizarPainelHorariosTv() {
     preencherTextoTv("diaSemanaAtualTv", nomesDiasTv[diaSemana] || diaSemana);
     preencherTextoTv("horaAtualTv", horaAtual);
     preencherTextoTv("ultimaAtualizacaoTv", horaAtual);
+    await atualizarReservasSalasTv();
 
     try {
         const semExpedienteManual = await buscarModoSemExpedienteManualTv();
@@ -91,6 +95,83 @@ async function atualizarPainelHorariosTv() {
         renderizarErroTv("Não foi possível carregar os horários agora. Tentando novamente em 1 minuto.");
         preencherTextoTv("mensagemStatusTv", "Erro de conexão com o Firebase.");
     }
+}
+
+async function atualizarReservasSalasTv() {
+    const lista = document.getElementById("listaReservasSalasTv");
+    if (!lista) return;
+
+    const firestore = typeof firebaseDbHorariosTv !== "undefined"
+        ? firebaseDbHorariosTv
+        : window.firebaseDbRiolando;
+    if (!firestore) {
+        lista.innerHTML = `<p class="mensagem-tv">Não foi possível conectar à agenda de salas.</p>`;
+        return;
+    }
+
+    const hoje = new Date();
+    const offset = hoje.getTimezoneOffset() * 60000;
+    const dataHoje = new Date(hoje.getTime() - offset).toISOString().slice(0, 10);
+    if (dataObservadaReservasSalasTv && dataObservadaReservasSalasTv !== dataHoje) {
+        proximaTentativaReservasSalasTv = 0;
+    }
+    if (pararObservacaoReservasSalasTv && dataObservadaReservasSalasTv === dataHoje) return;
+    if (Date.now() < proximaTentativaReservasSalasTv) return;
+
+    if (pararObservacaoReservasSalasTv) pararObservacaoReservasSalasTv();
+    dataObservadaReservasSalasTv = dataHoje;
+    pararObservacaoReservasSalasTv = firestore.collection("reservas_salas")
+        .where("data", ">=", dataHoje)
+        .orderBy("data")
+        .limit(300)
+        .onSnapshot(function (consulta) {
+            const todasReservas = consulta.docs
+                .map(function (documento) {
+                    return Object.assign({ id: documento.id }, documento.data());
+                })
+                .sort(function (a, b) {
+                    return a.data.localeCompare(b.data)
+                        || a.horario_inicio.localeCompare(b.horario_inicio)
+                        || a.ambiente.localeCompare(b.ambiente);
+                });
+            proximaTentativaReservasSalasTv = 0;
+            const maxReservasVisiveis = document.getElementById("filtroProfessorNomeTv") ? 1 : 2;
+            const reservas = todasReservas.slice(0, maxReservasVisiveis);
+            if (reservas.length === 0) {
+                lista.innerHTML = `<p class="mensagem-tv">Nenhuma sala reservada nos próximos dias.</p>`;
+                return;
+            }
+
+            lista.innerHTML = reservas.map(function (reserva) {
+                return `
+                    <article class="item-reserva-tv">
+                        <div class="ambiente-reserva-tv">${escaparHtmlTv(reserva.ambiente)}</div>
+                        <div class="detalhe-reserva-tv">
+                            <strong>${formatarDataReservaTv(reserva.data)}</strong>
+                            <span>${escaparHtmlTv(reserva.horario_inicio)} às ${escaparHtmlTv(reserva.horario_fim)}</span>
+                            <span>Professor(a): ${escaparHtmlTv(reserva.professor)}</span>
+                        </div>
+                    </article>
+                `;
+            }).join("") + (todasReservas.length > reservas.length
+                ? `<span class="mais-reservas-tv">+${todasReservas.length - reservas.length} reservas</span>`
+                : "");
+        }, function (error) {
+            console.error("Erro ao carregar reservas de salas para a TV:", error);
+            lista.innerHTML = `<p class="mensagem-tv">Não foi possível carregar a agenda de salas.</p>`;
+            pararObservacaoReservasSalasTv = null;
+            proximaTentativaReservasSalasTv = Date.now() + 5 * 60 * 1000;
+        });
+}
+
+function formatarDataReservaTv(value) {
+    if (!value) return "Data não informada";
+    const [year, month, day] = value.split("-").map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString("pt-BR", {
+        weekday: "short",
+        day: "2-digit",
+        month: "2-digit"
+    });
 }
 
 function renderizarAulasAgoraTv(aulas) {

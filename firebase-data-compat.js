@@ -280,7 +280,13 @@
     }
 
     function normalizeUser(user) {
-        return user ? Object.assign({}, user, { id: user.uid, user_metadata: { nome: user.displayName || "" }, app_metadata: {} }) : null;
+        return user ? Object.assign({}, user, {
+            id: user.uid,
+            uid: user.uid,
+            email: user.email || null,
+            user_metadata: { nome: user.displayName || "" },
+            app_metadata: {}
+        }) : null;
     }
 
     function createAuthAdapter() {
@@ -360,5 +366,8 @@
         return error?.message || "Falha ao acessar o Firestore.";
     }
 
-    window.firebaseData = { createClient: () => new FirebaseCompatClient() };
+    window.firebaseData = {
+        createClient: () => new FirebaseCompatClient(),
+        getAccess
+    };
 }());

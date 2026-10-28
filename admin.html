@@ -1586,7 +1586,7 @@ body > p {
             <input
                 type="email"
                 id="emailAdmin"
-                placeholder="Digite seu e-mail cadastrado"
+                placeholder="Digite seu e-mail institucional"
                 autocomplete="email"
             >
 
@@ -2995,11 +2995,18 @@ segunda,14:30,15:20,1ºA,Adriana,Componente Técnico,Sala 01</textarea>
         <div class="aviso-acesso-limitado">
             <strong>Acesso limitado ativo.</strong>
             Professores e coordenação podem contribuir com o acompanhamento e recuperação
-            de aprendizagem dos estudantes. A agenda fica disponível apenas para consulta,
-            sem permissão para criar, editar ou excluir eventos.
+            de aprendizagem dos estudantes e reservar ambientes. A agenda pedagógica fica
+            disponível apenas para consulta, sem permissão para criar, editar ou excluir eventos.
         </div>
 
         <div class="grade-menu-limitado">
+
+            <a href="horario-celular.html" class="card-acesso-limitado">
+                <h3>🏫 Agendar sala</h3>
+                <p>
+                    Consulte a disponibilidade e reserve os ambientes Maker, Acessa e Leitura.
+                </p>
+            </a>
 
             <a href="acompanhamento.html" class="card-acesso-limitado">
                 <h3>🧑‍🎓 Acompanhamento PAEET</h3>
@@ -3023,6 +3030,7 @@ segunda,14:30,15:20,1ºA,Adriana,Componente Técnico,Sala 01</textarea>
             <h3>Permissões deste acesso</h3>
 
             <ul>
+                <li>✅ Consultar disponibilidade e reservar ambientes.</li>
                 <li>✅ Acessar a página de acompanhamento PAEET.</li>
                 <li>✅ Contribuir com registros de acompanhamento e recuperação de aprendizagem.</li>
                 <li>✅ Visualizar a agenda escolar/PAEET.</li>
@@ -3039,11 +3047,13 @@ segunda,14:30,15:20,1ºA,Adriana,Componente Técnico,Sala 01</textarea>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="firebase-app.js?v=20261016-02"></script>
-<script src="firebase-data-compat.js?v=20261016-02"></script>
+<script src="firebase-app.js?v=20261027-IA-02"></script>
+<script src="firebase-data-compat.js?v=20261027-02"></script>
 
     <!-- Arquivo com as funções do painel administrativo -->
-    <script src="admin.js?v=20261016-05"></script>
+    <script src="admin.js?v=20261028-01"></script>
+    <script src="admin-reset-senha-professores.js?v=20261027-02"></script>
+    <script type="module" src="firebase-ai-logic.js?v=20261027-02"></script>
 
     <script>
         if ("serviceWorker" in navigator) {

@@ -7,9 +7,13 @@ service cloud.firestore {
     }
 
     function roleActive(collectionName) {
-      return signedIn()
-        && exists(/databases/$(database)/documents/$(collectionName)/$(request.auth.uid))
-        && get(/databases/$(database)/documents/$(collectionName)/$(request.auth.uid)).data.active == true;
+      return signedIn() && (
+        (exists(/databases/$(database)/documents/$(collectionName)/$(request.auth.uid))
+          && get(/databases/$(database)/documents/$(collectionName)/$(request.auth.uid)).data.active == true)
+        || (request.auth.token.email != null
+          && exists(/databases/$(database)/documents/$(collectionName)/$(request.auth.token.email))
+          && get(/databases/$(database)/documents/$(collectionName)/$(request.auth.token.email)).data.active == true)
+      );
     }
 
     function isAdmin() {
@@ -18,6 +22,134 @@ service cloud.firestore {
 
     function isCoordinator() {
       return roleActive('_roles_coordenacao');
+    }
+
+    function roomReservationMemberPath(uid) {
+      return /databases/$(database)/documents/reserva_salas_membros/$(uid);
+    }
+
+    function accessProfilePath(profileId) {
+      return /databases/$(database)/documents/perfis_acesso/$(profileId);
+    }
+
+    function institutionalEmail(email) {
+      return email is string && email.matches('^[^@]+@prof\\.educacao\\.sp\\.gov\\.br$');
+    }
+
+    function activeRoomTeacherProfile(profileId) {
+      let profile = get(accessProfilePath(profileId)).data;
+      return exists(accessProfilePath(profileId))
+        && profile.email == request.auth.token.email
+        && institutionalEmail(profile.email)
+        && profile.user_id == request.auth.uid
+        && profile.ativo == true
+        && profile.perfil in ['professor', 'coordenacao'];
+    }
+
+    function isRoomTeacher() {
+      let memberPath = roomReservationMemberPath(request.auth.uid);
+      let member = get(memberPath).data;
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && institutionalEmail(request.auth.token.email)
+        && exists(memberPath)
+        && member.email == request.auth.token.email
+        && activeRoomTeacherProfile(member.profile_id);
+    }
+
+    function canUseRoomReservations() {
+      return signedIn() && (isRoomTeacher() || isAdmin() || isCoordinator());
+    }
+
+    function validRoomReservationName(name) {
+      return isRoomTeacher()
+        ? name == get(roomReservationMemberPath(request.auth.uid)).data.nome
+        : name == request.auth.token.name;
+    }
+
+    function roomLockPath(data, ambiente) {
+      return /databases/$(database)/documents/reserva_salas_locks/$(data + '_' + ambiente);
+    }
+
+    function roomLockMatches(data, ambiente, reservationId) {
+      let lockPath = roomLockPath(data, ambiente);
+      let lock = getAfter(lockPath).data;
+      return existsAfter(lockPath)
+        && lock.data == data
+        && lock.ambiente == ambiente
+        && lock.updated_by == request.auth.uid
+        && lock.last_reservation_id == reservationId
+        && lock.updated_at == request.time;
+    }
+
+    function validRoomReservation(reservationId) {
+      return request.resource.data.keys().hasOnly([
+          'id', 'data', 'horario_inicio', 'horario_fim', 'ambiente',
+          'professor', 'professor_uid', 'criado_em'
+        ])
+        && request.resource.data.keys().hasAll([
+          'id', 'data', 'horario_inicio', 'horario_fim', 'ambiente',
+          'professor', 'professor_uid', 'criado_em'
+        ])
+        && request.resource.data.id == reservationId
+        && request.resource.data.data.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && request.resource.data.horario_inicio.matches('^([01]\\d|2[0-3]):[0-5]\\d$')
+        && request.resource.data.horario_fim.matches('^([01]\\d|2[0-3]):[0-5]\\d$')
+        && request.resource.data.horario_fim > request.resource.data.horario_inicio
+        && request.resource.data.ambiente in ['Maker', 'Acessa', 'Leitura']
+        && request.resource.data.professor is string
+        && request.resource.data.professor.size() > 0
+        && request.resource.data.professor_uid == request.auth.uid
+        && validRoomReservationName(request.resource.data.professor)
+        && request.resource.data.criado_em == request.time
+        && roomLockMatches(request.resource.data.data, request.resource.data.ambiente, reservationId);
+    }
+
+    function validRoomLock(data, ambiente, reservationId) {
+      return request.resource.data.keys().hasOnly([
+          'data', 'ambiente', 'version', 'updated_by', 'updated_at', 'last_reservation_id'
+        ])
+        && request.resource.data.keys().hasAll([
+          'data', 'ambiente', 'version', 'updated_by', 'updated_at', 'last_reservation_id'
+        ])
+        && request.resource.data.data.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && request.resource.data.ambiente in ['Maker', 'Acessa', 'Leitura']
+        && data == request.resource.data.data
+        && ambiente == request.resource.data.ambiente
+        && request.resource.data.version is int
+        && request.resource.data.version > 0
+        && request.resource.data.updated_by == request.auth.uid
+        && request.resource.data.updated_at == request.time
+        && request.resource.data.last_reservation_id == reservationId;
+    }
+
+    function validRoomMembership(profileId) {
+      let profilePath = accessProfilePath(profileId);
+      let profile = getAfter(profilePath).data;
+      return existsAfter(profilePath)
+        && profile.email == request.auth.token.email
+        && request.auth.token.email_verified == true
+        && institutionalEmail(profile.email)
+        && profile.user_id == request.auth.uid
+        && profile.ativo == true
+        && profile.perfil in ['professor', 'coordenacao']
+        && request.resource.data.nome == (
+          profile.nome is string && profile.nome.size() > 0
+            ? profile.nome
+            : request.auth.token.name
+        );
+    }
+
+    function canUpdateOwnAccessProfile() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && institutionalEmail(request.auth.token.email)
+        && resource.data.email == request.auth.token.email
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['trocar_senha_obrigatorio', 'user_id'])
+        && request.resource.data.trocar_senha_obrigatorio == false
+        && request.resource.data.user_id == request.auth.uid;
     }
 
     function adminManaged(table) {
@@ -37,6 +169,44 @@ service cloud.firestore {
     match /_roles_coordenacao/{uid} {
       allow get: if signedIn() && request.auth.uid == uid;
       allow list, create, update, delete: if false;
+    }
+
+    match /reserva_salas_membros/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, update, delete: if false;
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true
+        && institutionalEmail(request.auth.token.email)
+        && request.resource.data.keys().hasOnly(['profile_id', 'email', 'nome'])
+        && request.resource.data.keys().hasAll(['profile_id', 'email', 'nome'])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.profile_id is string
+        && request.resource.data.nome is string
+        && validRoomMembership(request.resource.data.profile_id);
+    }
+
+    match /reservas_salas/{reservationId} {
+      allow read: if true;
+      allow create: if canUseRoomReservations()
+        && validRoomReservation(reservationId);
+      allow update: if false;
+      allow delete: if canUseRoomReservations()
+        && resource.data.professor_uid == request.auth.uid
+        && roomLockMatches(resource.data.data, resource.data.ambiente, reservationId);
+    }
+
+    match /reserva_salas_locks/{lockId} {
+      allow get, list: if canUseRoomReservations();
+      allow create: if canUseRoomReservations()
+        && lockId == request.resource.data.data + '_' + request.resource.data.ambiente
+        && validRoomLock(request.resource.data.data, request.resource.data.ambiente, request.resource.data.last_reservation_id)
+        && request.resource.data.version == 1;
+      allow update: if canUseRoomReservations()
+        && lockId == request.resource.data.data + '_' + request.resource.data.ambiente
+        && request.resource.data.version == resource.data.version + 1
+        && validRoomLock(resource.data.data, resource.data.ambiente, request.resource.data.last_reservation_id);
+      allow delete: if false;
     }
 
     match /disciplinas_horarios/{docId} {
@@ -81,6 +251,7 @@ service cloud.firestore {
       allow update: if table == 'admin_profiles'
           ? signedIn() && resource.data.user_id == request.auth.uid && request.resource.data.user_id == request.auth.uid
           : isAdmin() && adminManaged(table) && table != 'admins'
+            || (table == 'perfis_acesso' && canUpdateOwnAccessProfile())
             || (table == 'acompanhamento_alunos' && isCoordinator())
             || (table == 'horarios_aulas' && isCoordinator())
             || (table == 'perfis' && signedIn()

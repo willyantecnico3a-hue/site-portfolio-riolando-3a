@@ -11,6 +11,13 @@
 
 
 const banco = firebaseData.createClient();
+const authRiolando = window.firebaseAuthRiolando;
+const authRiolandoReady = new Promise(resolve => {
+    const unsubscribe = authRiolando.onAuthStateChanged(() => {
+        unsubscribe();
+        resolve();
+    });
+});
 
 console.log("Painel admin conectado ao Firebase.");
 
@@ -51,7 +58,8 @@ if (btnRecuperarSenhaAdmin) {
 
         if (mensagemLogin) mensagemLogin.textContent = "Enviando solicitação de redefinição...";
         try {
-            const { error } = await banco.auth.resetPasswordForEmail(email);
+            await authRiolando.sendPasswordResetEmail(email);
+            const error = null;
             if (mensagemLogin) {
                 mensagemLogin.textContent = error
                     ? "Não foi possível enviar. Confira o e-mail e tente novamente."
@@ -166,10 +174,10 @@ if (btnLoginAdmin) {
             mensagemLogin.textContent = "Verificando login...";
         }
 
-        const { data, error } = await banco.auth.signInWithPassword({
-            email: email,
-            password: senha
-        });
+        const resultadoLogin = await authRiolando.signInWithEmailAndPassword(email, senha)
+            .then(credencial => ({ data: { user: { uid: credencial.user.uid, id: credencial.user.uid, email: credencial.user.email } }, error: null }))
+            .catch(error => ({ data: { user: null }, error }));
+        const { data, error } = resultadoLogin;
 
         if (error) {
             if (mensagemLogin) {
@@ -196,7 +204,7 @@ if (btnLoginAdmin) {
                 mensagemLogin.textContent = "Este usuário não possui permissão ativa no sistema.";
             }
 
-            await banco.auth.signOut();
+            await authRiolando.signOut();
             mostrarTelaLoginAdmin();
             return;
         }
@@ -213,7 +221,7 @@ if (btnLoginAdmin) {
                     mensagemLogin.textContent = "A troca de senha é obrigatória para continuar.";
                 }
 
-                await banco.auth.signOut();
+                await authRiolando.signOut();
                 mostrarTelaLoginAdmin();
                 return;
             }
@@ -262,7 +270,7 @@ async function carregarPerfilAcessoSistema(usuario) {
 
     if (adminAutorizado) {
         return {
-            user_id: usuario.id,
+            user_id: usuario.uid || usuario.id,
             nome: usuario.email,
             email: usuario.email,
             perfil: "admin",
@@ -293,7 +301,7 @@ async function carregarPerfilAcessoSistema(usuario) {
 
     return {
         ...perfil,
-        user_id: perfil.user_id || usuario.id,
+        user_id: perfil.user_id || usuario.uid || usuario.id,
         email: perfil.email || usuario.email
     };
 }
@@ -315,10 +323,13 @@ async function solicitarTrocaSenhaProvisoria(perfil, senhaAtualDigitada) {
         return false;
     }
 
-    const { error: erroSenha } = await banco.auth.updateUser({
-        current_password: senhaAtualDigitada,
-        password: novaSenha
-    });
+    let erroSenha = null;
+    try {
+        if (!authRiolando.currentUser) throw new Error("No authenticated user.");
+        await authRiolando.currentUser.updatePassword(novaSenha);
+    } catch (error) {
+        erroSenha = error;
+    }
 
     if (erroSenha) {
         alert("Erro ao alterar senha: " + erroSenha.message);
@@ -382,17 +393,18 @@ function aplicarAcessoPorPerfil(perfil) {
 }
 
 async function verificarSessaoAtual() {
-    const { data, error } = await banco.auth.getUser();
+    await authRiolandoReady;
+    const usuarioAtual = authRiolando.currentUser;
 
-    if (error || !data.user) {
+    if (!usuarioAtual) {
         mostrarTelaLoginAdmin();
         return;
     }
 
-    const perfil = await carregarPerfilAcessoSistema(data.user);
+    const perfil = await carregarPerfilAcessoSistema(usuarioAtual);
 
     if (!perfil) {
-        await banco.auth.signOut();
+        await authRiolando.signOut();
         localStorage.removeItem("perfilAcesso");
         mostrarTelaLoginAdmin();
         return;
@@ -400,7 +412,7 @@ async function verificarSessaoAtual() {
 
     perfilAcessoLogado = perfil;
     localStorage.setItem("perfilAcesso", JSON.stringify(perfil));
-    localStorage.setItem("adminEmail", data.user.email || perfil.email);
+    localStorage.setItem("adminEmail", usuarioAtual.email || perfil.email);
 
     if (perfil.perfil === "admin" || perfil.perfil === "coordenacao") {
         if (mensagemLogin) {
@@ -425,7 +437,7 @@ async function verificarSessaoAtual() {
         return;
     }
 
-    await banco.auth.signOut();
+    await authRiolando.signOut();
     mostrarTelaLoginAdmin();
 }
 
@@ -446,7 +458,7 @@ function configurarBotaoSairAdmin() {
 
     if (btnSairAdmin) {
         btnSairAdmin.addEventListener("click", async function () {
-            await banco.auth.signOut();
+            await authRiolando.signOut();
             localStorage.removeItem("perfilAcesso");
 
             mostrarTelaLoginAdmin();
@@ -470,7 +482,7 @@ function configurarBotaoSairAdmin() {
 
     if (btnSairProfessorLimitado) {
         btnSairProfessorLimitado.addEventListener("click", async function () {
-            await banco.auth.signOut();
+            await authRiolando.signOut();
             localStorage.removeItem("perfilAcesso");
 
             mostrarTelaLoginAdmin();
@@ -518,7 +530,7 @@ async function carregarPerfilAdminEditavel() {
 
     if (!data) {
         const perfilInicial = {
-            user_id: usuario.id,
+            user_id: usuario.uid || usuario.id,
             nome_funcao: perfilPadraoAdmin.nome_funcao,
             email: usuario.email || perfilPadraoAdmin.email,
             escola: perfilPadraoAdmin.escola,
@@ -629,7 +641,7 @@ async function salvarPerfilAdminEditavel() {
         }
 
         const perfilAtualizado = {
-            user_id: usuario.id,
+            user_id: usuario.uid || usuario.id,
             nome_funcao: pegarValorCampo("inputNomePerfilAdmin") || perfilPadraoAdmin.nome_funcao,
             email: pegarValorCampo("inputEmailPerfilAdmin") || usuario.email,
             escola: pegarValorCampo("inputEscolaPerfilAdmin") || perfilPadraoAdmin.escola,
@@ -2805,11 +2817,50 @@ if (campoDataAula) {
 let ultimoConteudoGeradoIA = "";
 let ultimoTipoGeradoIA = "";
 
-async function gerarConteudoIA() {
+async function gerarConteudoIA(tipo) {
     const mensagemIA = document.getElementById("mensagemIA");
     const resultadoIA = document.getElementById("resultadoIA");
-    if (mensagemIA) mensagemIA.textContent = "A geracao automatica por IA foi desativada na versao Firebase Spark, que nao inclui backend para proteger a chave do provedor.";
-    if (resultadoIA) resultadoIA.innerHTML = "<p>Este recurso precisa de um servidor seguro e nao esta disponivel nesta versao gratuita.</p>";
+    const campoPrompt = document.getElementById("promptIA");
+    const campoContexto = document.getElementById("contextoIA");
+    const prompt = campoPrompt ? campoPrompt.value.trim() : "";
+    const botoes = document.querySelectorAll(".botoes-ia-admin button");
+
+    if (!prompt) {
+        if (mensagemIA) mensagemIA.textContent = "Escreva o pedido principal antes de gerar o conteúdo.";
+        if (campoPrompt) campoPrompt.focus();
+        return;
+    }
+
+    await authRiolandoReady;
+    const usuario = authRiolando.currentUser;
+    if (!usuario) {
+        if (mensagemIA) mensagemIA.textContent = "Entre na sua conta administradora para gerar conteúdo.";
+        return;
+    }
+
+    botoes.forEach(botao => { botao.disabled = true; });
+    if (mensagemIA) mensagemIA.textContent = "Gerando conteúdo. Isso pode levar alguns segundos...";
+    if (resultadoIA) resultadoIA.textContent = "";
+
+    try {
+        const firebaseAi = await window.firebaseAiLogicReady;
+        const conteudo = await firebaseAi.generate({
+            tipo: tipo || "aula",
+            prompt,
+            contexto: campoContexto ? campoContexto.value.trim() : ""
+        });
+
+        ultimoConteudoGeradoIA = conteudo;
+        ultimoTipoGeradoIA = tipo || "aula";
+        if (resultadoIA) resultadoIA.innerHTML = formatarTextoIAParaHTML(ultimoConteudoGeradoIA);
+        if (mensagemIA) mensagemIA.textContent = "Conteúdo gerado. Revise antes de usar.";
+    } catch (erro) {
+        console.error("Erro ao gerar conteúdo por IA:", erro);
+        if (mensagemIA) mensagemIA.textContent = erro.message || "Falha ao conectar com o servidor de IA.";
+        if (resultadoIA) resultadoIA.textContent = "Não foi possível gerar o conteúdo. Verifique a configuração do serviço e tente novamente.";
+    } finally {
+        botoes.forEach(botao => { botao.disabled = false; });
+    }
 }
 function formatarTextoIAParaHTML(texto) {
     if (!texto) {
@@ -3426,6 +3477,7 @@ async function chamarApiHorariosFirebaseAdmin(acao, dados) {
         return {};
     }
     if (acao === "add-discipline") {
+        if (perfilAcessoLogado?.perfil !== "admin") throw new Error("Somente administradores podem alterar o catalogo de disciplinas.");
         const id = catalogId(input.nome);
         if (!id) throw new Error("Informe um nome valido para a disciplina.");
         await db.collection("disciplinas_horarios").doc(id).set({ nome: input.nome, curso: input.curso, descricao: input.descricao || "", ativo: true }, { merge: true });
@@ -3439,9 +3491,11 @@ async function chamarApiHorariosFirebaseAdmin(acao, dados) {
         const ref = input.horarioId ? db.collection("horarios_aulas").doc(String(input.horarioId)) : db.collection("horarios_aulas").doc();
         const horario = Object.assign({}, input.horario, { id: ref.id, atualizado_em: new Date().toISOString() });
         await ref.set(horario, { merge: true });
-        const professorId = catalogId(horario.professor);
-        if (professorId) await db.collection("professores_horarios").doc(professorId).set({ nome: horario.professor }, { merge: true });
-        if (horario.disciplina) await db.collection("disciplinas_horarios").doc(catalogId(horario.disciplina)).set({ nome: horario.disciplina }, { merge: true });
+        if (perfilAcessoLogado?.perfil === "admin") {
+            const professorId = catalogId(horario.professor);
+            if (professorId) await db.collection("professores_horarios").doc(professorId).set({ nome: horario.professor }, { merge: true });
+            if (horario.disciplina) await db.collection("disciplinas_horarios").doc(catalogId(horario.disciplina)).set({ nome: horario.disciplina }, { merge: true });
+        }
         return { horarioId: ref.id };
     }
     if (acao === "set-active") {
@@ -3460,9 +3514,11 @@ async function chamarApiHorariosFirebaseAdmin(acao, dados) {
             const ref = db.collection("horarios_aulas").doc();
             const horario = Object.assign({}, item, { id: ref.id, atualizado_em: new Date().toISOString() });
             batch.set(ref, horario);
-            const professorId = catalogId(horario.professor);
-            if (professorId) batch.set(db.collection("professores_horarios").doc(professorId), { nome: horario.professor }, { merge: true });
-            if (horario.disciplina) batch.set(db.collection("disciplinas_horarios").doc(catalogId(horario.disciplina)), { nome: horario.disciplina }, { merge: true });
+            if (perfilAcessoLogado?.perfil === "admin") {
+                const professorId = catalogId(horario.professor);
+                if (professorId) batch.set(db.collection("professores_horarios").doc(professorId), { nome: horario.professor }, { merge: true });
+                if (horario.disciplina) batch.set(db.collection("disciplinas_horarios").doc(catalogId(horario.disciplina)), { nome: horario.disciplina }, { merge: true });
+            }
         });
         await batch.commit();
         return { importados: rows.length };

@@ -4,6 +4,26 @@
   },
   "hosting": {
     "public": ".",
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ],
     "ignore": [
       "firebase.json",
       ".firebaserc",
@@ -17,6 +37,7 @@
       "**/.env*",
       "**/node_modules/**",
       "**/firebase-service-account*.json",
+      "**/firebase-debug.log",
       "**/firebase-password-reset-links.csv",
       "functions/**",
       "netlify/**",

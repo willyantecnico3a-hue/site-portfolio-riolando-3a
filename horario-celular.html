@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f8fafc">
     <title>Horarios dos Professores | Celular</title>
-    <link rel="stylesheet" href="horario-celular.css">
+    <link rel="stylesheet" href="horario-celular.css?v=20261027-02">
 </head>
 <body>
     <main class="painel-tv-horarios">
@@ -27,9 +27,103 @@
                 <strong id="totalAulasAgoraTv">0</strong>
             </div>
 
+            <section class="reservas-salas-tv" aria-labelledby="tituloReservasSalasTv" aria-live="polite">
+                <div class="cabecalho-reservas-tv">
+                    <div>
+                        <span class="etiqueta-reservas-tv">AGENDA COMPARTILHADA</span>
+                        <h2 id="tituloReservasSalasTv">Ambientes reservados</h2>
+                    </div>
+                    <span class="icone-reservas-tv" aria-hidden="true">▦</span>
+                </div>
+                <div id="listaReservasSalasTv" class="lista-reservas-tv">
+                    <p class="mensagem-tv">Carregando reservas...</p>
+                </div>
+            </section>
+
             <div>
                 <span>Proximos horarios</span>
                 <strong id="proximoHorarioResumoTv">--:--</strong>
+            </div>
+        </section>
+
+        <section class="reservas-salas-celular" aria-labelledby="tituloReservasSalas">
+            <div class="cabecalho-reservas-celular">
+                <div>
+                    <h2 id="tituloReservasSalas">Reservar um ambiente</h2>
+                    <p>Selecione data, período e sala para agendar.</p>
+                </div>
+            </div>
+
+            <div id="formLoginReservaSala" class="form-reserva-sala">
+                <label for="emailReservaSala">E-mail institucional</label>
+                <input id="emailReservaSala" type="email" placeholder="nome@prof.educacao.sp.gov.br" autocomplete="username" autocapitalize="none">
+                <label for="senhaReservaSala">Senha</label>
+                <input id="senhaReservaSala" type="password" placeholder="Digite sua senha" autocomplete="current-password">
+                <button id="btnEntrarEmailReservaSala" type="button" class="botao-reserva-principal">Entrar com e-mail</button>
+                <div id="criarAcessoReservaSala" class="campos-criar-acesso-reserva" hidden>
+                    <label for="confirmarSenhaReservaSala">Confirme a senha</label>
+                    <input id="confirmarSenhaReservaSala" type="password" placeholder="Digite a senha novamente" autocomplete="new-password">
+                    <button id="btnCriarAcessoReservaSala" type="button" class="botao-google-reserva">Criar meu acesso</button>
+                </div>
+                <div class="acoes-login-reserva">
+                    <button id="btnMostrarCriarAcessoReservaSala" type="button" class="botao-link-reserva">Primeiro acesso? Criar senha</button>
+                    <button id="btnRecuperarSenhaReservaSala" type="button" class="botao-link-reserva">Esqueci minha senha</button>
+                    <button id="btnReenviarVerificacaoReservaSala" type="button" class="botao-link-reserva" hidden>Reenviar verificação do e-mail</button>
+                    <button id="btnConfirmarVerificacaoReservaSala" type="button" class="botao-link-reserva" hidden>Já confirmei meu e-mail</button>
+                </div>
+                <button id="btnEntrarGoogleReservaSala" type="button" class="botao-google-reserva">
+                    <span class="icone-google-reserva" aria-hidden="true">G</span>
+                    Entrar com Google
+                </button>
+                <p id="mensagemReservaSala" class="mensagem-reserva-sala" role="status">Use seu e-mail institucional verificado. A senha é protegida pelo Firebase e nunca é salva no banco do site.</p>
+            </div>
+
+            <div id="painelReservaSala" hidden>
+                <div class="sessao-reserva-sala">
+                    <span>Conectado como</span>
+                    <strong id="nomeProfessorReservaSala"></strong>
+                    <button id="btnSairReservaSala" type="button" class="botao-sair-reserva">Sair</button>
+                </div>
+                <details id="vincularSenhaReservaSala" class="agenda-reservas-celular" hidden>
+                    <summary>Ativar acesso por senha para esta conta</summary>
+                    <div class="campos-criar-acesso-reserva">
+                        <label for="novaSenhaContaReservaSala">Nova senha</label>
+                        <input id="novaSenhaContaReservaSala" type="password" autocomplete="new-password" minlength="8">
+                        <label for="confirmarNovaSenhaContaReservaSala">Confirme a nova senha</label>
+                        <input id="confirmarNovaSenhaContaReservaSala" type="password" autocomplete="new-password" minlength="8">
+                        <button id="btnVincularSenhaReservaSala" type="button" class="botao-reserva-principal">Ativar senha nesta conta</button>
+                        <p id="mensagemVincularSenhaReservaSala" class="mensagem-reserva-sala" role="status"></p>
+                    </div>
+                </details>
+                <form id="formReservaSala" class="form-reserva-sala">
+                    <label for="dataReservaSala">Dia da reserva</label>
+                    <input id="dataReservaSala" type="date" required>
+                    <div class="campos-horario-reserva">
+                        <div>
+                            <label for="inicioReservaSala">Início</label>
+                            <input id="inicioReservaSala" type="time" required>
+                        </div>
+                        <div>
+                            <label for="fimReservaSala">Fim</label>
+                            <input id="fimReservaSala" type="time" required>
+                        </div>
+                    </div>
+                    <label for="ambienteReservaSala">Ambiente</label>
+                    <select id="ambienteReservaSala" required>
+                        <option value="">Selecione uma sala</option>
+                        <option value="Maker">Maker</option>
+                        <option value="Acessa">Acessa</option>
+                        <option value="Leitura">Leitura</option>
+                    </select>
+                    <button type="submit" class="botao-reserva-principal">Reservar ambiente</button>
+                    <p id="mensagemEnvioReservaSala" class="mensagem-reserva-sala" role="status"></p>
+                </form>
+                <details class="agenda-reservas-celular">
+                    <summary>Ver agenda completa</summary>
+                    <div id="listaReservasSalasCelular" class="lista-reservas-celular">
+                        <p class="mensagem-tv">Carregando agenda...</p>
+                    </div>
+                </details>
             </div>
         </section>
 
@@ -84,8 +178,11 @@
     </main>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="firebase-horarios.js"></script>
-    <script src="horario-tv.js"></script>
+    <script src="firebase-app.js?v=20261027-01"></script>
+    <script src="firebase-horarios.js?v=20261027-01"></script>
+    <script src="horario-tv.js?v=20261027-02"></script>
+    <script src="horario-celular.js?v=20261028-01"></script>
 </body>
 </html>

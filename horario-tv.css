@@ -82,11 +82,11 @@ body {
 
 .faixa-status-tv {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(520px, 1.25fr) minmax(0, 1fr);
     gap: 20px;
 }
 
-.faixa-status-tv div,
+.faixa-status-tv > div,
 .card-aula-tv,
 .proximo-horario-tv {
     background: var(--branco);
@@ -96,11 +96,11 @@ body {
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
-.faixa-status-tv div {
+.faixa-status-tv > div {
     padding: 20px 24px;
 }
 
-.faixa-status-tv span {
+.faixa-status-tv > div > span {
     display: block;
     font-size: 24px;
     color: var(--muted);
@@ -108,7 +108,7 @@ body {
     text-transform: uppercase;
 }
 
-.faixa-status-tv strong {
+.faixa-status-tv > div > strong {
     display: block;
     margin-top: 6px;
     font-size: 52px;
@@ -341,7 +341,7 @@ body[data-densidade-aulas="alta"] .proximo-horario-tv h2 {
     font-size: 28px;
 }
 
-body[data-densidade-aulas="alta"] .faixa-status-tv div,
+body[data-densidade-aulas="alta"] .faixa-status-tv > div,
 body[data-densidade-aulas="alta"] .proximo-horario-tv {
     padding: 16px;
 }
@@ -357,15 +357,134 @@ body[data-densidade-aulas="alta"] .proximo-horario-tv {
     font-weight: 700;
 }
 
+.faixa-status-tv .reservas-salas-tv {
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 2px solid #14b8a6;
+    border-left: 7px solid #0f766e;
+    border-radius: 10px;
+    background: linear-gradient(110deg, #ecfeff 0%, #ffffff 76%);
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.14);
+}
+
+.faixa-status-tv .cabecalho-reservas-tv {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.faixa-status-tv .etiqueta-reservas-tv {
+    color: #0f766e;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+}
+
+.faixa-status-tv .cabecalho-reservas-tv h2 {
+    margin: 2px 0 0;
+    color: #134e4a;
+    font-size: 19px;
+}
+
+.faixa-status-tv .icone-reservas-tv {
+    display: none;
+}
+
+.faixa-status-tv .lista-reservas-tv {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    min-width: 0;
+}
+
+.faixa-status-tv .item-reserva-tv {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    padding: 6px;
+    border: 1px solid #99f6e4;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.faixa-status-tv .ambiente-reserva-tv {
+    display: grid;
+    min-width: 0;
+    min-height: 36px;
+    padding: 4px;
+    place-items: center;
+    border-radius: 6px;
+    background: #0f766e;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.faixa-status-tv .detalhe-reserva-tv {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    color: #334155;
+    font-size: 11px;
+}
+
+.faixa-status-tv .detalhe-reserva-tv strong {
+    color: #134e4a;
+    font-size: 12px;
+    text-transform: capitalize;
+}
+
+.faixa-status-tv .detalhe-reserva-tv span {
+    overflow-wrap: anywhere;
+}
+
+.faixa-status-tv .mais-reservas-tv {
+    grid-column: 1 / -1;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.faixa-status-tv .lista-reservas-tv > .mensagem-tv {
+    padding: 6px;
+    border-width: 1px;
+    font-size: 11px;
+}
+
 @media (max-width: 1100px) {
     .painel-tv-horarios {
         padding: 20px;
     }
 
     .topo-tv-horarios,
-    .conteudo-tv-horarios,
-    .faixa-status-tv {
+    .conteudo-tv-horarios {
         grid-template-columns: 1fr;
+    }
+
+    .faixa-status-tv {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .faixa-status-tv > div {
+        padding: 12px;
+    }
+
+    .faixa-status-tv > div > span {
+        font-size: 15px;
+    }
+
+    .faixa-status-tv > div > strong {
+        font-size: 30px;
     }
 
     .topo-tv-horarios {

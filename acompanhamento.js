@@ -57,17 +57,21 @@ async function verificarAcessoAdministradorAcompanhamento() {
 
         const email = usuario.email.toLowerCase();
 
-        const { data: admin, error: erroAdmin } = await bancoAcompanhamento
-            .from("admins")
-            .select("email")
-            .ilike("email", email)
-            .maybeSingle();
+        const acessoFirebase = await window.firebaseData.getAccess();
+        const adminFirebase = acessoFirebase.admin;
+        const { data: adminLegado, error: erroAdmin } = adminFirebase
+            ? { data: null, error: null }
+            : await bancoAcompanhamento
+                .from("admins")
+                .select("email")
+                .ilike("email", email)
+                .maybeSingle();
 
         if (erroAdmin) {
             console.log("Erro ao verificar admin:", erroAdmin);
         }
 
-        if (admin) {
+        if (adminFirebase || adminLegado) {
             usuarioAdminAcompanhamento = usuario;
 
             perfilAcessoAcompanhamento = {

@@ -53,14 +53,23 @@ async function verificarAcessoAdministradorCentral() {
         }
 
         const email = usuario.email.toLowerCase();
+        const acessoFirebase = await window.firebaseData.getAccess();
 
-        const { data: admin, error: erroAdmin } = await bancoCentral
-            .from("admins")
-            .select("email")
-            .ilike("email", email)
-            .limit(1);
+        let adminLegado = [];
+        if (!acessoFirebase.admin) {
+            const { data, error: erroAdmin } = await bancoCentral
+                .from("admins")
+                .select("email")
+                .ilike("email", email)
+                .limit(1);
 
-        if (erroAdmin || !admin || admin.length === 0) {
+            if (erroAdmin) {
+                console.error("Erro ao verificar administrador legado:", erroAdmin);
+            }
+            adminLegado = data || [];
+        }
+
+        if (!acessoFirebase.admin && adminLegado.length === 0) {
             bloquearCentralSemPermissao("Este usuário não possui permissão administrativa.");
             return false;
         }

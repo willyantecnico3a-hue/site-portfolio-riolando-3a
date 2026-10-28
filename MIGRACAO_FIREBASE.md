@@ -7,14 +7,21 @@ O destino é o projeto Firebase `horariosprofsriolandocanno`. A versão Spark us
 - Páginas estáticas no Firebase Hosting.
 - Login por e-mail e senha e redefinição de senha pelo Firebase Authentication.
 - Dados no Firestore, protegidos por `firestore.rules`.
+- A agenda de salas aceita e-mails institucionais verificados (`@prof.educacao.sp.gov.br`). Após entrar no painel, professores e coordenação podem abrir **Agendar sala**; a sessão Firebase existente é reutilizada. Professores podem criar senha própria ou vincular uma senha à conta Google; administradores enviam links de redefinição, sem visualizar nem armazenar senhas.
 - Importação local das tabelas e contas do Supabase para Firestore/Auth usando o script de migração.
 - Links de arquivos existentes continuam apontando para o Supabase enquanto esses arquivos permanecerem hospedados lá.
 
 ## Recursos que ficam indisponíveis
 
 - Upload de fotos e materiais para Firebase Storage. Os formulários de upload informam que o recurso não está disponível; use URLs públicas já existentes.
-- Funções de servidor: geração de conteúdo por IA, envio automático de notificações push e tarefas agendadas. A agenda continua mostrando os eventos, mas notificações automáticas ficam desativadas.
+- Funções de servidor: envio automático de notificações push e tarefas agendadas. A agenda continua mostrando os eventos, mas notificações automáticas ficam desativadas.
 - O Firebase Spark não inclui Cloud Functions nem Firebase Storage para este projeto. Não faça upgrade para Blaze se a exigência é manter tudo gratuito.
+
+## Geração de conteúdo por IA
+
+A geração de conteúdo usa Firebase AI Logic com a Gemini Developer API no plano Spark, sem depender de funções Netlify ou Cloud Functions. O app usa App Check com Fraud Defense/reCAPTCHA Enterprise; a aplicação do App Check à API Firebase AI Logic está habilitada no projeto.
+
+Como a chamada é feita no navegador, a verificação de papel administrador no cliente pode ser contornada. O App Check reduz abuso, mas não garante que somente administradores possam consumir a cota da API. Para impor essa autorização no servidor, será necessário um backend com Cloud Functions, que exige o plano Blaze. A API Gemini Developer tem cotas gratuitas sujeitas aos limites e termos atuais do Google; não vincule uma conta de faturamento sem autorização.
 
 O Spark tem limites de uso gratuitos. Consulte os limites atuais do [Firebase Spark](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans), [Firestore](https://firebase.google.com/docs/firestore/pricing) e [Hosting](https://firebase.google.com/docs/hosting/usage-quotas-pricing). Ao atingir cotas gratuitas, alguns recursos podem parar até o próximo ciclo ou até reduzir o uso; o plano Spark não faz cobrança automática.
 

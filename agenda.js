@@ -127,18 +127,24 @@ async function carregarPerfilUsuario() {
 
     console.log("Usuário logado na agenda:", emailUsuario);
 
-    // 1º - Admin tem prioridade para liberar edição total
-    const { data: admin, error: erroAdmin } = await banco
-        .from("admins")
-        .select("email")
-        .ilike("email", emailUsuario)
-        .maybeSingle();
+    // O papel ativo do Firebase é a fonte principal de autorização administrativa.
+    const acessoFirebase = await window.firebaseData.getAccess();
+    const adminFirebase = acessoFirebase.admin;
+
+    // Compatibilidade com administradores cadastrados antes da migração dos papéis.
+    const { data: adminLegado, error: erroAdmin } = adminFirebase
+        ? { data: null, error: null }
+        : await banco
+            .from("admins")
+            .select("email")
+            .ilike("email", emailUsuario)
+            .maybeSingle();
 
     if (erroAdmin) {
         console.log("Erro ao buscar admin:", erroAdmin);
     }
 
-    if (admin) {
+    if (adminFirebase || adminLegado) {
         perfilUsuario = {
             id: usuario.id,
             nome: usuario.email,
@@ -157,7 +163,12 @@ async function carregarPerfilUsuario() {
 
         agendaSomenteLeitura = false;
 
-        console.log("Usuário reconhecido como admin pela tabela admins:", perfilUsuario);
+        console.log(
+            adminFirebase
+                ? "Usuário reconhecido como admin pelo papel ativo do Firebase."
+                : "Usuário reconhecido como admin pela tabela legada admins:",
+            perfilUsuario
+        );
         return;
     }
 

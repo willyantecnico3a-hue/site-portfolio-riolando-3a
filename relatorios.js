@@ -54,27 +54,44 @@ async function verificarAcessoAdministradorRelatorio() {
             return false;
         }
 
-        const usuario = sessaoData.session.user;
+        const usuarioSessao = sessaoData.session.user;
+        const acessoFirebase = await window.firebaseData.getAccess();
+        const usuario = acessoFirebase.user || usuarioSessao;
 
-        if (!usuario || !usuario.email) {
+        if (!usuario) {
             bloquearRelatorioSemPermissao("Usuário administrativo não identificado.");
             return false;
         }
 
-        const email = usuario.email.toLowerCase();
+        const email = String(usuario.email || usuarioSessao.email || "").trim().toLowerCase();
 
-        const { data: admin, error: erroAdmin } = await banco
-            .from("admins")
-            .select("email")
-            .ilike("email", email)
-            .limit(1);
+        let adminLegado = [];
+        if (!acessoFirebase.admin) {
+            if (!email) {
+                bloquearRelatorioSemPermissao("Este usuário não possui permissão administrativa.");
+                return false;
+            }
 
-        if (erroAdmin || !admin || admin.length === 0) {
+            const { data, error: erroAdmin } = await banco
+                .from("admins")
+                .select("email")
+                .ilike("email", email)
+                .limit(1);
+
+            if (erroAdmin) {
+                console.error("Erro ao verificar administrador legado:", erroAdmin);
+            }
+            adminLegado = data || [];
+        }
+
+        if (!acessoFirebase.admin && adminLegado.length === 0) {
             bloquearRelatorioSemPermissao("Este usuário não possui permissão administrativa.");
             return false;
         }
 
-        localStorage.setItem("adminEmail", email);
+        if (email) {
+            localStorage.setItem("adminEmail", email);
+        }
 
         mostrarDashboardRelatorio();
         return true;

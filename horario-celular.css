@@ -29,7 +29,7 @@ body {
     padding: 14px;
     display: grid;
     grid-template-rows: auto auto 1fr auto;
-    gap: 12px;
+    gap: 4px;
 }
 
 .topo-tv-horarios {
@@ -76,25 +76,25 @@ body {
 
 .faixa-status-tv {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
 }
 
-.faixa-status-tv div,
+.faixa-status-tv > div,
 .card-aula-tv,
 .proximo-horario-tv {
     background: var(--branco);
     border: 1px solid var(--linha);
     border-left: 5px solid var(--verde);
-    border-radius: 8px;
+    border-radius: 5px;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07);
 }
 
-.faixa-status-tv div {
+.faixa-status-tv > div {
     padding: 10px;
 }
 
-.faixa-status-tv span {
+.faixa-status-tv > div > span {
     display: block;
     color: var(--muted);
     font-size: 10px;
@@ -102,7 +102,7 @@ body {
     text-transform: uppercase;
 }
 
-.faixa-status-tv strong {
+.faixa-status-tv > div > strong {
     display: block;
     margin-top: 2px;
     color: var(--texto);
@@ -112,7 +112,7 @@ body {
 .filtro-professor-celular {
     display: grid;
     gap: 8px;
-    padding: 12px;
+    padding: 3px;
     background: var(--branco);
     border: 1px solid var(--linha);
     border-left: 5px solid var(--azul);
@@ -128,7 +128,7 @@ body {
 
 .filtro-professor-celular label {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 7px;
     font-weight: 800;
     text-transform: uppercase;
 }
@@ -311,6 +311,389 @@ body {
     font-weight: 700;
 }
 
+.reservas-salas-celular {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+    background: linear-gradient(135deg, #ecfeff 0%, #ffffff 68%);
+    border: 2px solid #14b8a6;
+    border-left: 8px solid #0f766e;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.12);
+}
+
+.cabecalho-reservas-celular,
+.sessao-reserva-sala {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.etiqueta-reservas-celular {
+    color: #0f766e;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+}
+
+.cabecalho-reservas-celular h2 {
+    margin: 3px 0;
+    color: #134e4a;
+    font-size: 21px;
+}
+
+.cabecalho-reservas-celular p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.icone-reservas-celular,
+.icone-reservas-tv {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 12px;
+    background: #ccfbf1;
+    color: #0f766e;
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.form-reserva-sala {
+    display: grid;
+    gap: 8px;
+}
+
+.campos-criar-acesso-reserva,
+.acoes-login-reserva {
+    display: grid;
+    gap: 8px;
+}
+
+.campos-criar-acesso-reserva[hidden],
+.acoes-login-reserva button[hidden] {
+    display: none;
+}
+
+.botao-link-reserva {
+    width: fit-content;
+    padding: 5px 0;
+    border: 0;
+    background: transparent;
+    color: #0f766e;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: left;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.botao-link-reserva:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.form-reserva-sala label {
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.form-reserva-sala input,
+.form-reserva-sala select {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #99f6e4;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--texto);
+    font: inherit;
+}
+
+.campos-horario-reserva {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.campos-horario-reserva > div {
+    display: grid;
+    gap: 8px;
+}
+
+.botao-reserva-principal,
+.botao-sair-reserva,
+.botao-cancelar-reserva {
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.botao-reserva-principal {
+    background: #0f766e;
+    color: #fff;
+}
+
+.botao-google-reserva {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #1e293b;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+}
+
+.botao-google-reserva:hover {
+    background: #f8fafc;
+}
+
+.botao-google-reserva:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.icone-google-reserva {
+    display: grid;
+    width: 22px;
+    height: 22px;
+    place-items: center;
+    border: 2px solid #4285f4;
+    border-radius: 50%;
+    color: #4285f4;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.botao-reserva-principal:disabled,
+.botao-cancelar-reserva:disabled {
+    cursor: wait;
+    opacity: 0.6;
+}
+
+.botao-sair-reserva,
+.botao-cancelar-reserva {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.sessao-reserva-sala {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f0fdfa;
+}
+
+.sessao-reserva-sala span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.sessao-reserva-sala strong {
+    flex: 1;
+    min-width: 120px;
+    color: #134e4a;
+}
+
+.mensagem-reserva-sala {
+    min-height: 18px;
+    margin: 2px 0 0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.agenda-reservas-celular {
+    display: grid;
+    gap: 8px;
+}
+
+.agenda-reservas-celular[hidden] {
+    display: none;
+}
+
+.agenda-reservas-celular summary {
+    padding: 8px 0;
+    color: #134e4a;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.agenda-reservas-celular[open] summary {
+    margin-bottom: 4px;
+}
+
+.agenda-reservas-celular h3 {
+    margin: 4px 0 0;
+    color: #134e4a;
+    font-size: 16px;
+}
+
+.lista-reservas-celular,
+.lista-reservas-tv {
+    display: grid;
+    gap: 8px;
+}
+
+.item-reserva-celular {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #99f6e4;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.detalhe-reserva-celular {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+    font-size: 13px;
+}
+
+.detalhe-reserva-celular strong {
+    color: #0f766e;
+    font-size: 15px;
+}
+
+.detalhe-reserva-celular span {
+    overflow-wrap: anywhere;
+    color: #334155;
+}
+
+.botao-cancelar-reserva {
+    flex: 0 0 auto;
+    min-height: 36px;
+    padding: 8px 10px;
+    font-size: 12px;
+}
+
+.faixa-status-tv .reservas-salas-tv {
+    display: grid;
+    align-content: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 6px;
+    border: 1px solid #14b8a6;
+    border-left: 4px solid #0f766e;
+    border-radius: 8px;
+    background: linear-gradient(110deg, #ecfeff 0%, #ffffff 76%);
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.12);
+}
+
+.faixa-status-tv .cabecalho-reservas-tv {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    gap: 4px;
+}
+
+.faixa-status-tv .etiqueta-reservas-tv {
+    color: #0f766e;
+    font-size: 7px;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+}
+
+.faixa-status-tv .cabecalho-reservas-tv h2 {
+    margin: 1px 0 0;
+    color: #134e4a;
+    font-size: 11px;
+    line-height: 1.1;
+}
+
+.faixa-status-tv .icone-reservas-tv {
+    display: none;
+}
+
+.faixa-status-tv .lista-reservas-tv {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.faixa-status-tv .item-reserva-tv {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 3px;
+    border: 1px solid #99f6e4;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.faixa-status-tv .ambiente-reserva-tv {
+    display: grid;
+    min-height: 30px;
+    padding: 3px;
+    place-items: center;
+    border-radius: 8px;
+    background: #0f766e;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.faixa-status-tv .detalhe-reserva-tv {
+    display: grid;
+    gap: 1px;
+    min-width: 0;
+    color: #334155;
+    font-size: 8px;
+    line-height: 1.1;
+}
+
+.faixa-status-tv .detalhe-reserva-tv strong {
+    color: #134e4a;
+    font-size: 9px;
+    text-transform: capitalize;
+}
+
+.faixa-status-tv .detalhe-reserva-tv span {
+    overflow-wrap: anywhere;
+}
+
+.faixa-status-tv .mais-reservas-tv {
+    color: #475569;
+    font-size: 8px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.faixa-status-tv .lista-reservas-tv > .mensagem-tv {
+    padding: 3px;
+    border-width: 1px;
+    font-size: 8px;
+}
+
 .grade-aulas-tv.aulas-qtd-4,
 .grade-aulas-tv.aulas-qtd-5,
 .grade-aulas-tv.aulas-qtd-6 {
@@ -351,6 +734,31 @@ body {
     }
 
     .faixa-status-tv {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 4px;
+    }
+
+    .faixa-status-tv > div {
+        padding: 6px 4px;
+    }
+
+    .faixa-status-tv .reservas-salas-tv {
+        padding: 4px;
+    }
+
+    .faixa-status-tv .item-reserva-tv {
+        grid-template-columns: 32px minmax(0, 1fr);
+    }
+
+    .faixa-status-tv .etiqueta-reservas-tv {
+        font-size: 6px;
+    }
+
+    .faixa-status-tv .cabecalho-reservas-tv h2 {
+        font-size: 10px;
+    }
+
+    .item-reserva-celular {
+        align-items: flex-start;
     }
 }
