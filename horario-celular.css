@@ -445,45 +445,6 @@ body {
     color: #fff;
 }
 
-.botao-google-reserva {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
-    min-height: 46px;
-    padding: 10px 14px;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    background: #fff;
-    color: #1e293b;
-    font: inherit;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
-}
-
-.botao-google-reserva:hover {
-    background: #f8fafc;
-}
-
-.botao-google-reserva:disabled {
-    cursor: wait;
-    opacity: 0.6;
-}
-
-.icone-google-reserva {
-    display: grid;
-    width: 22px;
-    height: 22px;
-    place-items: center;
-    border: 2px solid #4285f4;
-    border-radius: 50%;
-    color: #4285f4;
-    font-size: 15px;
-    font-weight: 900;
-}
-
 .botao-reserva-principal:disabled,
 .botao-cancelar-reserva:disabled {
     cursor: wait;

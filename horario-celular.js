@@ -4,34 +4,31 @@
     const COLECAO_TRAVAS_RESERVAS = "reserva_salas_locks";
     const AMBIENTES_RESERVA = new Set(["Maker", "Acessa", "Leitura"]);
     const LIMITE_AGENDA_RESERVAS = 300;
-    const DOMINIO_EMAIL_INSTITUCIONAL = "@prof.educacao.sp.gov.br";
-
     let usuarioReservaSala = null;
     let perfilReservaSala = null;
     let reservasSala = [];
     let pararObservacaoReservasSala = null;
     let timerNovaTentativaReservasSala = null;
+    let mensagemErroAcesso = "";
+    let sequenciaEstadoAutenticacao = 0;
 
     document.addEventListener("DOMContentLoaded", function () {
         const auth = window.firebaseAuthRiolando;
         const db = window.firebaseDbRiolando;
         const login = document.getElementById("formLoginReservaSala");
-        const botaoGoogle = document.getElementById("btnEntrarGoogleReservaSala");
         const botaoEntrarEmail = document.getElementById("btnEntrarEmailReservaSala");
         const botaoCriarAcesso = document.getElementById("btnCriarAcessoReservaSala");
         const botaoMostrarCriarAcesso = document.getElementById("btnMostrarCriarAcessoReservaSala");
         const botaoRecuperarSenha = document.getElementById("btnRecuperarSenhaReservaSala");
         const botaoReenviarVerificacao = document.getElementById("btnReenviarVerificacaoReservaSala");
         const botaoConfirmarVerificacao = document.getElementById("btnConfirmarVerificacaoReservaSala");
-        const botaoVincularSenha = document.getElementById("btnVincularSenhaReservaSala");
-        const secaoVincularSenha = document.getElementById("vincularSenhaReservaSala");
         const camposCriarAcesso = document.getElementById("criarAcessoReservaSala");
         const formReserva = document.getElementById("formReservaSala");
         const botaoSair = document.getElementById("btnSairReservaSala");
         const campoData = document.getElementById("dataReservaSala");
         const lista = document.getElementById("listaReservasSalasCelular");
 
-        if (!auth || !db || !login || !botaoGoogle || !botaoEntrarEmail || !formReserva) return;
+        if (!auth || !db || !login || !botaoEntrarEmail || !formReserva) return;
 
         if (campoData) {
             campoData.min = dataLocalReservaSala(new Date());
@@ -46,13 +43,15 @@
                 return;
             }
 
+            mensagemErroAcesso = "";
             botaoEntrarEmail.disabled = true;
             mostrarMensagemReservaSala("mensagemReservaSala", "Validando acesso...");
             try {
                 await auth.signInWithEmailAndPassword(email, senha);
             } catch (error) {
                 console.error("Erro ao entrar com e-mail na agenda de reservas:", error);
-                mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroEmailReservaSala(error));
+                mensagemErroAcesso = mensagemErroEmailReservaSala(error);
+                mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroAcesso);
             } finally {
                 botaoEntrarEmail.disabled = false;
             }
@@ -83,18 +82,48 @@
                     return;
                 }
 
+                mensagemErroAcesso = "";
                 botaoCriarAcesso.disabled = true;
-                mostrarMensagemReservaSala("mensagemReservaSala", "Criando acesso e enviando verificação...");
+                mostrarMensagemReservaSala("mensagemReservaSala", "Verificando seu cadastro e criando o acesso...");
+                let usuarioCriado = null;
                 try {
                     const credential = await auth.createUserWithEmailAndPassword(email, senha);
-                    await credential.user.sendEmailVerification({
-                        url: `${window.location.origin}/horario-celular.html`
-                    });
+                    usuarioCriado = credential.user;
+                    try {
+                        await validarCadastroReservaSala(db, usuarioCriado);
+                    } catch (error) {
+                        try {
+                            await usuarioCriado.delete();
+                        } catch (erroExclusao) {
+                            console.error("Não foi possível remover a conta sem perfil de reserva:", erroExclusao);
+                            throw new Error(`${error.message} A conta criada não pôde ser removida; use “Esqueci minha senha” ou contate a escola.`);
+                        }
+                        throw error;
+                    }
+
+                    await enviarVerificacaoEmailReservaSala(usuarioCriado);
                     camposCriarAcesso.hidden = true;
-                    mostrarMensagemReservaSala("mensagemReservaSala", "Enviamos um link de verificação para seu e-mail institucional. Confirme-o antes de reservar.");
+                    mostrarMensagemReservaSala("mensagemReservaSala", "Acesso criado. Enviamos um link de verificação para seu e-mail institucional. Confirme-o antes de entrar.");
                 } catch (error) {
+                    if (error.code === "auth/email-already-in-use") {
+                        try {
+                            await enviarRedefinicaoSenhaReservaSala(auth, email);
+                            camposCriarAcesso.hidden = true;
+                            mostrarMensagemReservaSala("mensagemReservaSala", "Esta conta já está cadastrada. Enviamos um link para definir ou redefinir sua senha ao e-mail institucional.");
+                            return;
+                        } catch (erroEnvio) {
+                            console.error("Erro ao enviar redefinição no primeiro acesso:", erroEnvio);
+                            mensagemErroAcesso = mensagemErroEmailReservaSala(erroEnvio);
+                            mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroAcesso);
+                            return;
+                        }
+                    }
+
                     console.error("Erro ao criar acesso por e-mail:", error);
-                    mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroEmailReservaSala(error));
+                    mensagemErroAcesso = error.code && error.code.startsWith("auth/")
+                        ? mensagemErroEmailReservaSala(error)
+                        : mensagemErroFirestoreReservaSala(error);
+                    mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroAcesso);
                 } finally {
                     botaoCriarAcesso.disabled = false;
                 }
@@ -109,13 +138,11 @@
                     return;
                 }
 
+                mensagemErroAcesso = "";
                 botaoRecuperarSenha.disabled = true;
                 mostrarMensagemReservaSala("mensagemReservaSala", "Enviando solicitação de redefinição...");
                 try {
-                    auth.languageCode = "pt-BR";
-                    await auth.sendPasswordResetEmail(email, {
-                        url: `${window.location.origin}/horario-celular.html`
-                    });
+                    await enviarRedefinicaoSenhaReservaSala(auth, email);
                     mostrarMensagemReservaSala("mensagemReservaSala", "Se houver uma conta com esse e-mail, você receberá um link para criar uma nova senha.");
                 } catch (error) {
                     console.error("Erro ao solicitar redefinição de senha:", error);
@@ -131,9 +158,7 @@
                 if (!auth.currentUser || auth.currentUser.emailVerified) return;
                 botaoReenviarVerificacao.disabled = true;
                 try {
-                    await auth.currentUser.sendEmailVerification({
-                        url: `${window.location.origin}/horario-celular.html`
-                    });
+                    await enviarVerificacaoEmailReservaSala(auth.currentUser);
                     mostrarMensagemReservaSala("mensagemReservaSala", "Enviamos outro link de verificação para seu e-mail.");
                 } catch (error) {
                     console.error("Erro ao reenviar verificação de e-mail:", error);
@@ -164,66 +189,6 @@
                 }
             });
         }
-
-        if (botaoVincularSenha) {
-            botaoVincularSenha.addEventListener("click", async function () {
-                const user = auth.currentUser;
-                const senha = document.getElementById("novaSenhaContaReservaSala").value;
-                const confirmacao = document.getElementById("confirmarNovaSenhaContaReservaSala").value;
-                if (!user || !user.emailVerified) {
-                    mostrarMensagemReservaSala("mensagemVincularSenhaReservaSala", "Confirme seu e-mail antes de adicionar uma senha.");
-                    return;
-                }
-                if (senha.length < 8) {
-                    mostrarMensagemReservaSala("mensagemVincularSenhaReservaSala", "Use uma senha com pelo menos 8 caracteres.");
-                    return;
-                }
-                if (senha !== confirmacao) {
-                    mostrarMensagemReservaSala("mensagemVincularSenhaReservaSala", "As senhas não conferem.");
-                    return;
-                }
-
-                botaoVincularSenha.disabled = true;
-                try {
-                    const credential = firebase.auth.EmailAuthProvider.credential(user.email, senha);
-                    await user.linkWithCredential(credential);
-                    if (secaoVincularSenha) secaoVincularSenha.hidden = true;
-                    mostrarMensagemReservaSala("mensagemReservaSala", "Senha ativada para esta conta. Agora você também pode entrar com e-mail e senha.");
-                } catch (error) {
-                    console.error("Erro ao ativar senha para a conta:", error);
-                    mostrarMensagemReservaSala("mensagemVincularSenhaReservaSala", mensagemErroEmailReservaSala(error));
-                } finally {
-                    botaoVincularSenha.disabled = false;
-                }
-            });
-        }
-
-        botaoGoogle.addEventListener("click", async function () {
-            botaoGoogle.disabled = true;
-            mostrarMensagemReservaSala("mensagemReservaSala", "Validando acesso...");
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: "select_account" });
-            try {
-                await auth.signInWithPopup(provider);
-            } catch (error) {
-                if (error.code === "auth/popup-blocked" || error.code === "auth/operation-not-supported-in-this-environment") {
-                    try {
-                        await auth.signInWithRedirect(provider);
-                        return;
-                    } catch (redirectError) {
-                        error = redirectError;
-                    }
-                }
-                console.error("Erro ao entrar com Google na agenda de reservas:", error);
-                mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroReservaSala(error));
-                botaoGoogle.disabled = false;
-            }
-        });
-
-        auth.getRedirectResult().catch(function (error) {
-            console.error("Erro ao concluir acesso Google redirecionado:", error);
-            mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroReservaSala(error));
-        });
 
         formReserva.addEventListener("submit", async function (event) {
             event.preventDefault();
@@ -279,6 +244,12 @@
         }
 
         auth.onAuthStateChanged(async function (user) {
+            const sequenciaAtual = ++sequenciaEstadoAutenticacao;
+            const estadoAindaAtual = function () {
+                return sequenciaAtual === sequenciaEstadoAutenticacao
+                    && (auth.currentUser?.uid || null) === (user?.uid || null);
+            };
+
             usuarioReservaSala = user;
             perfilReservaSala = null;
             if (pararObservacaoReservasSala) {
@@ -293,62 +264,90 @@
             const painel = document.getElementById("painelReservaSala");
             login.hidden = false;
             painel.hidden = true;
-            botaoGoogle.disabled = false;
             if (botaoReenviarVerificacao) botaoReenviarVerificacao.hidden = true;
             if (botaoConfirmarVerificacao) botaoConfirmarVerificacao.hidden = true;
-            if (secaoVincularSenha) secaoVincularSenha.hidden = true;
             if (camposCriarAcesso) camposCriarAcesso.hidden = true;
 
             if (!user) {
                 reservasSala = [];
                 renderizarAgendaReservasSala();
-                mostrarMensagemReservaSala("mensagemReservaSala", "Entre com seu e-mail institucional verificado para agendar.");
+                mostrarMensagemReservaSala(
+                    "mensagemReservaSala",
+                    mensagemErroAcesso || "Entre com seu e-mail institucional verificado para agendar."
+                );
                 return;
             }
 
             if (!validarEmailInstitucionalReservaSala(user.email)) {
-                mostrarMensagemReservaSala("mensagemReservaSala", "A agenda aceita somente contas @prof.educacao.sp.gov.br cadastradas pela escola.");
-                await auth.signOut().catch(function (error) {
-                    console.error("Não foi possível encerrar uma sessão com e-mail não institucional:", error);
-                });
+                mensagemErroAcesso = "A agenda aceita somente contas @prof.educacao.sp.gov.br cadastradas pela escola.";
+                await encerrarSessaoReservaSala(auth, mensagemErroAcesso);
                 return;
             }
 
-            if (user.providerData.some(provider => provider.providerId === "password") && !user.emailVerified) {
+            const possuiAcessoPorEmail = user.providerData.some(provider => provider.providerId === "password");
+            if (!possuiAcessoPorEmail) {
+                mensagemErroAcesso = "Esta conta ainda não tem senha. Use “Primeiro acesso? Criar senha” para receber um link no e-mail institucional.";
+                await encerrarSessaoReservaSala(auth, mensagemErroAcesso);
+                return;
+            }
+
+            if (!user.emailVerified) {
                 if (botaoReenviarVerificacao) botaoReenviarVerificacao.hidden = false;
                 if (botaoConfirmarVerificacao) botaoConfirmarVerificacao.hidden = false;
                 mostrarMensagemReservaSala("mensagemReservaSala", "Confirme o link enviado ao seu e-mail institucional. Depois, entre novamente para reservar.");
                 return;
             }
 
+            try {
+                const token = await user.getIdTokenResult();
+                if (token.signInProvider !== "password") {
+                    mensagemErroAcesso = "Entre usando seu e-mail institucional e sua senha. O acesso pelo Google não está disponível.";
+                    await encerrarSessaoReservaSala(auth, mensagemErroAcesso);
+                    return;
+                }
+            } catch (error) {
+                console.error("Não foi possível confirmar o método de autenticação:", error);
+                mensagemErroAcesso = "Não foi possível confirmar seu acesso. Entre novamente com e-mail e senha.";
+                await encerrarSessaoReservaSala(auth, mensagemErroAcesso);
+                return;
+            }
+
             mostrarMensagemReservaSala("mensagemReservaSala", "Conferindo seu perfil...");
             try {
                 perfilReservaSala = await carregarPerfilReservaSala(db, user);
-                if (usuarioReservaSala?.uid !== user.uid) return;
+                if (!estadoAindaAtual()) return;
 
                 login.hidden = true;
                 painel.hidden = false;
                 document.getElementById("nomeProfessorReservaSala").textContent = perfilReservaSala.nome;
-                if (secaoVincularSenha) {
-                    secaoVincularSenha.hidden = user.providerData.some(provider => provider.providerId === "password");
-                }
-                mostrarMensagemReservaSala("mensagemReservaSala", "Acesse com sua conta institucional. Senhas são gerenciadas pelo Firebase e não são salvas no banco do site.");
+                mensagemErroAcesso = "";
+                mostrarMensagemReservaSala("mensagemReservaSala", "Acesso autorizado. Você já pode agendar um ambiente.");
                 observarAgendaReservasSala(db);
             } catch (error) {
+                if (!estadoAindaAtual()) return;
                 console.error("Erro ao carregar perfil da agenda de reservas:", error);
                 login.hidden = false;
-                mostrarMensagemReservaSala("mensagemReservaSala", mensagemErroFirestoreReservaSala(error));
-                await auth.signOut().catch(function (signOutError) {
-                    console.error("Não foi possível encerrar uma sessão sem permissão de reserva:", signOutError);
-                });
+                mensagemErroAcesso = mensagemErroFirestoreReservaSala(error);
+                await encerrarSessaoReservaSala(auth, mensagemErroAcesso);
             }
         });
     });
 
     async function carregarPerfilReservaSala(db, user) {
-        const email = String(user.email || "").trim().toLowerCase();
+        const email = String(user.email || "").trim();
         if (!validarEmailInstitucionalReservaSala(email) || user.emailVerified !== true) {
             throw new Error("Entre com um e-mail institucional verificado e cadastrado pela escola.");
+        }
+
+        const [papelAdmin, papelCoordenacao] = await Promise.all([
+            db.collection("_roles_admin").doc(user.uid).get(),
+            db.collection("_roles_coordenacao").doc(user.uid).get()
+        ]);
+        if (papelAdmin.exists && papelAdmin.data().active === true) {
+            return {
+                nome: await garantirNomeReservaSala(user),
+                perfil: { perfil: "admin", user_id: user.uid, ativo: true }
+            };
         }
 
         const membroRef = db.collection(COLECAO_MEMBROS_RESERVAS).doc(user.uid);
@@ -369,14 +368,23 @@
             .limit(1)
             .get();
         if (perfis.empty) {
-            throw new Error("Esta conta Google não está cadastrada no acesso de professores.");
+            if (papelCoordenacao.exists && papelCoordenacao.data().active === true) {
+                return {
+                    nome: await garantirNomeReservaSala(user),
+                    perfil: { perfil: "coordenacao", user_id: user.uid, ativo: true }
+                };
+            }
+            throw new Error("Não encontramos um perfil ativo de professor ou coordenação para este e-mail. Peça à escola para cadastrá-lo.");
         }
 
         const perfilDoc = perfis.docs[0];
         const perfil = validarDadosPerfilReservaSala(perfilDoc.data(), user);
+        if (perfil.perfil.user_id && perfil.perfil.user_id !== user.uid) {
+            throw new Error("Este perfil já está vinculado a outro acesso. Solicite ajuda à escola.");
+        }
         const membro = {
             profile_id: perfilDoc.id,
-            email,
+            email: email.toLowerCase(),
             nome: perfil.nome
         };
 
@@ -398,7 +406,7 @@
                 }, { merge: true });
                 transaction.set(membroRef, {
                     profile_id: perfilDoc.id,
-                    email,
+                    email: email.toLowerCase(),
                     nome: perfilAtual.nome
                 });
             });
@@ -412,6 +420,22 @@
         }
 
         return perfil;
+    }
+
+    async function validarCadastroReservaSala(db, user) {
+        const email = String(user.email || "").trim();
+        const perfis = await db.collection("perfis_acesso")
+            .where("email", "==", email)
+            .limit(1)
+            .get();
+        if (perfis.empty) {
+            throw new Error("Não encontramos um cadastro ativo de professor ou coordenação para este e-mail. Confirme o endereço ou solicite o cadastro à escola.");
+        }
+
+        const perfil = validarDadosPerfilReservaSala(perfis.docs[0].data(), user);
+        if (perfil.perfil.user_id && perfil.perfil.user_id !== user.uid) {
+            throw new Error("Este perfil já está vinculado a outro acesso. Solicite ajuda à escola.");
+        }
     }
 
     function validarPerfilReservaSala(documento, user) {
@@ -432,6 +456,39 @@
             nome: String(perfil.nome || user.displayName || email).trim(),
             perfil
         };
+    }
+
+    async function garantirNomeReservaSala(user) {
+        const nome = String(user.displayName || user.email || "").trim();
+        if (!nome) throw new Error("Não foi possível identificar o nome desta conta.");
+        if (user.displayName !== nome) {
+            await user.updateProfile({ displayName: nome });
+            await user.getIdToken(true);
+        }
+        return nome;
+    }
+
+    function enviarVerificacaoEmailReservaSala(user) {
+        return user.sendEmailVerification({
+            url: `${window.location.origin}/horario-celular.html`
+        });
+    }
+
+    function enviarRedefinicaoSenhaReservaSala(auth, email) {
+        auth.languageCode = "pt-BR";
+        return auth.sendPasswordResetEmail(email, {
+            url: `${window.location.origin}/horario-celular.html`
+        });
+    }
+
+    async function encerrarSessaoReservaSala(auth, mensagem) {
+        mensagemErroAcesso = mensagem;
+        try {
+            await auth.signOut();
+        } catch (error) {
+            console.error("Não foi possível encerrar uma sessão sem permissão de reserva:", error);
+            mostrarMensagemReservaSala("mensagemReservaSala", `${mensagem} Não foi possível encerrar a sessão; recarregue a página.`);
+        }
     }
 
     function pegarEmailReservaSala() {
@@ -616,7 +673,7 @@
 
     function mensagemErroFirestoreReservaSala(error) {
         if (error.code === "permission-denied") {
-            return "Seu perfil não tem permissão para reservar. Confira se ele está ativo no acesso de professores.";
+            return "O Firestore bloqueou a consulta do seu perfil. Confira se o perfil está ativo e vinculado exatamente ao e-mail institucional.";
         }
         if (error.code === "unavailable" || error.code === "deadline-exceeded") {
             return "O Firestore está temporariamente indisponível. Tente novamente em instantes.";
@@ -624,31 +681,23 @@
         return error.message || "Não foi possível acessar as reservas.";
     }
 
-    function mensagemErroReservaSala(error) {
-        if (error.code === "auth/popup-closed-by-user") return "A janela do Google foi fechada antes de concluir o acesso.";
-        if (error.code === "auth/unauthorized-domain") return "Este domínio não está autorizado para acesso Google no Firebase.";
-        if (error.code === "auth/account-exists-with-different-credential") return "Esta conta já está cadastrada com outro método de acesso.";
-        if (error.code === "auth/too-many-requests") return "Muitas tentativas de acesso. Aguarde e tente novamente.";
-        return error.message || "Não foi possível entrar.";
-    }
-
     function mensagemErroEmailReservaSala(error) {
         if (error.code === "auth/operation-not-allowed") {
             return "O acesso por e-mail e senha ainda não está habilitado no Firebase.";
         }
         if (error.code === "auth/email-already-in-use") {
-            return "Este e-mail já possui acesso. Entre com sua senha ou pelo Google e ative uma senha no painel.";
+            return "Este e-mail já possui acesso. Use “Primeiro acesso? Criar senha” ou “Esqueci minha senha” para receber o link de redefinição.";
         }
         if (error.code === "auth/invalid-email") return "Informe um e-mail institucional válido.";
         if (error.code === "auth/weak-password") return "A senha precisa ter pelo menos 8 caracteres.";
         if (error.code === "auth/invalid-credential" || error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
-            return "E-mail ou senha incorretos. Se sua conta usa Google, entre por esse botão e ative uma senha no painel.";
+            return "E-mail ou senha incorretos. Se for seu primeiro acesso, use “Primeiro acesso? Criar senha”.";
         }
         if (error.code === "auth/too-many-requests") {
             return "Muitas tentativas. Aguarde um pouco antes de tentar novamente.";
         }
         if (error.code === "auth/account-exists-with-different-credential") {
-            return "Esta conta já usa Google. Entre pelo botão Google e ative uma senha no painel.";
+            return "Esta conta já está vinculada a outro método. Use “Esqueci minha senha” para receber um link no e-mail.";
         }
         if (error.code === "auth/credential-already-in-use") {
             return "Esta senha já está vinculada a outra conta. Use uma senha diferente.";
@@ -660,7 +709,7 @@
             return "O domínio do site precisa ser autorizado para os e-mails de acesso no Firebase.";
         }
         if (error.code === "auth/requires-recent-login") {
-            return "Entre novamente pelo Google e tente ativar a senha.";
+            return "Entre novamente com seu e-mail e senha e tente outra vez.";
         }
         return error.message || "Não foi possível concluir o acesso por e-mail.";
     }

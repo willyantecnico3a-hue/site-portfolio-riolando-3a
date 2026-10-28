@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f8fafc">
     <title>Horarios dos Professores | Celular</title>
-    <link rel="stylesheet" href="horario-celular.css?v=20261027-02">
+    <link rel="stylesheet" href="horario-celular.css?v=20261028-02">
 </head>
 <body>
     <main class="painel-tv-horarios">
@@ -61,9 +61,10 @@
                 <input id="senhaReservaSala" type="password" placeholder="Digite sua senha" autocomplete="current-password">
                 <button id="btnEntrarEmailReservaSala" type="button" class="botao-reserva-principal">Entrar com e-mail</button>
                 <div id="criarAcessoReservaSala" class="campos-criar-acesso-reserva" hidden>
+                    <p>Crie uma senha para seu primeiro acesso. Se sua conta já foi cadastrada, enviaremos um link para definir ou redefinir a senha; a senha digitada não será usada.</p>
                     <label for="confirmarSenhaReservaSala">Confirme a senha</label>
                     <input id="confirmarSenhaReservaSala" type="password" placeholder="Digite a senha novamente" autocomplete="new-password">
-                    <button id="btnCriarAcessoReservaSala" type="button" class="botao-google-reserva">Criar meu acesso</button>
+                    <button id="btnCriarAcessoReservaSala" type="button" class="botao-reserva-principal">Criar meu acesso</button>
                 </div>
                 <div class="acoes-login-reserva">
                     <button id="btnMostrarCriarAcessoReservaSala" type="button" class="botao-link-reserva">Primeiro acesso? Criar senha</button>
@@ -71,11 +72,7 @@
                     <button id="btnReenviarVerificacaoReservaSala" type="button" class="botao-link-reserva" hidden>Reenviar verificação do e-mail</button>
                     <button id="btnConfirmarVerificacaoReservaSala" type="button" class="botao-link-reserva" hidden>Já confirmei meu e-mail</button>
                 </div>
-                <button id="btnEntrarGoogleReservaSala" type="button" class="botao-google-reserva">
-                    <span class="icone-google-reserva" aria-hidden="true">G</span>
-                    Entrar com Google
-                </button>
-                <p id="mensagemReservaSala" class="mensagem-reserva-sala" role="status">Use seu e-mail institucional verificado. A senha é protegida pelo Firebase e nunca é salva no banco do site.</p>
+                <p id="mensagemReservaSala" class="mensagem-reserva-sala" role="status">Entre com seu e-mail institucional verificado para agendar. A senha é protegida pelo Firebase e nunca é salva no banco do site.</p>
             </div>
 
             <div id="painelReservaSala" hidden>
@@ -84,17 +81,6 @@
                     <strong id="nomeProfessorReservaSala"></strong>
                     <button id="btnSairReservaSala" type="button" class="botao-sair-reserva">Sair</button>
                 </div>
-                <details id="vincularSenhaReservaSala" class="agenda-reservas-celular" hidden>
-                    <summary>Ativar acesso por senha para esta conta</summary>
-                    <div class="campos-criar-acesso-reserva">
-                        <label for="novaSenhaContaReservaSala">Nova senha</label>
-                        <input id="novaSenhaContaReservaSala" type="password" autocomplete="new-password" minlength="8">
-                        <label for="confirmarNovaSenhaContaReservaSala">Confirme a nova senha</label>
-                        <input id="confirmarNovaSenhaContaReservaSala" type="password" autocomplete="new-password" minlength="8">
-                        <button id="btnVincularSenhaReservaSala" type="button" class="botao-reserva-principal">Ativar senha nesta conta</button>
-                        <p id="mensagemVincularSenhaReservaSala" class="mensagem-reserva-sala" role="status"></p>
-                    </div>
-                </details>
                 <form id="formReservaSala" class="form-reserva-sala">
                     <label for="dataReservaSala">Dia da reserva</label>
                     <input id="dataReservaSala" type="date" required>
@@ -183,6 +169,6 @@
     <script src="firebase-app.js?v=20261027-01"></script>
     <script src="firebase-horarios.js?v=20261027-01"></script>
     <script src="horario-tv.js?v=20261027-02"></script>
-    <script src="horario-celular.js?v=20261028-01"></script>
+    <script src="horario-celular.js?v=20261028-02"></script>
 </body>
 </html>

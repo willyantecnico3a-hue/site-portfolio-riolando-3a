@@ -7,7 +7,7 @@ O destino é o projeto Firebase `horariosprofsriolandocanno`. A versão Spark us
 - Páginas estáticas no Firebase Hosting.
 - Login por e-mail e senha e redefinição de senha pelo Firebase Authentication.
 - Dados no Firestore, protegidos por `firestore.rules`.
-- A agenda de salas aceita e-mails institucionais verificados (`@prof.educacao.sp.gov.br`). Após entrar no painel, professores e coordenação podem abrir **Agendar sala**; a sessão Firebase existente é reutilizada. Professores podem criar senha própria ou vincular uma senha à conta Google; administradores enviam links de redefinição, sem visualizar nem armazenar senhas.
+- A agenda de salas aceita e-mails institucionais verificados (`@prof.educacao.sp.gov.br`) com perfil ativo. O primeiro acesso permite criar uma conta por e-mail; contas já importadas recebem um link para definir/redefinir a senha. A recuperação envia um link ao e-mail registrado. O login é somente por e-mail e senha, sem Google. Após entrar no painel, professores e coordenação podem abrir **Agendar sala**; a sessão Firebase existente é reutilizada.
 - Importação local das tabelas e contas do Supabase para Firestore/Auth usando o script de migração.
 - Links de arquivos existentes continuam apontando para o Supabase enquanto esses arquivos permanecerem hospedados lá.
 
