@@ -327,6 +327,7 @@
                 if (!estadoAindaAtual()) return;
                 console.error("Erro ao carregar perfil da agenda de reservas:", error);
                 login.hidden = false;
+                painel.hidden = true;
                 mensagemErroAcesso = mensagemErroFirestoreReservaSala(error);
                 await encerrarSessaoReservaSala(auth, mensagemErroAcesso);
             }
@@ -540,9 +541,15 @@
             .doc(`${reservation.data}_${reservation.ambiente}`);
         const reservationRef = collection.doc();
 
-        await db.runTransaction(async function (transaction) {
-            const lockSnapshot = await transaction.get(lockRef);
-            const sameDay = await transaction.get(collection.where("data", "==", reservation.data));
+        const maxTentativasConcorrencia = 5;
+        for (let tentativa = 0; tentativa < maxTentativasConcorrencia; tentativa += 1) {
+            const lockSnapshot = await lockRef.get();
+            const versaoObservada = lockSnapshot.exists ? Number(lockSnapshot.data().version) : 0;
+            if (!Number.isInteger(versaoObservada) || versaoObservada < 0) {
+                throw new Error("O controle de disponibilidade deste ambiente está inválido. Solicite ajuda à escola.");
+            }
+
+            const sameDay = await collection.where("data", "==", reservation.data).get();
             const hasConflict = sameDay.docs.some(function (documento) {
                 const existing = documento.data();
                 return existing.ambiente === reservation.ambiente
@@ -553,23 +560,42 @@
                 throw new Error("Esse ambiente já está reservado nesse intervalo. Escolha outro horário.");
             }
 
-            const version = lockSnapshot.exists ? Number(lockSnapshot.data().version) + 1 : 1;
-            const timestamp = firebase.firestore.FieldValue.serverTimestamp();
-            transaction.set(reservationRef, Object.assign({
-                id: reservationRef.id,
-                professor: perfilReservaSala.nome,
-                professor_uid: usuarioReservaSala.uid,
-                criado_em: timestamp
-            }, reservation));
-            transaction.set(lockRef, {
-                data: reservation.data,
-                ambiente: reservation.ambiente,
-                version,
-                updated_by: usuarioReservaSala.uid,
-                updated_at: timestamp,
-                last_reservation_id: reservationRef.id
-            });
-        });
+            try {
+                await db.runTransaction(async function (transaction) {
+                    const lockAtual = await transaction.get(lockRef);
+                    const versaoAtual = lockAtual.exists ? Number(lockAtual.data().version) : 0;
+                    if (versaoAtual !== versaoObservada) {
+                        const erroConcorrencia = new Error("A disponibilidade mudou durante a reserva.");
+                        erroConcorrencia.code = "reservation/retry";
+                        throw erroConcorrencia;
+                    }
+
+                    const version = versaoAtual + 1;
+                    const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+                    transaction.set(reservationRef, Object.assign({
+                        id: reservationRef.id,
+                        professor: perfilReservaSala.nome,
+                        professor_uid: usuarioReservaSala.uid,
+                        criado_em: timestamp
+                    }, reservation));
+                    transaction.set(lockRef, {
+                        data: reservation.data,
+                        ambiente: reservation.ambiente,
+                        version,
+                        updated_by: usuarioReservaSala.uid,
+                        updated_at: timestamp,
+                        last_reservation_id: reservationRef.id
+                    });
+                });
+                return;
+            } catch (error) {
+                if (error.code !== "reservation/retry" || tentativa === maxTentativasConcorrencia - 1) {
+                    throw error;
+                }
+            }
+        }
+
+        throw new Error("Não foi possível confirmar a disponibilidade após várias tentativas. Tente novamente.");
     }
 
     async function cancelarReservaSala(db, id) {
